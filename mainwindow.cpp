@@ -1,33 +1,59 @@
 #include "mainwindow.h"
-#include <QVBoxLayout>
-#include "portsettings.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent) {
-
     centralWidget = new QWidget(this);
     setCentralWidget(centralWidget);
 
-    setupUI();
-    applyStyles();
+    mainLayout = new QVBoxLayout(centralWidget);
+
+    createMenu();    // Create hoverable menu
+    createControls(); // Create bottom buttons & sliders
 }
 
 MainWindow::~MainWindow() {}
 
-void MainWindow::setupUI() {
+void MainWindow::createMenu() {
+    menuBar = new QMenuBar(this);
+    setMenuBar(menuBar);
 
-    QVBoxLayout *mainLayout = new QVBoxLayout(centralWidget);
+    mainMenu = new QMenu("☰ Menu", this); // Compact menu
+    menuBar->addMenu(mainMenu);
 
-    // Top menu buttons (removed duplicates)
-    QHBoxLayout *menuLayout = new QHBoxLayout();
-    menuLayout->addWidget(new QPushButton("Port settings"));
-    menuLayout->addWidget(new QPushButton("Graph"));
-    menuLayout->addWidget(new QPushButton("Start measurement"));
-    menuLayout->addWidget(new QPushButton("Save data to file"));
-    mainLayout->addLayout(menuLayout);
+    // Create Actions
+    portSettingsAction = new QAction("Port settings", this);
+    graphAction = new QAction("Graph", this);
+    startMeasurementAction = new QAction("Start measurement", this);
+    saveDataAction = new QAction("Save data to file", this);
 
-    // Control Buttons
+    // Add actions to menu
+    mainMenu->addAction(portSettingsAction);
+    mainMenu->addAction(graphAction);
+    mainMenu->addAction(startMeasurementAction);
+    mainMenu->addAction(saveDataAction);
+
+    // Connect actions
+    connect(portSettingsAction, &QAction::triggered, this, [this]() {
+        PortSettings dialog(this);
+        dialog.exec();
+    });
+
+    connect(graphAction, &QAction::triggered, this, []() {
+        qDebug("Graph action triggered!");
+    });
+
+    connect(startMeasurementAction, &QAction::triggered, this, []() {
+        qDebug("Start measurement triggered!");
+    });
+
+    connect(saveDataAction, &QAction::triggered, this, []() {
+        qDebug("Save data to file triggered!");
+    });
+}
+
+void MainWindow::createControls() {
     QHBoxLayout *buttonLayout = new QHBoxLayout();
+
     portSettingsBtn = new QPushButton("PORT settings");
     showGraphBtn = new QPushButton("Show GRAPH");
     stopBtn = new QPushButton("STOP");
@@ -39,86 +65,62 @@ void MainWindow::setupUI() {
     buttonLayout->addWidget(stopBtn);
     buttonLayout->addWidget(saveDataBtn);
     buttonLayout->addWidget(clearGraphBtn);
+
     mainLayout->addLayout(buttonLayout);
 
-    // Distance & Time Section
-    QGridLayout *formLayout = new QGridLayout();
-    distanceLabel = new QLabel("Distance");
+    // Connect buttons to the same actions as the menu
+    connect(portSettingsBtn, &QPushButton::clicked, this, [this]() {
+        PortSettings dialog(this);
+        dialog.exec();
+    });
+
+    connect(showGraphBtn, &QPushButton::clicked, this, []() {
+        qDebug("Show Graph clicked!");
+    });
+
+    connect(stopBtn, &QPushButton::clicked, this, []() {
+        qDebug("STOP clicked!");
+    });
+
+    connect(saveDataBtn, &QPushButton::clicked, this, []() {
+        qDebug("Save Data clicked!");
+    });
+
+    connect(clearGraphBtn, &QPushButton::clicked, this, []() {
+        qDebug("Clear Graph clicked!");
+    });
+
+    // Controls layout
+    QGridLayout *controlsLayout = new QGridLayout();
+
+    QLabel *distanceLabel = new QLabel("Distance:");
     distanceInput = new QLineEdit("00");
-    timeLabel = new QLabel("Time");
+    QLabel *timeLabel = new QLabel("Time:");
     timeInput = new QTimeEdit();
     timeInput->setDisabled(true);  // Make Time non-editable
 
-    formLayout->addWidget(distanceLabel, 0, 0);
-    formLayout->addWidget(distanceInput, 0, 1);
-    formLayout->addWidget(timeLabel, 1, 0);
-    formLayout->addWidget(timeInput, 1, 1);
-    mainLayout->addLayout(formLayout);
+    controlsLayout->addWidget(distanceLabel, 0, 0);
+    controlsLayout->addWidget(distanceInput, 0, 1);
+    controlsLayout->addWidget(timeLabel, 1, 0);
+    controlsLayout->addWidget(timeInput, 1, 1);
 
-    // Sliders Section
-    QGroupBox *sliderGroup = new QGroupBox("Graph Controls");
-    QGridLayout *sliderLayout = new QGridLayout();
-
-    yAxisLabel = new QLabel("Y axis scale");
+    // Graph Sliders
+    QLabel *yAxisLabel = new QLabel("Y axis scale:");
     yAxisSlider = new QSlider(Qt::Horizontal);
-    maxYLabel = new QLabel("max Y =");
+    QLabel *maxYLabel = new QLabel("max Y =");
     maxYInput = new QLineEdit("0");
 
-    recordingLabel = new QLabel("Recording period [ms]");
+    controlsLayout->addWidget(yAxisLabel, 2, 0);
+    controlsLayout->addWidget(yAxisSlider, 2, 1);
+    controlsLayout->addWidget(maxYLabel, 3, 0);
+    controlsLayout->addWidget(maxYInput, 3, 1);
+
+    // Recording period slider
+    QLabel *recordingLabel = new QLabel("Recording period [ms]:");
     recordingSlider = new QSlider(Qt::Horizontal);
 
-    sliderLayout->addWidget(yAxisLabel, 0, 0);
-    sliderLayout->addWidget(yAxisSlider, 0, 1);
-    sliderLayout->addWidget(maxYLabel, 1, 0);
-    sliderLayout->addWidget(maxYInput, 1, 1);
-    sliderLayout->addWidget(recordingLabel, 2, 0);
-    sliderLayout->addWidget(recordingSlider, 2, 1);
+    controlsLayout->addWidget(recordingLabel, 4, 0);
+    controlsLayout->addWidget(recordingSlider, 4, 1);
 
-    sliderGroup->setLayout(sliderLayout);
-    mainLayout->addWidget(sliderGroup);
-    connect(portSettingsBtn, &QPushButton::clicked, this, [this]() {
-    PortSettings dialog(this);
-    dialog.exec();  // Show as modal dialog
-});
-
+    mainLayout->addLayout(controlsLayout);
 }
-
-
-void MainWindow::applyStyles() {
-    setStyleSheet(R"(
-        QWidget {
-            background-color: #2E2E2E;
-            color: white;
-            font-size: 14px;
-        }
-        QPushButton {
-            background-color: #555;
-            border: 1px solid #777;
-            padding: 8px;
-            border-radius: 5px;
-        }
-        QPushButton:hover {
-            background-color: #777;
-        }
-        QLineEdit, QTimeEdit {
-            background-color: #444;
-            border: 1px solid #666;
-            padding: 5px;
-            border-radius: 3px;
-        }
-        QSlider::groove:horizontal {
-            height: 8px;
-            background: #666;
-            border-radius: 4px;
-        }
-        QSlider::handle:horizontal {
-            background: #888;
-            width: 18px;
-            margin: -5px 0;
-            border-radius: 9px;
-        }
-    )");
-}
-//
-// Created by macho on 4.03.2025.
-//

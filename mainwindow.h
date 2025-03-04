@@ -2,15 +2,16 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QMenuBar>
+#include <QMenu>
+#include <QAction>
+#include <QVBoxLayout>
 #include <QPushButton>
+#include <QSlider>
 #include <QLabel>
 #include <QLineEdit>
-#include <QSlider>
 #include <QTimeEdit>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QGridLayout>
-#include <QGroupBox>
+#include "portsettings.h"  // Include Port Settings Dialog
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -21,6 +22,16 @@ public:
 
 private:
     QWidget *centralWidget;
+    QVBoxLayout *mainLayout;
+
+    // Menu Bar
+    QMenuBar *menuBar;
+    QMenu *mainMenu;
+
+    QAction *portSettingsAction;
+    QAction *graphAction;
+    QAction *startMeasurementAction;
+    QAction *saveDataAction;
 
     // Buttons
     QPushButton *portSettingsBtn;
@@ -29,24 +40,16 @@ private:
     QPushButton *saveDataBtn;
     QPushButton *clearGraphBtn;
 
-    // Labels and Inputs
-    QLabel *distanceLabel;
+    // Sliders & Controls
+    QSlider *yAxisSlider;
+    QLineEdit *maxYInput;
+    QSlider *recordingSlider;
     QLineEdit *distanceInput;
-    QLabel *timeLabel;
     QTimeEdit *timeInput;
 
-    // Sliders
-    QLabel *yAxisLabel;
-    QSlider *yAxisSlider;
-    QLabel *maxYLabel;
-    QLineEdit *maxYInput;
-
-    QLabel *recordingLabel;
-    QSlider *recordingSlider;
-
-    // Methods
     void setupUI();
-    void applyStyles();
+    void createMenu();
+    void createControls();
 };
 
 #endif // MAINWINDOW_H
