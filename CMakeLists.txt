@@ -16,7 +16,9 @@ find_package(Qt6 COMPONENTS
 
 add_executable(lidar main.cpp
         mainwindow.h
-        mainwindow.cpp)
+        mainwindow.cpp
+        portsettings.cpp
+        portsettings.h)
 target_link_libraries(lidar
   Qt::Core
   Qt::Gui

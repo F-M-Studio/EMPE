@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include <QVBoxLayout>
+#include "portsettings.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent) {
@@ -14,9 +15,10 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow() {}
 
 void MainWindow::setupUI() {
+
     QVBoxLayout *mainLayout = new QVBoxLayout(centralWidget);
 
-    // Top menu buttons
+    // Top menu buttons (removed duplicates)
     QHBoxLayout *menuLayout = new QHBoxLayout();
     menuLayout->addWidget(new QPushButton("Port settings"));
     menuLayout->addWidget(new QPushButton("Graph"));
@@ -45,6 +47,7 @@ void MainWindow::setupUI() {
     distanceInput = new QLineEdit("00");
     timeLabel = new QLabel("Time");
     timeInput = new QTimeEdit();
+    timeInput->setDisabled(true);  // Make Time non-editable
 
     formLayout->addWidget(distanceLabel, 0, 0);
     formLayout->addWidget(distanceInput, 0, 1);
@@ -73,7 +76,13 @@ void MainWindow::setupUI() {
 
     sliderGroup->setLayout(sliderLayout);
     mainLayout->addWidget(sliderGroup);
+    connect(portSettingsBtn, &QPushButton::clicked, this, [this]() {
+    PortSettings dialog(this);
+    dialog.exec();  // Show as modal dialog
+});
+
 }
+
 
 void MainWindow::applyStyles() {
     setStyleSheet(R"(
