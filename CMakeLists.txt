@@ -6,23 +6,26 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(CMAKE_PREFIX_PATH "C:/Qt/6.8.2/mingw_64")
+set(CMAKE_PREFIX_PATH "F:/Qt/6.8.2/mingw_64")
 
 find_package(Qt6 COMPONENTS
-  Core
-  Gui
-  Widgets
-  REQUIRED)
+        Core
+        Gui
+        Widgets
+        SerialPort
+        REQUIRED)
 
 add_executable(lidar main.cpp
         mainwindow.h
         mainwindow.cpp
         portsettings.cpp
         portsettings.h)
+
 target_link_libraries(lidar
-  Qt::Core
-  Qt::Gui
-  Qt::Widgets
+        Qt::Core
+        Qt::Gui
+        Qt::Widgets
+        Qt6::SerialPort
 )
 
 if (WIN32 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
@@ -46,7 +49,7 @@ if (WIN32 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
                 "${QT_INSTALL_PATH}/plugins/platforms/qwindows${DEBUG_SUFFIX}.dll"
                 "$<TARGET_FILE_DIR:${PROJECT_NAME}>/plugins/platforms/")
     endif()
-    foreach(QT_LIB Core Gui Widgets )
+    foreach(QT_LIB Core Gui Widgets SerialPort)
         add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy
                 "${QT_INSTALL_PATH}/bin/Qt6${QT_LIB}${DEBUG_SUFFIX}.dll"

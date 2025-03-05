@@ -1,4 +1,5 @@
 #include "portsettings.h"
+#include <QtSerialPort/QSerialPortInfo>
 
 PortSettings::PortSettings(QWidget *parent)
     : QDialog(parent) {
@@ -16,9 +17,10 @@ void PortSettings::setupUI() {
     // Port Selection
     layout->addWidget(new QLabel("Port"), 1, 0);
     portBox = new QComboBox();
-    portBox->addItems({"COM1", "COM2", "COM3", "COM4"});  // Example ports
+    foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts()) {
+        portBox->addItem(info.portName());
+    }
     layout->addWidget(portBox, 1, 1);
-
     // Baud Rate
     layout->addWidget(new QLabel("Baud rate"), 2, 0);
     baudRateBox = new QComboBox();

@@ -107,20 +107,36 @@ void MainWindow::createControls() {
     // Graph Sliders
     QLabel *yAxisLabel = new QLabel("Y axis scale:");
     yAxisSlider = new QSlider(Qt::Horizontal);
-    QLabel *maxYLabel = new QLabel("max Y =");
-    maxYInput = new QLineEdit("0");
+    yAxisSlider->setRange(0, 10000);  // Set range for Y axis slider
 
     controlsLayout->addWidget(yAxisLabel, 2, 0);
     controlsLayout->addWidget(yAxisSlider, 2, 1);
+
+    QLabel *maxYLabel = new QLabel("max Y =");
+    maxYInput = new QLineEdit("0");
+
     controlsLayout->addWidget(maxYLabel, 3, 0);
     controlsLayout->addWidget(maxYInput, 3, 1);
 
     // Recording period slider
     QLabel *recordingLabel = new QLabel("Recording period [ms]:");
     recordingSlider = new QSlider(Qt::Horizontal);
+    recordingSlider->setRange(1, 1000);  // Set range for recording period slider
+    recordingValueLabel = new QLabel("1");  // Label to display recording period value
+    recordingValueLabel->setFixedWidth(50);  // Set fixed width for the label
 
     controlsLayout->addWidget(recordingLabel, 4, 0);
     controlsLayout->addWidget(recordingSlider, 4, 1);
+    controlsLayout->addWidget(recordingValueLabel, 4, 2);  // Add label to layout
 
     mainLayout->addLayout(controlsLayout);
+
+    // Connect sliders to update labels
+    connect(yAxisSlider, &QSlider::valueChanged, this, [this](int value) {
+        maxYInput->setText(QString::number(value));
+    });
+
+    connect(recordingSlider, &QSlider::valueChanged, this, [this](int value) {
+        recordingValueLabel->setText(QString::number(value));
+    });
 }

@@ -46,6 +46,8 @@ private:
     QSlider *recordingSlider;
     QLineEdit *distanceInput;
     QTimeEdit *timeInput;
+    QLabel *recordingValueLabel;  // Label to display recording period value
+    QLabel *yAxisValueLabel;      // Label to display Y axis scale value
 
     void setupUI();
     void createMenu();
