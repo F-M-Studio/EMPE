@@ -1,7 +1,9 @@
 #include "mainwindow.h"
+#include <QDebug>
+#include <QTimer>  // Include QTimer header
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent) {
+    : QMainWindow(parent), isReading(false) {
     centralWidget = new QWidget(this);
     setCentralWidget(centralWidget);
 
@@ -11,7 +13,11 @@ MainWindow::MainWindow(QWidget *parent)
     createControls(); // Create bottom buttons & sliders
 }
 
-MainWindow::~MainWindow() {}
+MainWindow::~MainWindow() {
+    if (isReading) {
+        stopReading();
+    }
+}
 
 void MainWindow::createMenu() {
     menuBar = new QMenuBar(this);
@@ -56,7 +62,7 @@ void MainWindow::createControls() {
 
     portSettingsBtn = new QPushButton("PORT settings");
     showGraphBtn = new QPushButton("Show GRAPH");
-    stopBtn = new QPushButton("STOP");
+    stopBtn = new QPushButton("START");
     saveDataBtn = new QPushButton("SAVE data to file");
     clearGraphBtn = new QPushButton("Clear GRAPH");
 
@@ -68,6 +74,15 @@ void MainWindow::createControls() {
 
     mainLayout->addLayout(buttonLayout);
 
+    // Initialize portBox
+    portBox = new QComboBox();
+    portBox->addItem("COM1");
+    portBox->addItem("COM2");
+    portBox->addItem("COM3");
+    // Add more COM ports as needed
+
+    mainLayout->addWidget(portBox);  // Add portBox to the layout
+
     // Connect buttons to the same actions as the menu
     connect(portSettingsBtn, &QPushButton::clicked, this, [this]() {
         PortSettings dialog(this);
@@ -78,9 +93,7 @@ void MainWindow::createControls() {
         qDebug("Show Graph clicked!");
     });
 
-    connect(stopBtn, &QPushButton::clicked, this, []() {
-        qDebug("STOP clicked!");
-    });
+    connect(stopBtn, &QPushButton::clicked, this, &MainWindow::handleStartStopButton);
 
     connect(saveDataBtn, &QPushButton::clicked, this, []() {
         qDebug("Save Data clicked!");
@@ -139,4 +152,41 @@ void MainWindow::createControls() {
     connect(recordingSlider, &QSlider::valueChanged, this, [this](int value) {
         recordingValueLabel->setText(QString::number(value));
     });
+}
+
+void MainWindow::handleStartStopButton() {
+    if (isReading) {
+        stopReading();
+        stopBtn->setText("START");
+    } else {
+        startReading();
+        stopBtn->setText("STOP");
+    }
+    isReading = !isReading;
+}
+
+void MainWindow::startReading() {
+    QString portName = portBox->currentText();
+    if (serial.openDevice(portName.toStdString().c_str(), 115200) != 1) {
+        qDebug() << "Failed to open port" << portName;
+        return;
+    }
+    qDebug() << "Started reading from port" << portName;
+
+    // Start a timer to read data periodically
+    QTimer *timer = new QTimer(this);
+    connect(timer, &QTimer::timeout, this, [this]() {
+        char buffer[256];
+        int bytesRead = serial.readBytes(buffer, sizeof(buffer) - 1, 100);
+        if (bytesRead > 0) {
+            buffer[bytesRead] = '\0';
+            qDebug() << "Data read:" << buffer;
+        }
+    });
+    timer->start(100);  // Read data every 100 ms
+}
+
+void MainWindow::stopReading() {
+    serial.closeDevice();
+    qDebug() << "Stopped reading from port";
 }

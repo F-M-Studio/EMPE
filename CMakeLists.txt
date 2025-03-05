@@ -19,12 +19,14 @@ add_executable(lidar main.cpp
         mainwindow.h
         mainwindow.cpp
         portsettings.cpp
-        portsettings.h)
+        portsettings.h
+        lib/serialib.cpp
+        lib/serialib.h)
 
 target_link_libraries(lidar
-        Qt::Core
-        Qt::Gui
-        Qt::Widgets
+        Qt6::Core
+        Qt6::Gui
+        Qt6::Widgets
         Qt6::SerialPort
 )
 
