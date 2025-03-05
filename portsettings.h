@@ -13,6 +13,13 @@ class PortSettings : public QDialog {
 public:
     explicit PortSettings(QWidget *parent = nullptr);
 
+    QString getPortName() const;
+    int getBaudRate() const;
+    int getDataBits() const;
+    int getStopBits() const;
+    int getParity() const;
+    int getFlowControl() const;
+
 private:
     QComboBox *portBox;
     QComboBox *baudRateBox;

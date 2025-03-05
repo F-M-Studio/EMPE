@@ -3,7 +3,7 @@
 #include <QTimer>  // Include QTimer header
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), isReading(false) {
+    : QMainWindow(parent), isReading(false), portSettings(new PortSettings(this)) {
     centralWidget = new QWidget(this);
     setCentralWidget(centralWidget);
 
@@ -40,8 +40,7 @@ void MainWindow::createMenu() {
 
     // Connect actions
     connect(portSettingsAction, &QAction::triggered, this, [this]() {
-        PortSettings dialog(this);
-        dialog.exec();
+        portSettings->exec();
     });
 
     connect(graphAction, &QAction::triggered, this, []() {
@@ -74,19 +73,9 @@ void MainWindow::createControls() {
 
     mainLayout->addLayout(buttonLayout);
 
-    // Initialize portBox
-    portBox = new QComboBox();
-    portBox->addItem("COM1");
-    portBox->addItem("COM2");
-    portBox->addItem("COM3");
-    // Add more COM ports as needed
-
-    mainLayout->addWidget(portBox);  // Add portBox to the layout
-
     // Connect buttons to the same actions as the menu
     connect(portSettingsBtn, &QPushButton::clicked, this, [this]() {
-        PortSettings dialog(this);
-        dialog.exec();
+        portSettings->exec();
     });
 
     connect(showGraphBtn, &QPushButton::clicked, this, []() {
@@ -166,11 +155,31 @@ void MainWindow::handleStartStopButton() {
 }
 
 void MainWindow::startReading() {
-    QString portName = portBox->currentText();
-    if (serial.openDevice(portName.toStdString().c_str(), 115200) != 1) {
-        qDebug() << "Failed to open port" << portName;
+    QString portName = portSettings->getPortName();
+    int baudRate = portSettings->getBaudRate();
+    int dataBits = portSettings->getDataBits();
+    int stopBits = portSettings->getStopBits();
+    int parity = portSettings->getParity();
+    int flowControl = portSettings->getFlowControl();
+
+    qDebug() << "Attempting to open port" << portName
+             << "with settings:"
+             << "BaudRate:" << baudRate
+             << "DataBits:" << dataBits
+             << "StopBits:" << stopBits
+             << "Parity:" << parity
+             << "FlowControl:" << flowControl;
+
+    int result = serial.openDevice(portName.toStdString().c_str(), baudRate,
+                                   static_cast<SerialDataBits>(dataBits),
+                                   static_cast<SerialParity>(parity),
+                                   static_cast<SerialStopBits>(stopBits));
+
+    if (result != 1) {
+        qDebug() << "Failed to open port" << portName << "Error code:" << result;
         return;
     }
+
     qDebug() << "Started reading from port" << portName;
 
     // Start a timer to read data periodically

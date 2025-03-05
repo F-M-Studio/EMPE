@@ -31,7 +31,7 @@ private:
     // Menu Bar
     QMenuBar *menuBar;
     QMenu *mainMenu;
-
+    PortSettings *portSettings;
     QAction *portSettingsAction;
     QAction *graphAction;
     QAction *startMeasurementAction;

@@ -21,6 +21,7 @@ void PortSettings::setupUI() {
         portBox->addItem(info.portName());
     }
     layout->addWidget(portBox, 1, 1);
+
     // Baud Rate
     layout->addWidget(new QLabel("Baud rate"), 2, 0);
     baudRateBox = new QComboBox();
@@ -30,7 +31,7 @@ void PortSettings::setupUI() {
     // Data Bits
     layout->addWidget(new QLabel("Data bits"), 3, 0);
     dataBitsBox = new QComboBox();
-    dataBitsBox->addItems({"5", "6", "7", "8"});
+    dataBitsBox->addItems({"6", "7", "8"});  // Remove "5"
     layout->addWidget(dataBitsBox, 3, 1);
 
     // Stop Bits
@@ -66,4 +67,28 @@ void PortSettings::setupUI() {
     connect(cancelButton, &QPushButton::clicked, this, &QDialog::reject);
 
     setLayout(layout);
+}
+
+QString PortSettings::getPortName() const {
+    return portBox->currentText();
+}
+
+int PortSettings::getBaudRate() const {
+    return baudRateBox->currentText().toInt();
+}
+
+int PortSettings::getDataBits() const {
+    return dataBitsBox->currentText().toInt();
+}
+
+int PortSettings::getStopBits() const {
+    return stopBitsBox->currentText().toInt();
+}
+
+int PortSettings::getParity() const {
+    return parityBox->currentIndex();
+}
+
+int PortSettings::getFlowControl() const {
+    return flowControlBox->currentIndex();
 }
