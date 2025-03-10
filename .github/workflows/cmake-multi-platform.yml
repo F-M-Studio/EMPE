@@ -50,7 +50,7 @@ jobs:
             host: windows
             target: desktop
             arch: win64_msvc2022_64
-            modules: qtbase qtserialport qtcharts
+            modules: qtserialport qtcharts
       
         - name: Configure CMake
           shell: cmd  # Explicit shell for Windows
