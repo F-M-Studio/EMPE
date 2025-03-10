@@ -17,11 +17,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      # Step 2: Set up CMake
+      # Step 2: Set up CMake using cmake-actions/setup-cmake
       - name: Set up CMake
-        uses: actions/setup-cmake@v1
+        uses: cmake-actions/setup-cmake@v2
         with:
-          cmake-version: '3.19'  # You can specify the version if needed
+          cmake-version: '3.19'  # Specify the desired CMake version
 
       # Step 3: Install Qt dependencies
       - name: Install Qt dependencies
@@ -35,7 +35,7 @@ jobs:
           mkdir build
           cd build
           cmake ..
-      
+
       - name: Build the project
         run: |
           cd build
