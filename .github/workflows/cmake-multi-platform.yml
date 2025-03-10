@@ -24,7 +24,7 @@ jobs:
         version: '6.8.2'
         host: 'linux'
         target: 'desktop'
-        arch: 'gcc_64'
+        arch: 'linux_gcc_64'
         dir: '$HOME/Qt'
 
 
