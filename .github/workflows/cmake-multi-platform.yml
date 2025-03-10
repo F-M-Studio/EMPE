@@ -27,7 +27,7 @@ jobs:
         echo "shorthash=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
         echo "fullhash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
 
-      windows-qt:
+  windows-qt:
         runs-on: windows-2022  # Updated to supported runner
         needs: get-info
         steps:
