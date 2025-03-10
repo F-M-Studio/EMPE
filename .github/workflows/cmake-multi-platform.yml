@@ -15,8 +15,8 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
-    - name: Set up CMake
-      uses: actions/setup-cmake@v2
+- name: actions-setup-cmake
+  uses: jwlawson/actions-setup-cmake@v2.0.2
 
     - name: Set up Qt
       uses: jurplel/install-qt-action@v2
