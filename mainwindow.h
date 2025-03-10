@@ -1,3 +1,5 @@
+// mainwindow.h
+
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
@@ -11,6 +13,8 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QTimeEdit>
+#include <QTextEdit>
+#include <QKeyEvent>
 #include "portsettings.h"
 #include "lib/serialib.h"  // Include serialib library
 
@@ -20,6 +24,9 @@ class MainWindow : public QMainWindow {
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+
+protected:
+    void keyPressEvent(QKeyEvent *event) override;
 
     private slots:
         void handleStartStopButton();
@@ -53,6 +60,7 @@ private:
     QLabel *recordingValueLabel;  // Label to display recording period value
     QLabel *yAxisValueLabel;      // Label to display Y axis scale value
 
+    QTextEdit *dataDisplay;  // TextEdit to display data from COM port
     serialib serial;  // Serialib object for serial communication
     bool isReading;  // Flag to indicate if reading is in progress
 

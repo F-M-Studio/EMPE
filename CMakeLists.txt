@@ -6,13 +6,14 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(CMAKE_PREFIX_PATH "F:/Qt/6.8.2/mingw_64")
+set(CMAKE_PREFIX_PATH "C:/Qt/6.8.2/mingw_64")
 
 find_package(Qt6 COMPONENTS
         Core
         Gui
         Widgets
         SerialPort
+        Charts
         REQUIRED)
 
 add_executable(lidar main.cpp
@@ -21,13 +22,18 @@ add_executable(lidar main.cpp
         portsettings.cpp
         portsettings.h
         lib/serialib.cpp
-        lib/serialib.h)
+        lib/serialib.h
+        graphwindow.cpp
+        graphwindow.h
+        graphwindow.ui
+)
 
 target_link_libraries(lidar
         Qt6::Core
         Qt6::Gui
         Qt6::Widgets
         Qt6::SerialPort
+        Qt6::Charts
 )
 
 if (WIN32 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)

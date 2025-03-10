@@ -1,6 +1,9 @@
+// mainwindow.cpp
+
 #include "mainwindow.h"
+#include "graphwindow.h"
 #include <QDebug>
-#include <QTimer>  // Include QTimer header
+#include <QTimer>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), isReading(false), portSettings(new PortSettings(this)) {
@@ -9,8 +12,13 @@ MainWindow::MainWindow(QWidget *parent)
 
     mainLayout = new QVBoxLayout(centralWidget);
 
-    createMenu();    // Create hoverable menu
-    createControls(); // Create bottom buttons & sliders
+    createMenu();
+    createControls();
+
+    dataDisplay = new QTextEdit(this);
+    dataDisplay->setReadOnly(true);
+    dataDisplay->hide();
+    mainLayout->addWidget(dataDisplay);
 }
 
 MainWindow::~MainWindow() {
@@ -23,28 +31,26 @@ void MainWindow::createMenu() {
     menuBar = new QMenuBar(this);
     setMenuBar(menuBar);
 
-    mainMenu = new QMenu("☰ Menu", this); // Compact menu
+    mainMenu = new QMenu("☰ Menu", this);
     menuBar->addMenu(mainMenu);
 
-    // Create Actions
     portSettingsAction = new QAction("Port settings", this);
     graphAction = new QAction("Graph", this);
     startMeasurementAction = new QAction("Start measurement", this);
     saveDataAction = new QAction("Save data to file", this);
 
-    // Add actions to menu
     mainMenu->addAction(portSettingsAction);
     mainMenu->addAction(graphAction);
     mainMenu->addAction(startMeasurementAction);
     mainMenu->addAction(saveDataAction);
 
-    // Connect actions
     connect(portSettingsAction, &QAction::triggered, this, [this]() {
         portSettings->exec();
     });
 
-    connect(graphAction, &QAction::triggered, this, []() {
-        qDebug("Graph action triggered!");
+    connect(graphAction, &QAction::triggered, this, [this]() {
+        GraphWindow *graphWindow = new GraphWindow(this);
+        graphWindow->show();
     });
 
     connect(startMeasurementAction, &QAction::triggered, this, []() {
@@ -73,13 +79,13 @@ void MainWindow::createControls() {
 
     mainLayout->addLayout(buttonLayout);
 
-    // Connect buttons to the same actions as the menu
     connect(portSettingsBtn, &QPushButton::clicked, this, [this]() {
         portSettings->exec();
     });
 
-    connect(showGraphBtn, &QPushButton::clicked, this, []() {
-        qDebug("Show Graph clicked!");
+    connect(showGraphBtn, &QPushButton::clicked, this, [this]() {
+        GraphWindow *graphWindow = new GraphWindow(this);
+        graphWindow->show();
     });
 
     connect(stopBtn, &QPushButton::clicked, this, &MainWindow::handleStartStopButton);
@@ -92,24 +98,22 @@ void MainWindow::createControls() {
         qDebug("Clear Graph clicked!");
     });
 
-    // Controls layout
     QGridLayout *controlsLayout = new QGridLayout();
 
     QLabel *distanceLabel = new QLabel("Distance:");
     distanceInput = new QLineEdit("00");
     QLabel *timeLabel = new QLabel("Time:");
     timeInput = new QTimeEdit();
-    timeInput->setDisabled(true);  // Make Time non-editable
+    timeInput->setDisabled(true);
 
     controlsLayout->addWidget(distanceLabel, 0, 0);
     controlsLayout->addWidget(distanceInput, 0, 1);
     controlsLayout->addWidget(timeLabel, 1, 0);
     controlsLayout->addWidget(timeInput, 1, 1);
 
-    // Graph Sliders
     QLabel *yAxisLabel = new QLabel("Y axis scale:");
     yAxisSlider = new QSlider(Qt::Horizontal);
-    yAxisSlider->setRange(0, 10000);  // Set range for Y axis slider
+    yAxisSlider->setRange(0, 10000);
 
     controlsLayout->addWidget(yAxisLabel, 2, 0);
     controlsLayout->addWidget(yAxisSlider, 2, 1);
@@ -120,20 +124,18 @@ void MainWindow::createControls() {
     controlsLayout->addWidget(maxYLabel, 3, 0);
     controlsLayout->addWidget(maxYInput, 3, 1);
 
-    // Recording period slider
     QLabel *recordingLabel = new QLabel("Recording period [ms]:");
     recordingSlider = new QSlider(Qt::Horizontal);
-    recordingSlider->setRange(1, 1000);  // Set range for recording period slider
-    recordingValueLabel = new QLabel("1");  // Label to display recording period value
-    recordingValueLabel->setFixedWidth(50);  // Set fixed width for the label
+    recordingSlider->setRange(1, 1000);
+    recordingValueLabel = new QLabel("1");
+    recordingValueLabel->setFixedWidth(50);
 
     controlsLayout->addWidget(recordingLabel, 4, 0);
     controlsLayout->addWidget(recordingSlider, 4, 1);
-    controlsLayout->addWidget(recordingValueLabel, 4, 2);  // Add label to layout
+    controlsLayout->addWidget(recordingValueLabel, 4, 2);
 
     mainLayout->addLayout(controlsLayout);
 
-    // Connect sliders to update labels
     connect(yAxisSlider, &QSlider::valueChanged, this, [this](int value) {
         maxYInput->setText(QString::number(value));
     });
@@ -182,7 +184,6 @@ void MainWindow::startReading() {
 
     qDebug() << "Started reading from port" << portName;
 
-    // Start a timer to read data periodically
     QTimer *timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, [this]() {
         char buffer[256];
@@ -190,12 +191,21 @@ void MainWindow::startReading() {
         if (bytesRead > 0) {
             buffer[bytesRead] = '\0';
             qDebug() << "Data read:" << buffer;
+            dataDisplay->append(buffer);
         }
     });
-    timer->start(100);  // Read data every 100 ms
+    timer->start(100);
 }
 
 void MainWindow::stopReading() {
     serial.closeDevice();
     qDebug() << "Stopped reading from port";
+}
+
+void MainWindow::keyPressEvent(QKeyEvent *event) {
+    if (event->key() == Qt::Key_F7) {
+        dataDisplay->setVisible(!dataDisplay->isVisible());
+    } else {
+        QMainWindow::keyPressEvent(event);
+    }
 }

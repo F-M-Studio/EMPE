@@ -4,11 +4,11 @@
 
 
 int main(int argc, char *argv[]) {
-    QApplication app(argc, argv);
+    QApplication a(argc, argv);
 
-    MainWindow window;
-    window.resize(600, 400);
-    window.show();
+    MainWindow w;
+    w.resize(600, 400);
+    w.show();
 
-    return app.exec();
+    return a.exec();
 }

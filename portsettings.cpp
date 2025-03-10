@@ -25,7 +25,7 @@ void PortSettings::setupUI() {
     // Baud Rate
     layout->addWidget(new QLabel("Baud rate"), 2, 0);
     baudRateBox = new QComboBox();
-    baudRateBox->addItems({"9600", "19200", "38400", "57600", "115200"});
+    baudRateBox->addItems({"110","9600", "19200", "38400", "57600", "115200"});
     layout->addWidget(baudRateBox, 2, 1);
 
     // Data Bits
