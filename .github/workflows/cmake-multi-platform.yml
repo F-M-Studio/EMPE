@@ -1,48 +1,38 @@
-name: Build Qt Application
+name: Build Qt Project
 
 on:
   push:
     branches:
-      - main  # Trigger on push to main branch (or any branch you want)
+      - main
   pull_request:
     branches:
-      - main  # Trigger on pull requests to main
+      - main
 
 jobs:
   build:
-    runs-on: ubuntu-latest  # You can use other runners, like windows-latest or macos-latest
+    runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout the repository code
-      - name: Checkout repository
-        uses: actions/checkout@v2
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
-      # Step 2: Set up CMake using cmake-actions/setup-cmake
-      - name: Set up CMake
-        uses: cmake-actions/setup-cmake@v2
-        with:
-          cmake-version: '3.19'  # Specify the desired CMake version
+    - name: Set up Qt
+      uses: jurplel/install-qt-action@v2
+      with:
+        version: '6.8.2'
+        host: 'linux'
+        target: 'desktop'
+        arch: 'gcc_64'
+        dir: '$HOME/Qt'
 
-      # Step 3: Install Qt dependencies
-      - name: Install Qt dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y qt6-base-dev qt6-tools-dev
+    - name: Set up CMake
+      uses: actions/setup-cmake@v3
 
-      # Step 4: Configure and build the project
-      - name: Configure with CMake
-        run: |
-          mkdir build
-          cd build
-          cmake ..
+    - name: Configure CMake
+      run: cmake -S . -B build -DCMAKE_PREFIX_PATH=$HOME/Qt/6.8.2/gcc_64
 
-      - name: Build the project
-        run: |
-          cd build
-          cmake --build .
-      
-      # Step 5: Optionally, run tests (if applicable)
-      - name: Run tests
-        run: |
-          cd build
-          ctest
+    - name: Build
+      run: cmake --build build --config Release
+
+    - name: Run tests
+      run: ctest --test-dir build
