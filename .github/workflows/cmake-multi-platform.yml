@@ -29,14 +29,14 @@ jobs:
         with:
           arch: amd64
 
-      - name: Setup Qt with SerialPort
+      - name: Setup Qt with Required Modules
         uses: jurplel/install-qt-action@v4
         with:
           version: 6.8.2
           host: windows
           target: desktop
           arch: win64_msvc2022_64
-          modules: qtserialport  # Ensures SerialPort module is installed
+          modules: qtserialport qtcharts  # Ensures SerialPort and Charts modules are installed
 
       - name: Configure CMake
         run: |
