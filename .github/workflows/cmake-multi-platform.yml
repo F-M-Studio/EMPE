@@ -1,74 +1,258 @@
+
 name: Build and Release
 
-on:
-  push:
-    branches:
-      - main
-      - develop
-  pull_request:
-    branches:
-      - main
-      - develop
+on: [push, pull_request]
+
+concurrency:
+  group: ci-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'push' }}
 
 env:
   BUILD_TYPE: Release
 
 jobs:
-  build:
-    runs-on: windows-2025
+  reuse:
+    runs-on: ubuntu-24.04
+    continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
+    - uses: actions/checkout@v4
+    - uses: fsfe/reuse-action@v5
 
-      - name: Install Ninja
-        run: choco install ninja
+  clang-format:
+    runs-on: ubuntu-24.04
+    continue-on-error: true
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Install
+      run: |
+        wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+        sudo add-apt-repository 'deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-19 main'
+        sudo apt update
+        sudo apt install clang-format-19
+    - name: Build
+      env:
+        COMMIT_RANGE: ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}
+      run: ./.ci/clang-format.sh
 
-      - name: Setup Visual Studio Environment
-        uses: ilammy/msvc-dev-cmd@v1.13.0
-        with:
-          arch: amd64
+  get-info:
+    runs-on: ubuntu-24.04
+    outputs:
+      date: ${{ steps.vars.outputs.date }}
+      shorthash: ${{ steps.vars.outputs.shorthash }}
+      fullhash: ${{ steps.vars.outputs.fullhash }}
+    steps:
+    - uses: actions/checkout@v4
+    - name: Get date and git hash
+      id: vars
+      run: |
+        echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+        echo "shorthash=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+        echo "fullhash=$(git rev-parse HEAD)" >> $GITHUB_ENV
+        echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+        echo "shorthash=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+        echo "fullhash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
 
-      - name: Cache Qt Installation
-        uses: actions/cache@v4
-        with:
-          path: |
-            C:/Qt/6.8.2/msvc2022_64
-          key: qt-${{ runner.os }}-6.8.2-msvc2022_64
+  windows-sdl:
+    runs-on: windows-2025
+    needs: get-info
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Cache CMake Configuration
+      uses: actions/cache@v4
+      env:
+          cache-name: ${{ runner.os }}-sdl-ninja-cache-cmake-configuration
+      with:
+          path: | 
+            ${{github.workspace}}/build
+          key: ${{ env.cache-name }}-${{ hashFiles('**/CMakeLists.txt', 'cmake/**') }}
           restore-keys: |
-            qt-${{ runner.os }}-6.8.2-msvc2022_64
+            ${{ env.cache-name }}-
 
-      - name: Setup Qt with Required Modules
-        uses: jurplel/install-qt-action@v4
-        with:
-          version: 6.8.2
-          host: windows
-          target: desktop
-          arch: win64_msvc2022_64
-          modules: qtcharts qtserialport
+    - name: Cache CMake Build
+      uses: hendrikmuhs/ccache-action@v1.2.17
+      env:
+          cache-name: ${{ runner.os }}-sdl-cache-cmake-build
+      with:
+        append-timestamp: false
+        key: ${{ env.cache-name }}-${{ hashFiles('**/CMakeLists.txt', 'cmake/**') }}
 
-      - name: Copy Qt DLLs before build
-        run: |
-          echo "Copying Qt DLLs..."
-          copy "C:/Qt/6.8.2/msvc2022_64/bin/Qt6Core.dll" "${GITHUB_WORKSPACE}/build/"
-          copy "C:/Qt/6.8.2/msvc2022_64/bin/Qt6Gui.dll" "${GITHUB_WORKSPACE}/build/"
-          copy "C:/Qt/6.8.2/msvc2022_64/bin/Qt6Widgets.dll" "${GITHUB_WORKSPACE}/build/"
-          copy "C:/Qt/6.8.2/msvc2022_64/bin/Qt6SerialPort.dll" "${GITHUB_WORKSPACE}/build/"
-          copy "C:/Qt/6.8.2/msvc2022_64/bin/Qt6Charts.dll" "${GITHUB_WORKSPACE}/build/"
-          copy "C:/Qt/6.8.2/msvc2022_64/bin/Qt6OpenGLWidgets.dll" "${GITHUB_WORKSPACE}/build/"
+    - name: Setup VS Environment
+      uses: ilammy/msvc-dev-cmd@v1.13.0
+      with:
+        arch: amd64
 
-      - name: Configure CMake
-        run: |
-          cmake --fresh -G Ninja -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_PREFIX_PATH="C:/Qt/6.8.2/msvc2022_64"
+    - name: Configure CMake
+      run: cmake --fresh -G Ninja -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE=ON -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
 
-      - name: Build
-        run: cmake --build build --config ${{env.BUILD_TYPE}} --parallel $env:NUMBER_OF_PROCESSORS
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --parallel $env:NUMBER_OF_PROCESSORS
 
-      - name: Run tests
-        run: ctest --test-dir build
+    - name: Upload Windows SDL artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: empe-win64-sdl-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}
+        path: ${{github.workspace}}/build/empe.exe
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-artifact
-          path: build
+  windows-qt:
+    runs-on: windows-2025
+    needs: get-info
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Setup Qt
+      uses: jurplel/install-qt-action@v4
+      with:
+        version: 6.9.0
+        host: windows
+        target: desktop
+        arch: win64_msvc2022_64
+        archives: qtbase qttools
+        modules: qtmultimedia
+
+    - name: Cache CMake Configuration
+      uses: actions/cache@v4
+      env:
+          cache-name: ${{ runner.os }}-qt-ninja-cache-cmake-configuration
+      with:
+          path: | 
+            ${{github.workspace}}/build
+          key: ${{ env.cache-name }}-${{ hashFiles('**/CMakeLists.txt', 'cmake/**') }}
+          restore-keys: |
+            ${{ env.cache-name }}-
+
+    - name: Cache CMake Build
+      uses: hendrikmuhs/ccache-action@v1.2.17
+      env:
+          cache-name: ${{ runner.os }}-qt-cache-cmake-build
+      with:
+        append-timestamp: false
+        key: ${{ env.cache-name }}-${{ hashFiles('**/CMakeLists.txt', 'cmake/**') }}
+
+    - name: Setup VS Environment
+      uses: ilammy/msvc-dev-cmd@v1.13.0
+      with:
+        arch: amd64
+
+    - name: Configure CMake
+      run: cmake --fresh -G Ninja -B ${{github.workspace}}/build -DENABLE_QT_GUI=ON -DENABLE_UPDATER=ON -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE=ON -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --parallel $env:NUMBER_OF_PROCESSORS
+
+    - name: Deploy and Package
+      run: |
+        mkdir upload
+        move build/empe.exe upload
+        windeployqt --no-compiler-runtime --no-system-d3d-compiler --no-system-dxc-compiler --dir upload upload/empe.exe
+        Compress-Archive -Path upload/* -DestinationPath empe-win64-qt-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}.zip
+
+    - name: Upload Windows Qt artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: empe-win64-qt-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}
+        path: upload/
+
+  linux-qt:
+    runs-on: ubuntu-24.04
+    needs: get-info
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Setup Qt
+      uses: jurplel/install-qt-action@v4
+      with:
+        version: 6.9.0
+        host: linux
+        target: desktop
+        arch: amd64
+        archives: qtbase qttools
+        modules: qtmultimedia
+
+    - name: Cache CMake Configuration
+      uses: actions/cache@v4
+      env:
+          cache-name: ${{ runner.os }}-qt-ninja-cache-cmake-configuration
+      with:
+          path: | 
+            ${{github.workspace}}/build
+          key: ${{ env.cache-name }}-${{ hashFiles('**/CMakeLists.txt', 'cmake/**') }}
+          restore-keys: |
+            ${{ env.cache-name }}-
+
+    - name: Cache CMake Build
+      uses: hendrikmuhs/ccache-action@v1.2.17
+      env:
+          cache-name: ${{ runner.os }}-qt-cache-cmake-build
+      with:
+        append-timestamp: false
+        key: ${{ env.cache-name }}-${{ hashFiles('**/CMakeLists.txt', 'cmake/**') }}
+
+    - name: Configure CMake
+      run: cmake --fresh -G Ninja -B ${{github.workspace}}/build -DENABLE_QT_GUI=ON -DENABLE_UPDATER=ON -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE=ON
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --parallel ${{env.NUMBER_OF_PROCESSORS}}
+
+    - name: Upload Linux Qt artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: empe-linux-qt-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}
+        path: ${{ github.workspace }}/build/empe
+
+  macos-qt:
+    runs-on: macos-13
+    needs: get-info
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Setup Qt
+      uses: jurplel/install-qt-action@v4
+      with:
+        version: 6.9.0
+        host: mac
+        target: desktop
+        arch: x86_64
+        archives: qtbase qttools
+        modules: qtmultimedia
+
+    - name: Cache CMake Configuration
+      uses: actions/cache@v4
+      env:
+          cache-name: ${{ runner.os }}-qt-ninja-cache-cmake-configuration
+      with:
+          path: | 
+            ${{github.workspace}}/build
+          key: ${{ env.cache-name }}-${{ hashFiles('**/CMakeLists.txt', 'cmake/**') }}
+          restore-keys: |
+            ${{ env.cache-name }}-
+
+    - name: Cache CMake Build
+      uses: hendrikmuhs/ccache-action@v1.2.17
+      env:
+          cache-name: ${{ runner.os }}-qt-cache-cmake-build
+      with:
+        append-timestamp: false
+        key: ${{ env.cache-name }}-${{ hashFiles('**/CMakeLists.txt', 'cmake/**') }}
+
+    - name: Configure CMake
+      run: cmake --fresh -G Ninja -B ${{github.workspace}}/build -DENABLE_QT_GUI=ON -DENABLE_UPDATER=ON -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE=ON
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --parallel ${{env.NUMBER_OF_PROCESSORS}}
+
+    - name: Upload macOS Qt artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: empe-macos-qt-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}
+        path: ${{ github.workspace }}/build/empe.app
