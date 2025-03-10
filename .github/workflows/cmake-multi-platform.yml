@@ -27,7 +27,7 @@ jobs:
         echo "shorthash=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
         echo "fullhash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
   windows-qt:
-    runs-on: windows-2022
+    runs-on: windows-2025
     needs: get-info
     steps:
     - uses: actions/checkout@v4
@@ -35,7 +35,7 @@ jobs:
         submodules: recursive
   
     - name: Install Ninja
-      run: choco install ninja -y
+      run: choco install ninja
   
     - name: Setup Visual Studio Environment
       uses: ilammy/msvc-dev-cmd@v1.13.0
@@ -49,7 +49,7 @@ jobs:
         host: windows
         target: desktop
         arch: win64_msvc2022_64
-        modules: qtbase qttools qtcharts qtserialport  # Core modules required
+        modules: qtcharts qtserialport  # Core modules required
   
     - name: Configure CMake
       run: |
@@ -59,11 +59,10 @@ jobs:
   
     - name: Build
       run: cmake --build build --config ${{env.BUILD_TYPE}} --parallel $env:NUMBER_OF_PROCESSORS
-  
     - name: Deploy Qt Dependencies
       run: |
-        "${{ env.Qt6_DIR }}/bin/windeployqt.exe" --release --dir build build/${{ env.APP_NAME }}.exe
-  
+          "${{ env.Qt6_DIR }}/bin/windeployqt.exe" --release --verbose 2 --dir build build/lidar.exe
+
     - name: Package and Upload
       run: |
         mkdir upload
