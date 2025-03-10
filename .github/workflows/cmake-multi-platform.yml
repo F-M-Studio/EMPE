@@ -36,7 +36,7 @@ jobs:
           host: windows
           target: desktop
           arch: win64_msvc2022_64
-          modules: qtserialport qtcharts  # Ensures SerialPort and Charts modules are installed
+          modules: qtserialport qtcharts
 
       - name: Configure CMake
         run: |
@@ -47,7 +47,7 @@ jobs:
 
       - name: Deploy Qt Dependencies
         run: |
-          "${{ env.Qt6_DIR }}/bin/windeployqt.exe" --release --dir build build/lidar.exe
+          "${{ env.Qt6_DIR }}/bin/windeployqt.exe" --release --verbose 2 --dir build build/lidar.exe
 
       - name: Run tests
         run: ctest --test-dir build
