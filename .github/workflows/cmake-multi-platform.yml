@@ -1,0 +1,48 @@
+name: Build Qt Application
+
+on:
+  push:
+    branches:
+      - main  # Trigger on push to main branch (or any branch you want)
+  pull_request:
+    branches:
+      - main  # Trigger on pull requests to main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest  # You can use other runners, like windows-latest or macos-latest
+
+    steps:
+      # Step 1: Checkout the repository code
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      # Step 2: Set up CMake
+      - name: Set up CMake
+        uses: actions/setup-cmake@v1
+        with:
+          cmake-version: '3.19'  # You can specify the version if needed
+
+      # Step 3: Install Qt dependencies
+      - name: Install Qt dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qt6-base-dev qt6-tools-dev
+
+      # Step 4: Configure and build the project
+      - name: Configure with CMake
+        run: |
+          mkdir build
+          cd build
+          cmake ..
+      
+      - name: Build the project
+        run: |
+          cd build
+          cmake --build .
+      
+      # Step 5: Optionally, run tests (if applicable)
+      - name: Run tests
+        run: |
+          cd build
+          ctest
