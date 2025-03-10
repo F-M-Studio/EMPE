@@ -10,26 +10,29 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-2022
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
-    - name: actions-setup-cmake
-      uses: jwlawson/actions-setup-cmake@v2.0.2
+
+    - name: Setup MSVC
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        vsversion: 2022
+        arch: amd64
 
     - name: Set up Qt
-      uses: jurplel/install-qt-action@v2
+      uses: jurplel/install-qt-action@v4
       with:
         version: '6.8.2'
-        host: 'linux'
+        host: 'windows'
         target: 'desktop'
-        arch: 'linux_gcc_64'
-        dir: '$HOME/Qt'
-
+        arch: 'win64_msvc2019_64'
+        dir: '${{ env.HOME }}/Qt'
 
     - name: Configure CMake
-      run: cmake -S . -B build -DCMAKE_PREFIX_PATH=$HOME/Qt/6.8.2/gcc_64
+      run: cmake -S . -B build -DCMAKE_PREFIX_PATH=${{ env.HOME }}/Qt/6.8.2/msvc2019_64
 
     - name: Build
       run: cmake --build build --config Release
