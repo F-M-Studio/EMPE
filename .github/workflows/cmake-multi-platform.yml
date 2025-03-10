@@ -26,53 +26,59 @@ jobs:
         echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
         echo "shorthash=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
         echo "fullhash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
-  windows-qt:
-    runs-on: windows-2025
-    needs: get-info
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        submodules: recursive
-  
-    - name: Install Ninja
-      run: choco install ninja
-  
-    - name: Setup Visual Studio Environment
-      uses: ilammy/msvc-dev-cmd@v1.13.0
-      with:
-        arch: amd64
-  
-    - name: Setup Qt
-      uses: jurplel/install-qt-action@v4
-      with:
-        version: 6.8.2
-        host: windows
-        target: desktop
-        arch: win64_msvc2022_64
-        modules: qtcharts qtserialport  # Core modules required
-  
-    - name: Configure CMake
-      run: |
-        cmake --fresh -G Ninja -B build `
-          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} `
-          -DCMAKE_PREFIX_PATH="${{ env.Qt6_DIR }}"
-  
-    - name: Build
-      run: cmake --build build --config ${{env.BUILD_TYPE}} --parallel $env:NUMBER_OF_PROCESSORS
-    - name: Deploy Qt Dependencies
-      run: |
-          "${{ env.Qt6_DIR }}/bin/windeployqt.exe" --release --verbose 2 --dir build build/lidar.exe
 
-    - name: Package and Upload
-      run: |
-        mkdir upload
-        cp build/${{ env.APP_NAME }}.exe upload/
-        7z a ${{ env.APP_NAME }}-windows-${{ needs.get-info.outputs.shorthash }}.zip ./upload/*
-    - uses: actions/upload-artifact@v4
-      with:
-          name: ${{ env.APP_NAME }}-windows-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}
-          path: ${{ env.APP_NAME }}-windows-*.zip
-
+      windows-qt:
+        runs-on: windows-2022  # Updated to supported runner
+        needs: get-info
+        steps:
+        - uses: actions/checkout@v4
+          with:
+            submodules: recursive
+      
+        - name: Install Ninja
+          run: choco install ninja -y
+      
+        - name: Setup Visual Studio Environment
+          uses: ilammy/msvc-dev-cmd@v1.13.0
+          with:
+            arch: amd64
+      
+        - name: Setup Qt
+          uses: jurplel/install-qt-action@v4
+          with:
+            version: 6.8.2
+            host: windows
+            target: desktop
+            arch: win64_msvc2022_64
+            modules: qtbase qtserialport qtcharts
+      
+        - name: Configure CMake
+          shell: cmd  # Explicit shell for Windows
+          run: |
+            cmake --fresh -G Ninja -B build ^
+              -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} ^
+              -DCMAKE_PREFIX_PATH="${{ env.Qt6_DIR }}"
+      
+        - name: Build
+          shell: cmd
+          run: cmake --build build --config ${{env.BUILD_TYPE}} --parallel %NUMBER_OF_PROCESSORS%
+      
+        - name: Deploy Qt Dependencies
+          shell: cmd
+          run: |
+            "%Qt6_DIR%\bin\windeployqt.exe" --release --dir build build/Release/lidar.exe
+      
+        - name: Package and Upload
+          shell: cmd
+          run: |
+            mkdir upload
+            copy build\Release\lidar.exe upload\
+            7z a lidar-windows-${{ needs.get-info.outputs.shorthash }}.zip .\upload\*
+        - uses: actions/upload-artifact@v4
+          with:
+              name: ${{ env.APP_NAME }}-windows-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}
+              path: lidar-windows-*.zip
+        
   linux-qt:
     runs-on: ubuntu-24.04
     needs: get-info
