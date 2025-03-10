@@ -47,20 +47,22 @@ jobs:
           arch: win64_msvc2022_64
           modules: qtcharts qtserialport
 
+      - name: Copy Qt DLLs before build
+        run: |
+          echo "Copying Qt DLLs..."
+          copy "C:/Qt/6.8.2/msvc2022_64/bin/Qt6Core.dll" "${GITHUB_WORKSPACE}/build/"
+          copy "C:/Qt/6.8.2/msvc2022_64/bin/Qt6Gui.dll" "${GITHUB_WORKSPACE}/build/"
+          copy "C:/Qt/6.8.2/msvc2022_64/bin/Qt6Widgets.dll" "${GITHUB_WORKSPACE}/build/"
+          copy "C:/Qt/6.8.2/msvc2022_64/bin/Qt6SerialPort.dll" "${GITHUB_WORKSPACE}/build/"
+          copy "C:/Qt/6.8.2/msvc2022_64/bin/Qt6Charts.dll" "${GITHUB_WORKSPACE}/build/"
+          copy "C:/Qt/6.8.2/msvc2022_64/bin/Qt6OpenGLWidgets.dll" "${GITHUB_WORKSPACE}/build/"
+
       - name: Configure CMake
         run: |
           cmake --fresh -G Ninja -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_PREFIX_PATH="C:/Qt/6.8.2/msvc2022_64"
 
       - name: Build
         run: cmake --build build --config ${{env.BUILD_TYPE}} --parallel $env:NUMBER_OF_PROCESSORS
-
-      - name: Manually Copy Qt DLLs
-        run: |
-          copy "C:/Qt/6.8.2/msvc2022_64/bin/Qt6Core.dll" build/
-          copy "C:/Qt/6.8.2/msvc2022_64/bin/Qt6Gui.dll" build/
-          copy "C:/Qt/6.8.2/msvc2022_64/bin/Qt6Widgets.dll" build/
-          copy "C:/Qt/6.8.2/msvc2022_64/bin/Qt6SerialPort.dll" build/
-          copy "C:/Qt/6.8.2/msvc2022_64/bin/Qt6Charts.dll" build/
 
       - name: Run tests
         run: ctest --test-dir build
