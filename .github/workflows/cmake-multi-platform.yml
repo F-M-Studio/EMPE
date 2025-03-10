@@ -1,42 +1,102 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  reuse:
+    runs-on: ubuntu-24.04
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: fsfe/reuse-action@v5
+
+  clang-format:
+    runs-on: ubuntu-24.04
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install Clang-Format
+        run: |
+          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+          sudo add-apt-repository 'deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-19 main'
+          sudo apt update
+          sudo apt install clang-format-19
+      - name: Run Clang-Format
+        env:
+          COMMIT_RANGE: ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}
+        run: ./.ci/clang-format.sh
+
+  get-info:
+    runs-on: ubuntu-24.04
+    outputs:
+      date: ${{ steps.vars.outputs.date }}
+      shorthash: ${{ steps.vars.outputs.shorthash }}
+      fullhash: ${{ steps.vars.outputs.fullhash }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Get date and git hash
+        id: vars
+        run: |
+          echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+          echo "shorthash=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+          echo "fullhash=$(git rev-parse HEAD)" >> $GITHUB_ENV
+          echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+          echo "shorthash=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          echo "fullhash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+
   build:
     runs-on: windows-2025
     needs: get-info
     steps:
-    - uses: actions/checkout@v4
-      with:
-        submodules: recursive
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
-    - name: Install Ninja
-      run: choco install ninja
+      - name: Install Ninja
+        run: choco install ninja
 
-    - name: Setup VS Environment
-      uses: ilammy/msvc-dev-cmd@v1.13.0
-      with:
-        arch: amd64
+      - name: Setup Visual Studio Environment
+        uses: ilammy/msvc-dev-cmd@v1.13.0
+        with:
+          arch: amd64
 
-    - name: Setup Qt
-      uses: jurplel/install-qt-action@v4
-      with:
-        version: 6.8.2
-        host: windows
-        target: desktop
-        arch: win64_msvc2022_64
+      - name: Setup Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: 6.8.2
+          host: windows
+          target: desktop
+          arch: win64_msvc2022_64
 
-    - name: Configure CMake
-      run: cmake --fresh -G Ninja -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_PREFIX_PATH="${{ env.Qt6_DIR }}"
+      - name: Configure CMake
+        run: |
+          cmake --fresh -G Ninja -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_PREFIX_PATH="${{ env.Qt6_DIR }}"
 
-    - name: Build
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --parallel $env:NUMBER_OF_PROCESSORS
+      - name: Build
+        run: cmake --build build --config ${{env.BUILD_TYPE}} --parallel $env:NUMBER_OF_PROCESSORS
 
-    - name: Deploy Qt Dependencies
-      run: |
-        "${{ env.Qt6_DIR }}/bin/windeployqt.exe" --release --dir ${{github.workspace}}/build ${{github.workspace}}/build/lidar.exe
+      - name: Deploy Qt Dependencies
+        run: |
+          "${{ env.Qt6_DIR }}/bin/windeployqt.exe" --release --dir build build/lidar.exe
 
-    - name: Run tests
-      run: ctest --test-dir build
+      - name: Run tests
+        run: ctest --test-dir build
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: build-artifact
-        path: ${{github.workspace}}/build
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifact
+          path: build
