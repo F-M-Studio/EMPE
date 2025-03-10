@@ -10,18 +10,22 @@ on:
 
 env:
   BUILD_TYPE: Release
-  APP_NAME: EMPE
+  APP_NAME: lidar  # Match CMake project name
 
 jobs:
   get-info:
     runs-on: ubuntu-latest
+    outputs:
+      date: ${{ steps.get-info.outputs.date }}
+      shorthash: ${{ steps.get-info.outputs.shorthash }}
+      fullhash: ${{ steps.get-info.outputs.fullhash }}
     steps:
     - name: Get commit information
       id: get-info
       run: |
-        echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
-        echo "shorthash=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
-        echo "fullhash=$(git rev-parse HEAD)" >> $GITHUB_ENV
+        echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+        echo "shorthash=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+        echo "fullhash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
 
   windows-qt:
     runs-on: windows-2022
@@ -42,7 +46,7 @@ jobs:
     - name: Setup Qt
       uses: jurplel/install-qt-action@v4
       with:
-        version: 6.8.2  # Using verified working version
+        version: 6.8.2
         host: windows
         target: desktop
         arch: win64_msvc2022_64
@@ -59,19 +63,18 @@ jobs:
 
     - name: Deploy Qt Dependencies
       run: |
-        "${{ env.Qt6_DIR }}/bin/windeployqt.exe" --release --dir build build/EMPE.exe
+        "${{ env.Qt6_DIR }}/bin/windeployqt.exe" --release --dir build build/${{ env.APP_NAME }}.exe
 
     - name: Package and Upload Windows artifact
       run: |
         mkdir upload
-        cp build/EMPE.exe upload/
-        7z a EMPE-windows-${{ needs.get-info.outputs.shorthash }}.zip ./upload/*
+        cp build/${{ env.APP_NAME }}.exe upload/
+        7z a ${{ env.APP_NAME }}-windows-${{ needs.get-info.outputs.shorthash }}.zip ./upload/*
     - uses: actions/upload-artifact@v4
       with:
-        name: EMPE-windows-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}
-        path: EMPE-windows-*.zip
+        name: ${{ env.APP_NAME }}-windows-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}
+        path: ${{ env.APP_NAME }}-windows-*.zip
 
-        
   linux-qt:
     runs-on: ubuntu-24.04
     needs: get-info
@@ -101,17 +104,17 @@ jobs:
 
     - name: Verify build output
       run: |
-        ls -lR build  # Check where the executable is actually built
+        ls -lR build
 
     - name: Package and Upload Linux artifact
       run: |
         mkdir -p upload
-        cp build/EMPE upload/  # Make sure this matches your actual executable name
-        tar czvf EMPE-linux-${{ needs.get-info.outputs.shorthash }}.tar.gz -C upload .
+        cp build/${{ env.APP_NAME }} upload/
+        tar czvf ${{ env.APP_NAME }}-linux-${{ needs.get-info.outputs.shorthash }}.tar.gz -C upload .
     - uses: actions/upload-artifact@v4
       with:
-        name: EMPE-linux-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}
-        path: EMPE-linux-*.tar.gz
+        name: ${{ env.APP_NAME }}-linux-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}
+        path: ${{ env.APP_NAME }}-linux-*.tar.gz
 
   macos-qt:
     runs-on: macos-15
@@ -146,15 +149,15 @@ jobs:
 
     - name: Deploy Qt Dependencies
       run: |
-        macdeployqt build/EMPE.app -verbose=2
+        macdeployqt build/${{ env.APP_NAME }}.app -verbose=2
 
     - name: Package and Upload macOS artifact
       run: |
-        7z a EMPE-macos-${{ needs.get-info.outputs.shorthash }}.zip ./build/EMPE.app
+        7z a ${{ env.APP_NAME }}-macos-${{ needs.get-info.outputs.shorthash }}.zip ./build/${{ env.APP_NAME }}.app
     - uses: actions/upload-artifact@v4
       with:
-        name: EMPE-macos-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}
-        path: EMPE-macos-*.zip
+        name: ${{ env.APP_NAME }}-macos-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}
+        path: ${{ env.APP_NAME }}-macos-*.zip
 
   pre-release:
     if: github.ref == 'refs/heads/main' && github.repository == 'F-M-Studio/EMPE' && github.event_name == 'push'
@@ -169,7 +172,7 @@ jobs:
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
-        name: "EMPE ${{ needs.get-info.outputs.date }} (${{ needs.get-info.outputs.shorthash }})"
+        name: "${{ env.APP_NAME }} ${{ needs.get-info.outputs.date }} (${{ needs.get-info.outputs.shorthash }})"
         tag_name: "v${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}"
         body: |
           Automated build from main branch
@@ -177,5 +180,6 @@ jobs:
         prerelease: true
         files: |
           artifacts/*.zip
+          artifacts/*.tar.gz
       env:
         GITHUB_TOKEN: ${{ secrets.EMPE_TOKEN_REPO }}
