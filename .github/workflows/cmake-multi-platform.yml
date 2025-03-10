@@ -70,6 +70,8 @@ jobs:
       with:
         name: EMPE-windows-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}
         path: EMPE-windows-*.zip
+
+        
   linux-qt:
     runs-on: ubuntu-24.04
     needs: get-info
@@ -86,7 +88,8 @@ jobs:
         clang build-essential ninja-build p7zip-full \
         qt6-base-dev qt6-tools-dev qt6-multimedia-dev \
         qt6-serialport-dev libqt6charts6-dev \
-        libasound2-dev libpulse-dev libopenal-dev libudev-dev
+        libasound2-dev libpulse-dev libopenal-dev libudev-dev \
+        appimage-builder
 
     - name: Configure CMake
       run: |
@@ -97,23 +100,39 @@ jobs:
     - name: Build
       run: cmake --build build --config ${{env.BUILD_TYPE}} --parallel $(nproc)
 
-    - name: Verify build output
+    - name: Create AppImage
       run: |
-        ls -lR build  # Debugging step to see actual file structure
+        mkdir -p AppDir/usr/bin
+        cp build/EMPE AppDir/usr/bin/
+        cp assets/icon.png AppDir/
+        
+        # Create basic desktop file
+        cat <<EOT > AppDir/EMPE.desktop
+        [Desktop Entry]
+        Name=EMPE
+        Exec=EMPE
+        Icon=icon
+        Type=Application
+        Categories=Utility;
+        EOT
 
-    - name: Run AppImage packaging script
-      run:  ./.github/linux-appimage-qt.sh
+        # Download linuxdeploy tool
+        wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+        chmod +x linuxdeploy-x86_64.AppImage
+        
+        # Create AppImage
+        ./linuxdeploy-x86_64.AppImage \
+          --appdir AppDir \
+          --output appimage \
+          --executable AppDir/usr/bin/EMPE
 
     - name: Package and Upload Linux artifact
       run: |
-        mkdir -p upload
-        cp EMPE-qt.AppImage upload/
-        7z a EMPE-linux-${{ needs.get-info.outputs.shorthash }}.zip ./upload/*
+        7z a EMPE-linux-${{ needs.get-info.outputs.shorthash }}.zip EMPE-*.AppImage
     - uses: actions/upload-artifact@v4
       with:
         name: EMPE-linux-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}
         path: EMPE-linux-*.zip
-
 
   macos-qt:
     runs-on: macos-15
