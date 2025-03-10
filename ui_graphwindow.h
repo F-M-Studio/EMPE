@@ -29,39 +29,39 @@ public:
     QMenuBar *menubar;
     QStatusBar *statusbar;
 
-    void setupUi(QMainWindow *MainWindow)
+    void setupUi(QMainWindow *GraphWindow)
     {
-        if (MainWindow->objectName().isEmpty())
-            MainWindow->setObjectName("MainWindow");
-        MainWindow->resize(800, 600);
-        centralwidget = new QWidget(MainWindow);
+        if (GraphWindow->objectName().isEmpty())
+            GraphWindow->setObjectName("GraphWindow");
+        GraphWindow->resize(800, 600);
+        centralwidget = new QWidget(GraphWindow);
         centralwidget->setObjectName("centralwidget");
         frame = new QFrame(centralwidget);
         frame->setObjectName("frame");
         frame->setGeometry(QRect(10, 10, 780, 550));
         frame->setMaximumSize(QSize(780, 550));
-        frame->setLayoutDirection(Qt::LeftToRight);
+        frame->setLayoutDirection(Qt::LayoutDirection::LeftToRight);
         frame->setAutoFillBackground(false);
         horizontalLayout = new QHBoxLayout(frame);
         horizontalLayout->setSpacing(1);
         horizontalLayout->setObjectName("horizontalLayout");
-        MainWindow->setCentralWidget(centralwidget);
-        menubar = new QMenuBar(MainWindow);
+        GraphWindow->setCentralWidget(centralwidget);
+        menubar = new QMenuBar(GraphWindow);
         menubar->setObjectName("menubar");
-        menubar->setGeometry(QRect(0, 0, 800, 22));
-        MainWindow->setMenuBar(menubar);
-        statusbar = new QStatusBar(MainWindow);
+        menubar->setGeometry(QRect(0, 0, 800, 23));
+        GraphWindow->setMenuBar(menubar);
+        statusbar = new QStatusBar(GraphWindow);
         statusbar->setObjectName("statusbar");
-        MainWindow->setStatusBar(statusbar);
+        GraphWindow->setStatusBar(statusbar);
 
-        retranslateUi(MainWindow);
+        retranslateUi(GraphWindow);
 
-        QMetaObject::connectSlotsByName(MainWindow);
+        QMetaObject::connectSlotsByName(GraphWindow);
     } // setupUi
 
-    void retranslateUi(QMainWindow *MainWindow)
+    void retranslateUi(QMainWindow *GraphWindow)
     {
-        MainWindow->setWindowTitle(QCoreApplication::translate("GraphWindow", "MainWindow", nullptr));
+        GraphWindow->setWindowTitle(QCoreApplication::translate("GraphWindow", "MainWindow", nullptr));
     } // retranslateUi
 
 };

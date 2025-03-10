@@ -20,6 +20,9 @@ public:
     int getParity() const;
     int getFlowControl() const;
 
+private slots:
+    void refreshPorts();
+
 private:
     QComboBox *portBox;
     QComboBox *baudRateBox;
@@ -30,6 +33,7 @@ private:
 
     QPushButton *okButton;
     QPushButton *cancelButton;
+    QPushButton *refreshButton;
 
     void setupUI();
 };

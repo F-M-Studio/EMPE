@@ -60,6 +60,9 @@ private:
     QLabel *recordingValueLabel;  // Label to display recording period value
     QLabel *yAxisValueLabel;      // Label to display Y axis scale value
 
+    // Serial port
+    QSerialPort *serialPort;
+
     QTextEdit *dataDisplay;  // TextEdit to display data from COM port
     bool isReading;  // Flag to indicate if reading is in progress
 

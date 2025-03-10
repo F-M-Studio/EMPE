@@ -174,7 +174,7 @@ void MainWindow::startReading() {
              << "Parity:" << parity
              << "FlowControl:" << flowControl;
 
-    QSerialPort *serialPort = new QSerialPort(this);
+    serialPort = new QSerialPort(this);
     serialPort->setPortName(portName);
     serialPort->setBaudRate(baudRate);
     serialPort->setDataBits(static_cast<QSerialPort::DataBits>(dataBits));
@@ -185,12 +185,13 @@ void MainWindow::startReading() {
     if (!serialPort->open(QIODevice::ReadOnly)) {
         qDebug() << "Failed to open port" << portName << "Error:" << serialPort->errorString();
         delete serialPort;
+        serialPort = nullptr;
         return;
     }
 
     qDebug() << "Started reading from port" << portName;
 
-    connect(serialPort, &QSerialPort::readyRead, this, [this, serialPort]() {
+    connect(serialPort, &QSerialPort::readyRead, this, [this]() {
         QByteArray data = serialPort->readAll();
         qDebug() << "Data read:" << data;
         dataDisplay->append(data);
@@ -198,15 +199,14 @@ void MainWindow::startReading() {
 }
 
 void MainWindow::stopReading() {
-    int i = 1;
-
-    // if (serialPort && serialPort->isOpen()) {
-    //     serialPort->close();
-    //     qDebug() << "Stopped reading from port";
-    //     delete serialPort;
-    //     serialPort = nullptr;
-    // }
+    if (serialPort && serialPort->isOpen()) {
+        serialPort->close();
+        qDebug() << "Stopped reading from port";
+        delete serialPort;
+        serialPort = nullptr;
+    }
 }
+
 void MainWindow::keyPressEvent(QKeyEvent *event) {
     if (event->key() == Qt::Key_F7) {
         dataDisplay->setVisible(!dataDisplay->isVisible());
