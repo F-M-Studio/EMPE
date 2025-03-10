@@ -29,6 +29,15 @@ jobs:
         with:
           arch: amd64
 
+      - name: Cache Qt Installation
+        uses: actions/cache@v4
+        with:
+          path: |
+            C:/Qt/6.8.2/msvc2022_64
+          key: qt-${{ runner.os }}-6.8.2-msvc2022_64
+          restore-keys: |
+            qt-${{ runner.os }}-6.8.2-msvc2022_64
+
       - name: Setup Qt with Required Modules
         uses: jurplel/install-qt-action@v4
         with:
@@ -38,15 +47,6 @@ jobs:
           arch: win64_msvc2022_64
           modules: qtcharts qtserialport
 
-      - name: Debug Qt Installation
-        run: |
-          echo "Qt installed at: ${{ env.Qt6_DIR }}"
-          Get-ChildItem -Recurse -Path "${{ env.Qt6_DIR }}"
-
-      - name: Verify Qt Modules (Windows)
-        run: |
-          Get-ChildItem -Recurse -Path "${{ env.Qt6_DIR }}\lib\cmake"
-
       - name: Configure CMake
         run: |
           cmake --fresh -G Ninja -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_PREFIX_PATH="C:/Qt/6.8.2/msvc2022_64"
@@ -54,15 +54,13 @@ jobs:
       - name: Build
         run: cmake --build build --config ${{env.BUILD_TYPE}} --parallel $env:NUMBER_OF_PROCESSORS
 
-      - name: Deploy Qt Dependencies
-        run: |
-          "${{ env.Qt6_DIR }}/bin/windeployqt.exe" --release --verbose 2 --dir build build/lidar.exe
-
       - name: Manually Copy Qt DLLs
         run: |
-          cp "C:/Qt/6.8.2/msvc2022_64/bin/Qt6Core.dll" build/
-          cp "C:/Qt/6.8.2/msvc2022_64/bin/Qt6Gui.dll" build/
-          cp "C:/Qt/6.8.2/msvc2022_64/bin/Qt6Widgets.dll" build/
+          copy "C:/Qt/6.8.2/msvc2022_64/bin/Qt6Core.dll" build/
+          copy "C:/Qt/6.8.2/msvc2022_64/bin/Qt6Gui.dll" build/
+          copy "C:/Qt/6.8.2/msvc2022_64/bin/Qt6Widgets.dll" build/
+          copy "C:/Qt/6.8.2/msvc2022_64/bin/Qt6SerialPort.dll" build/
+          copy "C:/Qt/6.8.2/msvc2022_64/bin/Qt6Charts.dll" build/
 
       - name: Run tests
         run: ctest --test-dir build
