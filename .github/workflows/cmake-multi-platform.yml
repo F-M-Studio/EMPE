@@ -69,7 +69,7 @@ windows-qt:
       mkdir upload
       cp build/${{ env.APP_NAME }}.exe upload/
       7z a ${{ env.APP_NAME }}-windows-${{ needs.get-info.outputs.shorthash }}.zip ./upload/*
-    - uses: actions/upload-artifact@v4
+  - uses: actions/upload-artifact@v4
       with:
         name: ${{ env.APP_NAME }}-windows-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}
         path: ${{ env.APP_NAME }}-windows-*.zip
