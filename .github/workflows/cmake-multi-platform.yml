@@ -41,11 +41,11 @@ jobs:
       - name: Debug Qt Installation
         run: |
           echo "Qt installed at: ${{ env.Qt6_DIR }}"
-          ls -R "${{ env.Qt6_DIR }}"
+          Get-ChildItem -Recurse -Path "${{ env.Qt6_DIR }}"
 
-      - name: Verify Qt Modules
+      - name: Verify Qt Modules (Windows)
         run: |
-          ls -R "${{ env.Qt6_DIR }}/lib/cmake"
+          Get-ChildItem -Recurse -Path "${{ env.Qt6_DIR }}\lib\cmake"
 
       - name: Configure CMake
         run: |
