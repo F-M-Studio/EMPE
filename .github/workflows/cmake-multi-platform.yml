@@ -1,105 +1,30 @@
+name: Build and Release EMPE
 
-name: Build and Release
-
-on: [push, pull_request]
-
-concurrency:
-  group: ci-${{ github.event_name }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'push' }}
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 env:
   BUILD_TYPE: Release
+  APP_NAME: EMPE
 
 jobs:
-  reuse:
-    runs-on: ubuntu-24.04
-    continue-on-error: true
-    steps:
-    - uses: actions/checkout@v4
-    - uses: fsfe/reuse-action@v5
-
-  clang-format:
-    runs-on: ubuntu-24.04
-    continue-on-error: true
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-    - name: Install
-      run: |
-        wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-        sudo add-apt-repository 'deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-19 main'
-        sudo apt update
-        sudo apt install clang-format-19
-    - name: Build
-      env:
-        COMMIT_RANGE: ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}
-      run: ./.ci/clang-format.sh
-
   get-info:
-    runs-on: ubuntu-24.04
-    outputs:
-      date: ${{ steps.vars.outputs.date }}
-      shorthash: ${{ steps.vars.outputs.shorthash }}
-      fullhash: ${{ steps.vars.outputs.fullhash }}
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - name: Get date and git hash
-      id: vars
+    - name: Get commit information
+      id: get-info
       run: |
         echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
         echo "shorthash=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
         echo "fullhash=$(git rev-parse HEAD)" >> $GITHUB_ENV
-        echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
-        echo "shorthash=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-        echo "fullhash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
-
-  windows-sdl:
-    runs-on: windows-2025
-    needs: get-info
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        submodules: recursive
-
-    - name: Cache CMake Configuration
-      uses: actions/cache@v4
-      env:
-          cache-name: ${{ runner.os }}-sdl-ninja-cache-cmake-configuration
-      with:
-          path: | 
-            ${{github.workspace}}/build
-          key: ${{ env.cache-name }}-${{ hashFiles('**/CMakeLists.txt', 'cmake/**') }}
-          restore-keys: |
-            ${{ env.cache-name }}-
-
-    - name: Cache CMake Build
-      uses: hendrikmuhs/ccache-action@v1.2.17
-      env:
-          cache-name: ${{ runner.os }}-sdl-cache-cmake-build
-      with:
-        append-timestamp: false
-        key: ${{ env.cache-name }}-${{ hashFiles('**/CMakeLists.txt', 'cmake/**') }}
-
-    - name: Setup VS Environment
-      uses: ilammy/msvc-dev-cmd@v1.13.0
-      with:
-        arch: amd64
-
-    - name: Configure CMake
-      run: cmake --fresh -G Ninja -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE=ON -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-
-    - name: Build
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --parallel $env:NUMBER_OF_PROCESSORS
-
-    - name: Upload Windows SDL artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: empe-win64-sdl-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}
-        path: ${{github.workspace}}/build/empe.exe
 
   windows-qt:
-    runs-on: windows-2025
+    runs-on: windows-2022
     needs: get-info
     steps:
     - uses: actions/checkout@v4
@@ -110,105 +35,47 @@ jobs:
       uses: jurplel/install-qt-action@v4
       with:
         version: 6.9.0
-        host: windows
+        host: win
         target: desktop
-        arch: win64_msvc2022_64
-        archives: qtbase qttools
-        modules: qtmultimedia
+        arch: msvc
+        modules: qtbase qttools qtmultimedia
 
     - name: Cache CMake Configuration
       uses: actions/cache@v4
       env:
-          cache-name: ${{ runner.os }}-qt-ninja-cache-cmake-configuration
+        cache-name: ${{ runner.os }}-qt-cache-cmake-configuration
       with:
-          path: | 
-            ${{github.workspace}}/build
-          key: ${{ env.cache-name }}-${{ hashFiles('**/CMakeLists.txt', 'cmake/**') }}
-          restore-keys: |
-            ${{ env.cache-name }}-
+        path: ${{github.workspace}}/build
+        key: ${{env.cache-name}}-${{hashFiles('**/CMakeLists.txt', 'cmake/**')}}
+        restore-keys: |
+          ${{env.cache-name}}-
 
     - name: Cache CMake Build
       uses: hendrikmuhs/ccache-action@v1.2.17
       env:
-          cache-name: ${{ runner.os }}-qt-cache-cmake-build
+        cache-name: ${{runner.os}}-qt-cache-cmake-build
       with:
         append-timestamp: false
-        key: ${{ env.cache-name }}-${{ hashFiles('**/CMakeLists.txt', 'cmake/**') }}
-
-    - name: Setup VS Environment
-      uses: ilammy/msvc-dev-cmd@v1.13.0
-      with:
-        arch: amd64
+        key: ${{env.cache-name}}-${{hashFiles('**/CMakeLists.txt', 'cmake/**')}}
+        variant: sccache
 
     - name: Configure CMake
-      run: cmake --fresh -G Ninja -B ${{github.workspace}}/build -DENABLE_QT_GUI=ON -DENABLE_UPDATER=ON -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE=ON -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+      run: cmake --fresh -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DENABLE_QT_GUI=ON -DENABLE_UPDATER=ON -DCMAKE_C_COMPILER_LAUNCHER=sccache -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
 
     - name: Build
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --parallel $env:NUMBER_OF_PROCESSORS
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --parallel $(sysctl -n hw.ncpu)
 
-    - name: Deploy and Package
+    - name: Package and Upload Windows Qt artifact
       run: |
         mkdir upload
-        move build/empe.exe upload
-        windeployqt --no-compiler-runtime --no-system-d3d-compiler --no-system-dxc-compiler --dir upload upload/empe.exe
-        Compress-Archive -Path upload/* -DestinationPath empe-win64-qt-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}.zip
-
-    - name: Upload Windows Qt artifact
-      uses: actions/upload-artifact@v4
+        mv ${{github.workspace}}/build/EMPE.exe upload
+        tar cf EMPE-windows-qt.tar.gz -C upload .
+    - uses: actions/upload-artifact@v4
       with:
-        name: empe-win64-qt-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}
-        path: upload/
+        name: EMPE-windows-qt-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}
+        path: EMPE-windows-qt.tar.gz
 
-  linux-qt:
-    runs-on: ubuntu-24.04
-    needs: get-info
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        submodules: recursive
-
-    - name: Setup Qt
-      uses: jurplel/install-qt-action@v4
-      with:
-        version: 6.9.0
-        host: linux
-        target: desktop
-        arch: amd64
-        archives: qtbase qttools
-        modules: qtmultimedia
-
-    - name: Cache CMake Configuration
-      uses: actions/cache@v4
-      env:
-          cache-name: ${{ runner.os }}-qt-ninja-cache-cmake-configuration
-      with:
-          path: | 
-            ${{github.workspace}}/build
-          key: ${{ env.cache-name }}-${{ hashFiles('**/CMakeLists.txt', 'cmake/**') }}
-          restore-keys: |
-            ${{ env.cache-name }}-
-
-    - name: Cache CMake Build
-      uses: hendrikmuhs/ccache-action@v1.2.17
-      env:
-          cache-name: ${{ runner.os }}-qt-cache-cmake-build
-      with:
-        append-timestamp: false
-        key: ${{ env.cache-name }}-${{ hashFiles('**/CMakeLists.txt', 'cmake/**') }}
-
-    - name: Configure CMake
-      run: cmake --fresh -G Ninja -B ${{github.workspace}}/build -DENABLE_QT_GUI=ON -DENABLE_UPDATER=ON -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE=ON
-
-    - name: Build
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --parallel ${{env.NUMBER_OF_PROCESSORS}}
-
-    - name: Upload Linux Qt artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: empe-linux-qt-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}
-        path: ${{ github.workspace }}/build/empe
-
-macos-qt:
+  macos-qt:
     runs-on: macos-15
     needs: get-info
     steps:
@@ -230,7 +97,7 @@ macos-qt:
         arch: clang_64
         archives: qtbase qttools
         modules: qtmultimedia
-        
+
     - name: Cache CMake Configuration
       uses: actions/cache@v4 
       env: 
@@ -261,15 +128,15 @@ macos-qt:
     - name: Package and Upload macOS Qt artifact
       run: |
         mkdir upload
-        mv ${{github.workspace}}/build/empe.app upload
-        macdeployqt upload/empe.app
-        tar cf empe-macos-qt.tar.gz -C upload .
+        mv ${{github.workspace}}/build/EMPE.app upload
+        macdeployqt upload/EMPE.app
+        tar cf EMPE-macos-qt.tar.gz -C upload .
     - uses: actions/upload-artifact@v4
       with:
-        name: empe-macos-qt-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}
-        path: empe-macos-qt.tar.gz
+        name: EMPE-macos-qt-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}
+        path: EMPE-macos-qt.tar.gz
 
-linux-qt:
+  linux-qt:
     runs-on: ubuntu-24.04
     needs: get-info
     steps:
@@ -310,15 +177,15 @@ linux-qt:
 
     - name: Package and Upload Linux Qt artifact
       run: |
-        tar cf empe-linux-qt.tar.gz -C ${{github.workspace}}/build empe
+        tar cf EMPE-linux-qt.tar.gz -C ${{github.workspace}}/build EMPE
     - uses: actions/upload-artifact@v4
       with:
-        name: empe-linux-qt-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}
-        path: Empe-qt.AppImage
+        name: EMPE-linux-qt-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}
+        path: EMPE-qt.AppImage
 
-pre-release:
+  pre-release:
     if: github.ref == 'refs/heads/main' && github.repository == 'F-M-Studio/EMPE' && github.event_name == 'push'
-    needs: [get-info, windows-sdl, windows-qt, macos-sdl, macos-qt, linux-sdl, linux-qt]
+    needs: [get-info, windows-qt, macos-qt, linux-qt]
     runs-on: ubuntu-latest
     steps:
     - name: Download all artifacts
