@@ -140,7 +140,7 @@ jobs:
         host: mac
         target: desktop
         arch: clang_64
-        modules: qtbase qttools qtmultimedia qtserialport qtcharts
+        modules: qtserialport qtcharts
 
     - name: Configure CMake
       run: |
