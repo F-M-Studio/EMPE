@@ -179,30 +179,6 @@ graphwindow.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/lidar.dir/build.make CMakeFiles/lidar.dir/graphwindow.cpp.s
 .PHONY : graphwindow.cpp.s
 
-lib/serialib.o: lib/serialib.cpp.o
-.PHONY : lib/serialib.o
-
-# target to build an object file
-lib/serialib.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/lidar.dir/build.make CMakeFiles/lidar.dir/lib/serialib.cpp.o
-.PHONY : lib/serialib.cpp.o
-
-lib/serialib.i: lib/serialib.cpp.i
-.PHONY : lib/serialib.i
-
-# target to preprocess a source file
-lib/serialib.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/lidar.dir/build.make CMakeFiles/lidar.dir/lib/serialib.cpp.i
-.PHONY : lib/serialib.cpp.i
-
-lib/serialib.s: lib/serialib.cpp.s
-.PHONY : lib/serialib.s
-
-# target to generate assembly for a file
-lib/serialib.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/lidar.dir/build.make CMakeFiles/lidar.dir/lib/serialib.cpp.s
-.PHONY : lib/serialib.cpp.s
-
 lidar_autogen/mocs_compilation.o: lidar_autogen/mocs_compilation.cpp.o
 .PHONY : lidar_autogen/mocs_compilation.o
 
@@ -313,9 +289,6 @@ help:
 	@echo "... graphwindow.o"
 	@echo "... graphwindow.i"
 	@echo "... graphwindow.s"
-	@echo "... lib/serialib.o"
-	@echo "... lib/serialib.i"
-	@echo "... lib/serialib.s"
 	@echo "... lidar_autogen/mocs_compilation.o"
 	@echo "... lidar_autogen/mocs_compilation.i"
 	@echo "... lidar_autogen/mocs_compilation.s"

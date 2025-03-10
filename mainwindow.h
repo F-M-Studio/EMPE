@@ -15,8 +15,8 @@
 #include <QTimeEdit>
 #include <QTextEdit>
 #include <QKeyEvent>
+#include <QSerialPort>  // Include QSerialPort header
 #include "portsettings.h"
-#include "lib/serialib.h"  // Include serialib library
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -61,7 +61,6 @@ private:
     QLabel *yAxisValueLabel;      // Label to display Y axis scale value
 
     QTextEdit *dataDisplay;  // TextEdit to display data from COM port
-    serialib serial;  // Serialib object for serial communication
     bool isReading;  // Flag to indicate if reading is in progress
 
     void setupUI();

@@ -21,8 +21,6 @@ add_executable(lidar main.cpp
         mainwindow.cpp
         portsettings.cpp
         portsettings.h
-        lib/serialib.cpp
-        lib/serialib.h
         graphwindow.cpp
         graphwindow.h
         graphwindow.ui

@@ -4,8 +4,6 @@ file(REMOVE_RECURSE
   "lidar_autogen"
   "CMakeFiles/lidar.dir/graphwindow.cpp.o"
   "CMakeFiles/lidar.dir/graphwindow.cpp.o.d"
-  "CMakeFiles/lidar.dir/lib/serialib.cpp.o"
-  "CMakeFiles/lidar.dir/lib/serialib.cpp.o.d"
   "CMakeFiles/lidar.dir/lidar_autogen/mocs_compilation.cpp.o"
   "CMakeFiles/lidar.dir/lidar_autogen/mocs_compilation.cpp.o.d"
   "CMakeFiles/lidar.dir/main.cpp.o"

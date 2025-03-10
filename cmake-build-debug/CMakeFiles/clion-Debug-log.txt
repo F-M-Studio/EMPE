@@ -21,6 +21,12 @@
 -- Found WrapOpenGL: TRUE
 -- Could NOT find WrapVulkanHeaders (missing: Vulkan_INCLUDE_DIR) 
 -- Could NOT find WrapVulkanHeaders (missing: Vulkan_INCLUDE_DIR) 
--- Configuring done (2.8s)
--- Generating done (0.9s)
--- Build files have been written to: /Users/mateuszkorniak/Downloads/EMPE-main-graph-test/EMPE-main/cmake-build-debug
+-- Configuring done (3.0s)
+CMake Error at CMakeLists.txt:19 (add_executable):
+  Cannot find source file:
+
+    lib/serialib.cpp
+
+
+-- Generating done (0.1s)
+CMake Generate step failed.  Build files cannot be regenerated correctly.
