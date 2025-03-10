@@ -25,14 +25,14 @@ jobs:
     - name: Set up Qt
       uses: jurplel/install-qt-action@v4
       with:
-        version: '6.7.3'
+        version: '6.8.2'
         host: 'windows'
         target: 'desktop'
         arch: 'win64_msvc2022_64'
         dir: '${{ env.HOME }}/Qt'
 
     - name: Configure CMake
-      run: cmake -S . -B build -DCMAKE_PREFIX_PATH=${{ env.HOME }}/Qt/6.8.2/msvc2019_64
+      run: cmake -S . -B build -DCMAKE_PREFIX_PATH=${{ env.HOME }}/Qt/6.8.2/msvc2022_64
 
     - name: Build
       run: cmake --build build --config Release
