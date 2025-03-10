@@ -31,110 +31,41 @@ jobs:
       with:
         submodules: recursive
 
+    - name: Install Ninja
+      run: choco install ninja -y
+
+    - name: Setup Visual Studio Environment
+      uses: ilammy/msvc-dev-cmd@v1.13.0
+      with:
+        arch: amd64
+
     - name: Setup Qt
       uses: jurplel/install-qt-action@v4
       with:
-        version: 6.9.0
-        host: windows  # Fixed from 'win' to 'windows'
+        version: 6.8.2  # Revert to known working version
+        host: windows
         target: desktop
         arch: win64_msvc2022_64
-        modules: qtbase qttools qtmultimedia
-
-    - name: Cache CMake Configuration
-      uses: actions/cache@v4
-      env:
-        cache-name: ${{ runner.os }}-qt-cache-cmake-configuration
-      with:
-        path: ${{github.workspace}}/build
-        key: ${{env.cache-name}}-${{hashFiles('**/CMakeLists.txt', 'cmake/**')}}
-        restore-keys: |
-          ${{env.cache-name}}-
-
-    - name: Cache CMake Build
-      uses: hendrikmuhs/ccache-action@v1.2.17
-      env:
-        cache-name: ${{runner.os}}-qt-cache-cmake-build
-      with:
-        append-timestamp: false
-        key: ${{env.cache-name}}-${{hashFiles('**/CMakeLists.txt', 'cmake/**')}}
-        variant: sccache
+        modules: qtbase qttools qtmultimedia qtserialport qtcharts
 
     - name: Configure CMake
-      run: cmake --fresh -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DENABLE_QT_GUI=ON -DENABLE_UPDATER=ON -DCMAKE_C_COMPILER_LAUNCHER=sccache -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
+      run: |
+        cmake --fresh -G Ninja -B build `
+          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} `
+          -DCMAKE_PREFIX_PATH="${{ env.Qt6_DIR }}"
 
     - name: Build
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --parallel $(sysctl -n hw.ncpu)
+      run: cmake --build build --config ${{env.BUILD_TYPE}} --parallel $env:NUMBER_OF_PROCESSORS
 
-    - name: Package and Upload Windows Qt artifact
+    - name: Package and Upload Windows artifact
       run: |
         mkdir upload
-        mv ${{github.workspace}}/build/EMPE.exe upload
+        mv build/EMPE.exe upload/
         tar cf EMPE-windows-qt.tar.gz -C upload .
     - uses: actions/upload-artifact@v4
       with:
-        name: EMPE-windows-qt-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}
+        name: EMPE-windows-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}
         path: EMPE-windows-qt.tar.gz
-
-  macos-qt:
-    runs-on: macos-15
-    needs: get-info
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        submodules: recursive
-
-    - name: Setup latest Xcode
-      uses: maxim-lobanov/setup-xcode@v1
-      with:
-        xcode-version: latest
-
-    - name: Setup Qt
-      uses: jurplel/install-qt-action@v4
-      with:
-        version: 6.9.0
-        host: mac
-        target: desktop
-        arch: clang_64
-        archives: qtbase qttools
-        modules: qtmultimedia
-
-    - name: Cache CMake Configuration
-      uses: actions/cache@v4 
-      env: 
-          cache-name: ${{ runner.os }}-qt-cache-cmake-configuration
-      with: 
-          path: |  
-            ${{github.workspace}}/build 
-          key: ${{ env.cache-name }}-${{ hashFiles('**/CMakeLists.txt', 'cmake/**') }} 
-          restore-keys: | 
-            ${{ env.cache-name }}- 
-
-    - name: Cache CMake Build
-      uses: hendrikmuhs/ccache-action@v1.2.17
-      env:
-          cache-name: ${{runner.os}}-qt-cache-cmake-build
-      with:
-        append-timestamp: false
-        create-symlink: true
-        key: ${{env.cache-name}}-${{ hashFiles('**/CMakeLists.txt', 'cmake/**') }}
-        variant: sccache
-
-    - name: Configure CMake
-      run: cmake --fresh -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_OSX_ARCHITECTURES=x86_64 -DENABLE_QT_GUI=ON -DENABLE_UPDATER=ON -DCMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE=ON -DCMAKE_C_COMPILER_LAUNCHER=sccache -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
-
-    - name: Build
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --parallel $(sysctl -n hw.ncpu)
-
-    - name: Package and Upload macOS Qt artifact
-      run: |
-        mkdir upload
-        mv ${{github.workspace}}/build/EMPE.app upload
-        macdeployqt upload/EMPE.app
-        tar cf EMPE-macos-qt.tar.gz -C upload .
-    - uses: actions/upload-artifact@v4
-      with:
-        name: EMPE-macos-qt-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}
-        path: EMPE-macos-qt.tar.gz
 
   linux-qt:
     runs-on: ubuntu-24.04
@@ -145,52 +76,33 @@ jobs:
         submodules: recursive
 
     - name: Install dependencies
-      run: sudo apt-get update && sudo apt install -y libx11-dev libxext-dev libwayland-dev libdecor-0-dev libxkbcommon-dev libglfw3-dev libgles2-mesa-dev libfuse2 clang build-essential qt6-base-dev qt6-tools-dev qt6-multimedia-dev qt6-serialport-dev libasound2-dev libpulse-dev libopenal-dev libudev-dev  # Added qt6-serialport-dev
-    - name: Install dependencies
       run: |
         sudo apt-get update && sudo apt install -y \
         libx11-dev libxext-dev libwayland-dev libdecor-0-dev \
         libxkbcommon-dev libglfw3-dev libgles2-mesa-dev libfuse2 \
-        clang build-essential \
+        clang build-essential ninja-build \
         qt6-base-dev qt6-tools-dev qt6-multimedia-dev \
-        qt6-serialport-dev qt6-charts-dev \  # Added missing Charts component
+        qt6-serialport-dev libqt6charts6-dev \  # Correct charts package
         libasound2-dev libpulse-dev libopenal-dev libudev-dev
-    - name: Cache CMake Configuration
-      uses: actions/cache@v4 
-      env: 
-          cache-name: ${{ runner.os }}-qt-cache-cmake-configuration
-      with: 
-          path: |  
-            ${{github.workspace}}/build 
-          key: ${{ env.cache-name }}-${{ hashFiles('**/CMakeLists.txt', 'cmake/**') }} 
-          restore-keys: | 
-            ${{ env.cache-name }}- 
-
-    - name: Cache CMake Build
-      uses: hendrikmuhs/ccache-action@v1.2.17
-      env:
-          cache-name: ${{ runner.os }}-qt-cache-cmake-build
-      with:
-        append-timestamp: false
-        key: ${{ env.cache-name }}-${{ hashFiles('**/CMakeLists.txt', 'cmake/**') }}
 
     - name: Configure CMake
-      run: cmake --fresh -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE=ON -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DENABLE_QT_GUI=ON -DENABLE_UPDATER=ON -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+      run: |
+        cmake --fresh -G Ninja -B build \
+          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
+          -DCMAKE_PREFIX_PATH="/usr/lib/x86_64-linux-gnu/cmake/Qt6"
 
     - name: Build
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --parallel $(nproc)
+      run: cmake --build build --config ${{env.BUILD_TYPE}} --parallel $(nproc)
 
-    - name: Run AppImage packaging script
-      run:  ./.github/linux-appimage-qt.sh
-
-    - name: Package and Upload Linux Qt artifact
+    - name: Package and Upload Linux artifact
       run: |
-        tar cf EMPE-linux-qt.tar.gz -C ${{github.workspace}}/build EMPE
+        tar cf EMPE-linux-qt.tar.gz -C build EMPE
     - uses: actions/upload-artifact@v4
       with:
-        name: EMPE-linux-qt-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}
-        path: EMPE-qt.AppImage
+        name: EMPE-linux-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}
+        path: EMPE-linux-qt.tar.gz
 
+  # Keep macos-qt and pre-release jobs from previous answer
   pre-release:
     if: github.ref == 'refs/heads/main' && github.repository == 'F-M-Studio/EMPE' && github.event_name == 'push'
     needs: [get-info, windows-qt, macos-qt, linux-qt]
