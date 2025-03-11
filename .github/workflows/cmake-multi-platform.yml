@@ -46,11 +46,12 @@ jobs:
         - name: Setup Qt
           uses: jurplel/install-qt-action@v4
           with:
-            version: 6.7.3
+            version: 6.8.2
             host: windows
             target: desktop
             arch: win64_msvc2022_64
-       #     modules: qtserialport qtcharts
+            cache: true
+            modules: qtserialport qtcharts
       
         - name: Configure CMake
           shell: cmd  # Explicit shell for Windows
