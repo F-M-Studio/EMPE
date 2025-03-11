@@ -68,18 +68,29 @@ jobs:
       - name: Build
         shell: cmd
         run: cmake --build build --config ${{ env.BUILD_TYPE }} --parallel %NUMBER_OF_PROCESSORS%
-  
+      - name: Show Qt Directory
+        shell: cmd
+        run: |
+          echo Qt Path: "${{ steps.qt.outputs.Qt6_DIR }}"
+          dir /s /b "${{ steps.qt.outputs.Qt6_DIR }}\bin"
+
       - name: Deploy Qt Dependencies
         shell: cmd
         run: |
           if exist "build/lidar.exe" (
             echo "lidar.exe found, running windeployqt"
-            "${{ steps.qt.outputs.Qt6_DIR }}\bin\windeployqt.exe" --release --no-translations --no-system-d3d-compiler ^
-            --dir build build/lidar.exe
+            if exist "${{ steps.qt.outputs.Qt6_DIR }}\bin\windeployqt.exe" (
+              "${{ steps.qt.outputs.Qt6_DIR }}\bin\windeployqt.exe" --release --no-translations --no-system-d3d-compiler ^
+              --dir build build/lidar.exe
+            ) else (
+              echo "ERROR: windeployqt.exe not found!"
+              exit 1
+            )
           ) else (
             echo "ERROR: lidar.exe NOT FOUND!"
             exit 1
           )
+
   
       - name: Manually Copy Missing DLLs (Fallback)
         shell: cmd
