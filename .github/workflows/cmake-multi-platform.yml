@@ -27,85 +27,85 @@ jobs:
         echo "shorthash=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
         echo "fullhash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
 
-windows-qt:
-  runs-on: windows-2022
-  needs: get-info
-  steps:
-    - uses: actions/checkout@v4
-      with:
-        submodules: recursive
-
-    - name: Install Ninja
-      run: choco install ninja -y
-
-    - name: Setup Visual Studio Environment
-      uses: ilammy/msvc-dev-cmd@v1.13.0
-      with:
-        arch: amd64
-
-    - name: Setup Qt
-      uses: jurplel/install-qt-action@v4
-      with:
-        version: 6.8.2
-        host: windows
-        target: desktop
-        arch: win64_msvc2022_64
-        cache: true
-        modules: qtserialport qtcharts
-      id: qt
-
-    - name: List Qt Binaries
-      shell: cmd
-      run: dir /s /b "${{ steps.qt.outputs.Qt6_DIR }}\bin"
-    - name: Configure CMake
-      shell: cmd
-      run: |
-        cmake --fresh -G Ninja -B build ^
-          -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} ^
-          -DCMAKE_PREFIX_PATH="${{ steps.qt.outputs.Qt6_DIR }}" ^
-          -DCMAKE_INSTALL_PREFIX=install
-
-    - name: Build
-      shell: cmd
-      run: cmake --build build --config ${{ env.BUILD_TYPE }} --parallel %NUMBER_OF_PROCESSORS%
-
-    - name: Deploy Qt Dependencies
-      shell: cmd
-      run: |
-        if exist "build/lidar.exe" (
-          echo "lidar.exe found, running windeployqt"
-          "${{ steps.qt.outputs.Qt6_DIR }}\bin\windeployqt.exe" --release --no-translations --no-system-d3d-compiler ^
-          --dir build build/lidar.exe
-        ) else (
-          echo "ERROR: lidar.exe NOT FOUND!"
-          exit 1
-        )
-
-    - name: Manually Copy Missing DLLs (Fallback)
-      shell: cmd
-      run: |
-        if not exist "build/Qt6Core.dll" (
-          echo "Qt6Core.dll missing, manually copying..."
-          copy "${{ steps.qt.outputs.Qt6_DIR }}\bin\Qt6Core.dll" "build\"
-          copy "${{ steps.qt.outputs.Qt6_DIR }}\bin\Qt6Gui.dll" "build\"
-          copy "${{ steps.qt.outputs.Qt6_DIR }}\bin\Qt6Widgets.dll" "build\"
-        ) else (
-          echo "Qt6Core.dll found, skipping manual copy."
-        )
-
-    - name: Package and Upload
-      shell: cmd
-      run: |
-        mkdir "${{ runner.temp }}\upload"
-        copy build\lidar.exe "${{ runner.temp }}\upload\"
-        7z a "${{ runner.temp }}\lidar-windows-${{ needs.get-info.outputs.shorthash }}.zip" "${{ runner.temp }}\upload\*"
-    
-    - uses: actions/upload-artifact@v4
-      with:
-        name: ${{ env.APP_NAME }}-windows-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}
-        path: "${{ runner.temp }}/lidar-windows-*.zip"
-
-
+  windows-qt:
+    runs-on: windows-2022
+    needs: get-info
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+  
+      - name: Install Ninja
+        run: choco install ninja -y
+  
+      - name: Setup Visual Studio Environment
+        uses: ilammy/msvc-dev-cmd@v1.13.0
+        with:
+          arch: amd64
+  
+      - name: Setup Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: 6.8.2
+          host: windows
+          target: desktop
+          arch: win64_msvc2022_64
+          cache: true
+          modules: qtserialport qtcharts
+        id: qt
+  
+      - name: List Qt Binaries
+        shell: cmd
+        run: dir /s /b "${{ steps.qt.outputs.Qt6_DIR }}\bin"
+      - name: Configure CMake
+        shell: cmd
+        run: |
+          cmake --fresh -G Ninja -B build ^
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} ^
+            -DCMAKE_PREFIX_PATH="${{ steps.qt.outputs.Qt6_DIR }}" ^
+            -DCMAKE_INSTALL_PREFIX=install
+  
+      - name: Build
+        shell: cmd
+        run: cmake --build build --config ${{ env.BUILD_TYPE }} --parallel %NUMBER_OF_PROCESSORS%
+  
+      - name: Deploy Qt Dependencies
+        shell: cmd
+        run: |
+          if exist "build/lidar.exe" (
+            echo "lidar.exe found, running windeployqt"
+            "${{ steps.qt.outputs.Qt6_DIR }}\bin\windeployqt.exe" --release --no-translations --no-system-d3d-compiler ^
+            --dir build build/lidar.exe
+          ) else (
+            echo "ERROR: lidar.exe NOT FOUND!"
+            exit 1
+          )
+  
+      - name: Manually Copy Missing DLLs (Fallback)
+        shell: cmd
+        run: |
+          if not exist "build/Qt6Core.dll" (
+            echo "Qt6Core.dll missing, manually copying..."
+            copy "${{ steps.qt.outputs.Qt6_DIR }}\bin\Qt6Core.dll" "build\"
+            copy "${{ steps.qt.outputs.Qt6_DIR }}\bin\Qt6Gui.dll" "build\"
+            copy "${{ steps.qt.outputs.Qt6_DIR }}\bin\Qt6Widgets.dll" "build\"
+          ) else (
+            echo "Qt6Core.dll found, skipping manual copy."
+          )
+  
+      - name: Package and Upload
+        shell: cmd
+        run: |
+          mkdir "${{ runner.temp }}\upload"
+          copy build\lidar.exe "${{ runner.temp }}\upload\"
+          7z a "${{ runner.temp }}\lidar-windows-${{ needs.get-info.outputs.shorthash }}.zip" "${{ runner.temp }}\upload\*"
+      
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.APP_NAME }}-windows-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}
+          path: "${{ runner.temp }}/lidar-windows-*.zip"
+  
+  
   
   linux-qt:
     runs-on: ubuntu-24.04
