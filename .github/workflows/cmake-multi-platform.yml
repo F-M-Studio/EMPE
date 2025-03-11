@@ -53,10 +53,19 @@ jobs:
           cache: true
           modules: qtserialport qtcharts
         id: qt
-  
-      - name: List Qt Binaries
+        
+      - name: Verify Qt Installation
         shell: cmd
-        run: dir /s /b "${{ steps.qt.outputs.Qt6_DIR }}\bin"
+        run: |
+          echo "Qt Path from Action: ${{ steps.qt.outputs.Qt6_DIR }}"
+          dir /s /b "${{ steps.qt.outputs.Qt6_DIR }}\bin"
+      
+      - name: Set Qt Path
+        shell: cmd
+        run: |
+          setx Qt6_DIR "${{ steps.qt.outputs.Qt6_DIR }}"
+          echo "Qt6_DIR set to: %Qt6_DIR%"
+          
       - name: Configure CMake
         shell: cmd
         run: |
@@ -86,9 +95,9 @@ jobs:
         run: |
           if exist "build\lidar.exe" (
             echo "lidar.exe found, running windeployqt"
-            set QT_DEPLOY_PATH=D:\a\EMPE\Qt\6.8.2\msvc2022_64\bin\windeployqt.exe
-            if exist "%QT_DEPLOY_PATH%" (
-              "%QT_DEPLOY_PATH%" --release --no-translations --no-system-d3d-compiler ^
+            where windeployqt.exe
+            if exist "%Qt6_DIR%\bin\windeployqt.exe" (
+              "%Qt6_DIR%\bin\windeployqt.exe" --release --no-translations --no-system-d3d-compiler ^
               --dir build build\lidar.exe
             ) else (
               echo "ERROR: windeployqt.exe not found in expected location!"
