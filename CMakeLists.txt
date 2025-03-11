@@ -6,6 +6,9 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
+# Hardcoded path commented - use CI-provided path instead
+# set(CMAKE_PREFIX_PATH "C:/Qt/6.8.2/msvc2022_64")
+
 find_package(Qt6 COMPONENTS
         Core
         Gui
@@ -33,11 +36,10 @@ target_link_libraries(lidar
 )
 
 if (WIN32 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
-    set(DEBUG_SUFFIX "")
+    set(DEBUG_SUFFIX)
     if (MSVC AND CMAKE_BUILD_TYPE MATCHES "Debug")
         set(DEBUG_SUFFIX "d")
     endif()
-
     set(QT_INSTALL_PATH "${CMAKE_PREFIX_PATH}")
     if(NOT EXISTS "${QT_INSTALL_PATH}/bin")
         set(QT_INSTALL_PATH "${QT_INSTALL_PATH}/..")
@@ -45,28 +47,19 @@ if (WIN32 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
             set(QT_INSTALL_PATH "${QT_INSTALL_PATH}/..")
         endif()
     endif()
-
-    # Ensure platform DLLs are copied, but ignore errors if they are missing
     if(EXISTS "${QT_INSTALL_PATH}/plugins/platforms/qwindows${DEBUG_SUFFIX}.dll")
         add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E make_directory
-                "$<TARGET_FILE_DIR:${PROJECT_NAME}>/plugins/platforms/"
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                COMMAND ${CMAKE_COMMAND} -E make_directory
+                "$<TARGET_FILE_DIR:${PROJECT_NAME}>/plugins/platforms/")
+        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy
                 "${QT_INSTALL_PATH}/plugins/platforms/qwindows${DEBUG_SUFFIX}.dll"
-                "$<TARGET_FILE_DIR:${PROJECT_NAME}>/plugins/platforms/"
-            COMMAND_ERROR_IS_FATAL ANY # Ensures only real failures stop the build
-        )
+                "$<TARGET_FILE_DIR:${PROJECT_NAME}>/plugins/platforms/")
     endif()
-
-    # Ensure Qt DLLs are copied, but ignore errors if they are missing
-    foreach(QT_LIB Core Gui Widgets SerialPort Charts)
-        if(EXISTS "${QT_INSTALL_PATH}/bin/Qt6${QT_LIB}${DEBUG_SUFFIX}.dll")
-            add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                    "${QT_INSTALL_PATH}/bin/Qt6${QT_LIB}${DEBUG_SUFFIX}.dll"
-                    "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
-                COMMAND_ERROR_IS_FATAL ANY
-            )
-        endif()
-    endforeach()
+    foreach(QT_LIB Core Gui Widgets SerialPort)
+        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy
+                "${QT_INSTALL_PATH}/bin/Qt6${QT_LIB}${DEBUG_SUFFIX}.dll"
+                "$<TARGET_FILE_DIR:${PROJECT_NAME}>")
+    endforeach(QT_LIB)
 endif()

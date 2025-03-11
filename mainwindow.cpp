@@ -6,6 +6,7 @@
 #include <QTimer>
 #include <QSerialPort>
 #include <QSerialPortInfo>
+#include <QRegularExpression>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), isReading(false), portSettings(new PortSettings(this)) {
@@ -106,7 +107,8 @@ void MainWindow::createControls() {
     distanceInput = new QLineEdit("00");
     QLabel *timeLabel = new QLabel("Time:");
     timeInput = new QTimeEdit();
-    timeInput->setDisabled(true);
+    timeInput->setDisplayFormat("mm:ss.zzz");  // Set the display format to include milliseconds
+    timeInput->setReadOnly(true);  // Make the time label non-editable
 
     controlsLayout->addWidget(distanceLabel, 0, 0);
     controlsLayout->addWidget(distanceInput, 0, 1);
@@ -126,26 +128,14 @@ void MainWindow::createControls() {
     controlsLayout->addWidget(maxYLabel, 3, 0);
     controlsLayout->addWidget(maxYInput, 3, 1);
 
-    QLabel *recordingLabel = new QLabel("Recording period [ms]:");
-    recordingSlider = new QSlider(Qt::Horizontal);
-    recordingSlider->setRange(1, 1000);
-    recordingValueLabel = new QLabel("1");
-    recordingValueLabel->setFixedWidth(50);
-
-    controlsLayout->addWidget(recordingLabel, 4, 0);
-    controlsLayout->addWidget(recordingSlider, 4, 1);
-    controlsLayout->addWidget(recordingValueLabel, 4, 2);
-
     mainLayout->addLayout(controlsLayout);
 
     connect(yAxisSlider, &QSlider::valueChanged, this, [this](int value) {
         maxYInput->setText(QString::number(value));
     });
-
-    connect(recordingSlider, &QSlider::valueChanged, this, [this](int value) {
-        recordingValueLabel->setText(QString::number(value));
-    });
 }
+
+
 
 void MainWindow::handleStartStopButton() {
     if (isReading) {
@@ -157,6 +147,7 @@ void MainWindow::handleStartStopButton() {
     }
     isReading = !isReading;
 }
+
 
 void MainWindow::startReading() {
     QString portName = portSettings->getPortName();
@@ -191,17 +182,39 @@ void MainWindow::startReading() {
 
     qDebug() << "Started reading from port" << portName;
 
+
+
     connect(serialPort, &QSerialPort::readyRead, this, [this]() {
+        Reading = true;
         QByteArray data = serialPort->readAll();
-        qDebug() << "Data read:" << data;
         dataDisplay->append(data);
+        parseData(QString::fromUtf8(data));
     });
+}
+
+void MainWindow::parseData(const QString &data) {
+    QRegularExpression regex("YY(\\d+)T(\\d+)E");
+    QRegularExpressionMatch match = regex.match(data);
+
+    QString distanceStr = match.captured(1);
+    QString timeStr = match.captured(2);
+    distance = distanceStr.toInt();
+    timeInMilliseconds = timeStr.toInt();
+    minutes = timeInMilliseconds / 60000;
+    seconds = (timeInMilliseconds % 60000) / 1000;
+    milliseconds = timeInMilliseconds % 1000;
+
+    qDebug() << "Distance:" << distanceStr << "Time:" << minutes << ":" << seconds << ":" << milliseconds;
+
+    distanceInput->setText(QString::number(distance));
+    timeInput->setTime(QTime(0, minutes, seconds, milliseconds));
 }
 
 void MainWindow::stopReading() {
     if (serialPort && serialPort->isOpen()) {
         serialPort->close();
         qDebug() << "Stopped reading from port";
+        Reading = false;
         delete serialPort;
         serialPort = nullptr;
     }

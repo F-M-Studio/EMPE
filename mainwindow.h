@@ -24,17 +24,20 @@ class MainWindow : public QMainWindow {
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+    bool Reading;
+    int distance, timeInMilliseconds, minutes, seconds, milliseconds;
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;
 
-    private slots:
-        void handleStartStopButton();
+private slots:
+    void handleStartStopButton();
 
 private:
     QWidget *centralWidget;
     QVBoxLayout *mainLayout;
     QComboBox *portBox;
+
     // Menu Bar
     QMenuBar *menuBar;
     QMenu *mainMenu;
@@ -54,10 +57,8 @@ private:
     // Sliders & Controls
     QSlider *yAxisSlider;
     QLineEdit *maxYInput;
-    QSlider *recordingSlider;
     QLineEdit *distanceInput;
     QTimeEdit *timeInput;
-    QLabel *recordingValueLabel;  // Label to display recording period value
     QLabel *yAxisValueLabel;      // Label to display Y axis scale value
 
     // Serial port
@@ -71,6 +72,7 @@ private:
     void createControls();
     void startReading();
     void stopReading();
+    void parseData(const QString &data);
 };
 
 #endif // MAINWINDOW_H
