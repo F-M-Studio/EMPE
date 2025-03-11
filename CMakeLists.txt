@@ -6,9 +6,6 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-# Hardcoded path commented - use CI-provided path instead
-# set(CMAKE_PREFIX_PATH "C:/Qt/6.8.2/msvc2022_64")
-
 find_package(Qt6 COMPONENTS
         Core
         Gui
@@ -49,7 +46,7 @@ if (WIN32 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
         endif()
     endif()
 
-    # ✅ Fix: Ignore missing Qt platform DLLs
+    # Ensure platform DLLs are copied, but ignore errors if they are missing
     if(EXISTS "${QT_INSTALL_PATH}/plugins/platforms/qwindows${DEBUG_SUFFIX}.dll")
         add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E make_directory
@@ -57,17 +54,19 @@ if (WIN32 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 "${QT_INSTALL_PATH}/plugins/platforms/qwindows${DEBUG_SUFFIX}.dll"
                 "$<TARGET_FILE_DIR:${PROJECT_NAME}>/plugins/platforms/"
-            COMMAND_ECHO STDOUT || true # Ignores errors
+            COMMAND_ERROR_IS_FATAL ANY # Ensures only real failures stop the build
         )
     endif()
 
-    # ✅ Fix: Ignore missing Qt DLLs (Core, Gui, Widgets, SerialPort, Charts)
+    # Ensure Qt DLLs are copied, but ignore errors if they are missing
     foreach(QT_LIB Core Gui Widgets SerialPort Charts)
-        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${QT_INSTALL_PATH}/bin/Qt6${QT_LIB}${DEBUG_SUFFIX}.dll"
-                "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
-            COMMAND_ECHO STDOUT || true # Ignores errors
-        )
+        if(EXISTS "${QT_INSTALL_PATH}/bin/Qt6${QT_LIB}${DEBUG_SUFFIX}.dll")
+            add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    "${QT_INSTALL_PATH}/bin/Qt6${QT_LIB}${DEBUG_SUFFIX}.dll"
+                    "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+                COMMAND_ERROR_IS_FATAL ANY
+            )
+        endif()
     endforeach()
 endif()
