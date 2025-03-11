@@ -73,17 +73,25 @@ jobs:
         run: |
           echo Qt Path: "${{ steps.qt.outputs.Qt6_DIR }}"
           dir /s /b "${{ steps.qt.outputs.Qt6_DIR }}\bin"
-
+      - name: Show Qt Directory
+        shell: cmd
+        run: |
+          echo "Checking Qt Paths..."
+          echo Qt Path: "%Qt6_DIR%"
+          dir /s /b "%Qt6_DIR%\bin\windeployqt.exe"
+          dir /s /b "D:\a\EMPE\Qt\6.8.2\msvc2022_64\bin\windeployqt.exe"
+      
       - name: Deploy Qt Dependencies
         shell: cmd
         run: |
-          if exist "build/lidar.exe" (
+          if exist "build\lidar.exe" (
             echo "lidar.exe found, running windeployqt"
-            if exist "${{ steps.qt.outputs.Qt6_DIR }}\bin\windeployqt.exe" (
-              "${{ steps.qt.outputs.Qt6_DIR }}\bin\windeployqt.exe" --release --no-translations --no-system-d3d-compiler ^
-              --dir build build/lidar.exe
+            set QT_DEPLOY_PATH=D:\a\EMPE\Qt\6.8.2\msvc2022_64\bin\windeployqt.exe
+            if exist "%QT_DEPLOY_PATH%" (
+              "%QT_DEPLOY_PATH%" --release --no-translations --no-system-d3d-compiler ^
+              --dir build build\lidar.exe
             ) else (
-              echo "ERROR: windeployqt.exe not found!"
+              echo "ERROR: windeployqt.exe not found in expected location!"
               exit 1
             )
           ) else (
