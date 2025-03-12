@@ -16,6 +16,8 @@
 #include <QTextEdit>
 #include <QKeyEvent>
 #include <QSerialPort>  // Include QSerialPort header
+#include <QtWidgets>
+
 #include "portsettings.h"
 
 class MainWindow : public QMainWindow {
@@ -37,6 +39,7 @@ private:
     QWidget *centralWidget;
     QVBoxLayout *mainLayout;
     QComboBox *portBox;
+    QCheckBox *alwaysOnTopCheckbox;
 
     // Menu Bar
     QMenuBar *menuBar;
@@ -67,7 +70,6 @@ private:
     QTextEdit *dataDisplay;  // TextEdit to display data from COM port
     bool isReading;  // Flag to indicate if reading is in progress
 
-    void setupUI();
     void createMenu();
     void createControls();
     void startReading();

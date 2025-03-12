@@ -22,7 +22,7 @@ public:
 
 
 private slots:
-    void updateGraph();
+    void updateGraph() const;
 
 private:
     Ui::GraphWindow *ui;
@@ -37,6 +37,22 @@ private:
     QSlider *recordingSlider;
     QLabel *recordingLabel;
     QLabel *recordingValueLabel;
+    QLabel *recordingTitleLabel;
+    QLabel *yAxisTitleLabel;
+    QLineEdit *recordingEdit;
+    QLineEdit *yAxisEdit;
+
+    QCheckBox *yAxisToggle;
+    QSlider *yAxisSlider;
+    QLabel *yAxisLabel;
+    QLabel *yAxisValueLabel;
+    bool manualYAxisControl = false;
+    QCheckBox *autoRemoveToggle;
+    QSlider *pointsLimitSlider;
+    QLineEdit *pointsLimitEdit;
+    QLabel *pointsLimitLabel;
+    bool autoRemovePoints = true;
+    int pointsLimit = 100;
 };
 
 #endif // GRAPHWINDOW_H

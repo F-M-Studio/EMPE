@@ -105,6 +105,7 @@ void MainWindow::createControls() {
 
     QLabel *distanceLabel = new QLabel("Distance:");
     distanceInput = new QLineEdit("00");
+    distanceInput->setReadOnly(true);  // Make the distance label non-editable
     QLabel *timeLabel = new QLabel("Time:");
     timeInput = new QTimeEdit();
     timeInput->setDisplayFormat("mm:ss.zzz");  // Set the display format to include milliseconds
@@ -115,23 +116,25 @@ void MainWindow::createControls() {
     controlsLayout->addWidget(timeLabel, 1, 0);
     controlsLayout->addWidget(timeInput, 1, 1);
 
-    QLabel *yAxisLabel = new QLabel("Y axis scale:");
-    yAxisSlider = new QSlider(Qt::Horizontal);
-    yAxisSlider->setRange(0, 10000);
-
-    controlsLayout->addWidget(yAxisLabel, 2, 0);
-    controlsLayout->addWidget(yAxisSlider, 2, 1);
-
-    QLabel *maxYLabel = new QLabel("max Y =");
-    maxYInput = new QLineEdit("0");
-
-    controlsLayout->addWidget(maxYLabel, 3, 0);
-    controlsLayout->addWidget(maxYInput, 3, 1);
-
     mainLayout->addLayout(controlsLayout);
 
     connect(yAxisSlider, &QSlider::valueChanged, this, [this](int value) {
         maxYInput->setText(QString::number(value));
+    });
+    // Create and add the "Always on Top" checkbox
+    alwaysOnTopCheckbox = new QCheckBox("Always on Top", this);
+    mainLayout->addWidget(alwaysOnTopCheckbox);
+
+    // Connect the checkbox state change to window flag update
+    connect(alwaysOnTopCheckbox, &QCheckBox::stateChanged, this, [this](int state) {
+        Qt::WindowFlags flags = windowFlags();
+        if (state == Qt::Checked) {
+            flags |= Qt::WindowStaysOnTopHint;
+        } else {
+            flags &= ~Qt::WindowStaysOnTopHint;
+        }
+        setWindowFlags(flags);
+        show(); // Need to show the window again after changing flags
     });
 }
 
@@ -203,8 +206,6 @@ void MainWindow::parseData(const QString &data) {
     minutes = timeInMilliseconds / 60000;
     seconds = (timeInMilliseconds % 60000) / 1000;
     milliseconds = timeInMilliseconds % 1000;
-
-    qDebug() << "Distance:" << distanceStr << "Time:" << minutes << ":" << seconds << ":" << milliseconds;
 
     distanceInput->setText(QString::number(distance));
     timeInput->setTime(QTime(0, minutes, seconds, milliseconds));

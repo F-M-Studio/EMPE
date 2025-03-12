@@ -1,0 +1,26 @@
+# ninja log v6
+3629	17065	1741790898775438501	CMakeFiles/lidar.dir/mainwindow.cpp.o	ee0c7d4564578cdf
+3630	17037	1741790898775863065	CMakeFiles/lidar.dir/graphwindow.cpp.o	7151dcc0113535b4
+3629	16235	1741790898775109267	CMakeFiles/lidar.dir/main.cpp.o	da3c93ec7d194bc9
+17092	17615	1741790912237202457	lidar	f0f979d86e97018c
+23	3623	1741790898743427000	/Users/mateuszkorniak/Documents/GitHub/EMPE/cmake-build-debug/lidar_autogen/timestamp	4b40c5d06272e7f3
+23	3623	1741790898743427000	/Users/mateuszkorniak/Documents/GitHub/EMPE/cmake-build-debug/lidar_autogen/mocs_compilation.cpp	4b40c5d06272e7f3
+23	3623	1741790898743427000	lidar_autogen/mocs_compilation.cpp	4b40c5d06272e7f3
+23	3623	1741790898743427000	lidar_autogen/timestamp	4b40c5d06272e7f3
+3628	17091	1741790898774495170	CMakeFiles/lidar.dir/lidar_autogen/mocs_compilation.cpp.o	c3e23f246cac1650
+6991	20834	1741741150002729123	CMakeFiles/lidar.dir/portsettings.cpp.o	8bb0e829bf5fa442
+18	1472	1741791364180295000	lidar_autogen/timestamp	4b40c5d06272e7f3
+18	1472	1741791364180295000	lidar_autogen/mocs_compilation.cpp	4b40c5d06272e7f3
+18	1472	1741791364180295000	/Users/mateuszkorniak/Documents/GitHub/EMPE/cmake-build-debug/lidar_autogen/timestamp	4b40c5d06272e7f3
+18	1472	1741791364180295000	/Users/mateuszkorniak/Documents/GitHub/EMPE/cmake-build-debug/lidar_autogen/mocs_compilation.cpp	4b40c5d06272e7f3
+1477	6590	1741791364206669768	CMakeFiles/lidar.dir/lidar_autogen/mocs_compilation.cpp.o	c3e23f246cac1650
+1478	6666	1741791364207224034	CMakeFiles/lidar.dir/graphwindow.cpp.o	7151dcc0113535b4
+1477	6749	1741791364207031127	CMakeFiles/lidar.dir/mainwindow.cpp.o	ee0c7d4564578cdf
+6749	7057	1741791369478931527	lidar	f0f979d86e97018c
+21	139	1741792202317278042	lidar_autogen/timestamp	4b40c5d06272e7f3
+21	139	1741792202317278042	lidar_autogen/mocs_compilation.cpp	4b40c5d06272e7f3
+21	139	1741792202317278042	/Users/mateuszkorniak/Documents/GitHub/EMPE/cmake-build-debug/lidar_autogen/timestamp	4b40c5d06272e7f3
+21	139	1741792202317278042	/Users/mateuszkorniak/Documents/GitHub/EMPE/cmake-build-debug/lidar_autogen/mocs_compilation.cpp	4b40c5d06272e7f3
+143	9625	1741792202438520025	CMakeFiles/lidar.dir/mainwindow.cpp.o	ee0c7d4564578cdf
+143	9630	1741792202438912507	CMakeFiles/lidar.dir/graphwindow.cpp.o	7151dcc0113535b4
+9630	10004	1741792211925630603	lidar	f0f979d86e97018c

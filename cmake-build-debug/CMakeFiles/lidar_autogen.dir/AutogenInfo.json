@@ -1,17 +1,17 @@
 {
-	"BUILD_DIR" : "/Users/mateuszkorniak/Downloads/EMPE-main-graph-test/EMPE-main/cmake-build-debug/lidar_autogen",
-	"CMAKE_BINARY_DIR" : "/Users/mateuszkorniak/Downloads/EMPE-main-graph-test/EMPE-main/cmake-build-debug",
-	"CMAKE_CURRENT_BINARY_DIR" : "/Users/mateuszkorniak/Downloads/EMPE-main-graph-test/EMPE-main/cmake-build-debug",
-	"CMAKE_CURRENT_SOURCE_DIR" : "/Users/mateuszkorniak/Downloads/EMPE-main-graph-test/EMPE-main",
+	"BUILD_DIR" : "/Users/mateuszkorniak/Documents/GitHub/EMPE/cmake-build-debug/lidar_autogen",
+	"CMAKE_BINARY_DIR" : "/Users/mateuszkorniak/Documents/GitHub/EMPE/cmake-build-debug",
+	"CMAKE_CURRENT_BINARY_DIR" : "/Users/mateuszkorniak/Documents/GitHub/EMPE/cmake-build-debug",
+	"CMAKE_CURRENT_SOURCE_DIR" : "/Users/mateuszkorniak/Documents/GitHub/EMPE",
 	"CMAKE_EXECUTABLE" : "/Users/mateuszkorniak/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/bin/cmake",
 	"CMAKE_LIST_FILES" : 
 	[
-		"/Users/mateuszkorniak/Downloads/EMPE-main-graph-test/EMPE-main/CMakeLists.txt",
-		"/Users/mateuszkorniak/Downloads/EMPE-main-graph-test/EMPE-main/cmake-build-debug/CMakeFiles/3.30.5/CMakeSystem.cmake",
+		"/Users/mateuszkorniak/Documents/GitHub/EMPE/CMakeLists.txt",
+		"/Users/mateuszkorniak/Documents/GitHub/EMPE/cmake-build-debug/CMakeFiles/3.30.5/CMakeSystem.cmake",
 		"/Users/mateuszkorniak/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeSystemSpecificInitialize.cmake",
 		"/Users/mateuszkorniak/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/Platform/Darwin-Initialize.cmake",
-		"/Users/mateuszkorniak/Downloads/EMPE-main-graph-test/EMPE-main/cmake-build-debug/CMakeFiles/3.30.5/CMakeCCompiler.cmake",
-		"/Users/mateuszkorniak/Downloads/EMPE-main-graph-test/EMPE-main/cmake-build-debug/CMakeFiles/3.30.5/CMakeCXXCompiler.cmake",
+		"/Users/mateuszkorniak/Documents/GitHub/EMPE/cmake-build-debug/CMakeFiles/3.30.5/CMakeCCompiler.cmake",
+		"/Users/mateuszkorniak/Documents/GitHub/EMPE/cmake-build-debug/CMakeFiles/3.30.5/CMakeCXXCompiler.cmake",
 		"/Users/mateuszkorniak/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeSystemSpecificInformation.cmake",
 		"/Users/mateuszkorniak/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeGenericSystem.cmake",
 		"/Users/mateuszkorniak/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeInitializeConfigs.cmake",
@@ -403,34 +403,34 @@
 		"/opt/homebrew/lib/cmake/Qt6Charts/Qt6ChartsAdditionalTargetInfo.cmake",
 		"/opt/homebrew/lib/cmake/Qt6Charts/Qt6ChartsVersionlessAliasTargets.cmake"
 	],
-	"CMAKE_SOURCE_DIR" : "/Users/mateuszkorniak/Downloads/EMPE-main-graph-test/EMPE-main",
+	"CMAKE_SOURCE_DIR" : "/Users/mateuszkorniak/Documents/GitHub/EMPE",
 	"CROSS_CONFIG" : false,
-	"DEP_FILE" : "/Users/mateuszkorniak/Downloads/EMPE-main-graph-test/EMPE-main/cmake-build-debug/lidar_autogen/deps",
+	"DEP_FILE" : "/Users/mateuszkorniak/Documents/GitHub/EMPE/cmake-build-debug/lidar_autogen/deps",
 	"DEP_FILE_RULE_NAME" : "lidar_autogen/timestamp",
 	"HEADERS" : 
 	[
 		[
-			"/Users/mateuszkorniak/Downloads/EMPE-main-graph-test/EMPE-main/graphwindow.h",
+			"/Users/mateuszkorniak/Documents/GitHub/EMPE/graphwindow.h",
 			"MU",
 			"EWIEGA46WW/moc_graphwindow.cpp",
 			null
 		],
 		[
-			"/Users/mateuszkorniak/Downloads/EMPE-main-graph-test/EMPE-main/mainwindow.h",
+			"/Users/mateuszkorniak/Documents/GitHub/EMPE/mainwindow.h",
 			"MU",
 			"EWIEGA46WW/moc_mainwindow.cpp",
 			null
 		],
 		[
-			"/Users/mateuszkorniak/Downloads/EMPE-main-graph-test/EMPE-main/portsettings.h",
+			"/Users/mateuszkorniak/Documents/GitHub/EMPE/portsettings.h",
 			"MU",
 			"EWIEGA46WW/moc_portsettings.cpp",
 			null
 		]
 	],
 	"HEADER_EXTENSIONS" : [ "h", "hh", "h++", "hm", "hpp", "hxx", "in", "txx" ],
-	"INCLUDE_DIR" : "/Users/mateuszkorniak/Downloads/EMPE-main-graph-test/EMPE-main/cmake-build-debug/lidar_autogen/include",
-	"MOC_COMPILATION_FILE" : "/Users/mateuszkorniak/Downloads/EMPE-main-graph-test/EMPE-main/cmake-build-debug/lidar_autogen/mocs_compilation.cpp",
+	"INCLUDE_DIR" : "/Users/mateuszkorniak/Documents/GitHub/EMPE/cmake-build-debug/lidar_autogen/include",
+	"MOC_COMPILATION_FILE" : "/Users/mateuszkorniak/Documents/GitHub/EMPE/cmake-build-debug/lidar_autogen/mocs_compilation.cpp",
 	"MOC_DEFINITIONS" : 
 	[
 		"QT_CHARTS_LIB",
@@ -466,8 +466,10 @@
 		"/opt/homebrew/lib/QtOpenGL.framework",
 		"/opt/homebrew/lib/QtOpenGLWidgets.framework/Headers",
 		"/opt/homebrew/lib/QtOpenGLWidgets.framework",
-		"/usr/include",
-		"/Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk/usr/include"
+		"/Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk/usr/include/c++/v1",
+		"/Library/Developer/CommandLineTools/usr/lib/clang/16/include",
+		"/Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk/usr/include",
+		"/Library/Developer/CommandLineTools/usr/include"
 	],
 	"MOC_MACRO_NAMES" : 
 	[
@@ -489,36 +491,32 @@
 		"-c",
 		"/Users/mateuszkorniak/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeCXXCompilerABI.cpp"
 	],
-	"MOC_PREDEFS_FILE" : "/Users/mateuszkorniak/Downloads/EMPE-main-graph-test/EMPE-main/cmake-build-debug/lidar_autogen/moc_predefs.h",
+	"MOC_PREDEFS_FILE" : "/Users/mateuszkorniak/Documents/GitHub/EMPE/cmake-build-debug/lidar_autogen/moc_predefs.h",
 	"MOC_RELAXED_MODE" : false,
 	"MOC_SKIP" : [],
 	"MULTI_CONFIG" : false,
 	"PARALLEL" : 8,
-	"PARSE_CACHE_FILE" : "/Users/mateuszkorniak/Downloads/EMPE-main-graph-test/EMPE-main/cmake-build-debug/CMakeFiles/lidar_autogen.dir/ParseCache.txt",
+	"PARSE_CACHE_FILE" : "/Users/mateuszkorniak/Documents/GitHub/EMPE/cmake-build-debug/CMakeFiles/lidar_autogen.dir/ParseCache.txt",
 	"QT_MOC_EXECUTABLE" : "/opt/homebrew/share/qt/libexec/moc",
 	"QT_UIC_EXECUTABLE" : "/opt/homebrew/share/qt/libexec/uic",
 	"QT_VERSION_MAJOR" : 6,
 	"QT_VERSION_MINOR" : 8,
-	"SETTINGS_FILE" : "/Users/mateuszkorniak/Downloads/EMPE-main-graph-test/EMPE-main/cmake-build-debug/CMakeFiles/lidar_autogen.dir/AutogenUsed.txt",
+	"SETTINGS_FILE" : "/Users/mateuszkorniak/Documents/GitHub/EMPE/cmake-build-debug/CMakeFiles/lidar_autogen.dir/AutogenUsed.txt",
 	"SOURCES" : 
 	[
 		[
-			"/Users/mateuszkorniak/Downloads/EMPE-main-graph-test/EMPE-main/graphwindow.cpp",
+			"/Users/mateuszkorniak/Documents/GitHub/EMPE/graphwindow.cpp",
+			"MU",
+			null
+		],
+		[ "/Users/mateuszkorniak/Documents/GitHub/EMPE/main.cpp", "MU", null ],
+		[
+			"/Users/mateuszkorniak/Documents/GitHub/EMPE/mainwindow.cpp",
 			"MU",
 			null
 		],
 		[
-			"/Users/mateuszkorniak/Downloads/EMPE-main-graph-test/EMPE-main/main.cpp",
-			"MU",
-			null
-		],
-		[
-			"/Users/mateuszkorniak/Downloads/EMPE-main-graph-test/EMPE-main/mainwindow.cpp",
-			"MU",
-			null
-		],
-		[
-			"/Users/mateuszkorniak/Downloads/EMPE-main-graph-test/EMPE-main/portsettings.cpp",
+			"/Users/mateuszkorniak/Documents/GitHub/EMPE/portsettings.cpp",
 			"MU",
 			null
 		]
