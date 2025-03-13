@@ -17,7 +17,7 @@ find_package(Qt6 COMPONENTS
         Charts
         REQUIRED)
 
-add_executable(lidar main.cpp
+add_executable(lidar WIN32 main.cpp
         mainwindow.h
         mainwindow.cpp
         portsettings.cpp
