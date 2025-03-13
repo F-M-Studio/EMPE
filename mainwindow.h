@@ -36,6 +36,12 @@ private slots:
     void handleStartStopButton();
 
 private:
+    struct DataPoint {
+        int distance;
+        int timeInMilliseconds;
+    };
+    QVector<DataPoint> dataPoints;
+
     QWidget *centralWidget;
     QVBoxLayout *mainLayout;
     QComboBox *portBox;

@@ -6,8 +6,8 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-# Hardcoded path for qt 6.7.3 on windows
-# set(CMAKE_PREFIX_PATH "C:/Qt/6.7.3/mingw_64")
+# Hardcoded path commented - use CI-provided path instead
+# set(CMAKE_PREFIX_PATH "C:/Qt/6.8.2/msvc2022_64")
 
 find_package(Qt6 COMPONENTS
         Core
@@ -17,7 +17,7 @@ find_package(Qt6 COMPONENTS
         Charts
         REQUIRED)
 
-add_executable(lidar WIN32 main.cpp
+add_executable(lidar main.cpp
         mainwindow.h
         mainwindow.cpp
         portsettings.cpp
@@ -35,42 +35,31 @@ target_link_libraries(lidar
         Qt6::Charts
 )
 
-#hard coded paths so the dlls actually copy 
-include(GNUInstallDirs)
-if(WIN32)
-    set(DEBUG_SUFFIX "")
-    if(CMAKE_BUILD_TYPE MATCHES "Debug")
+if (WIN32 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+    set(DEBUG_SUFFIX)
+    if (MSVC AND CMAKE_BUILD_TYPE MATCHES "Debug")
         set(DEBUG_SUFFIX "d")
     endif()
-
-    # Deploy Qt runtime files
-    if(TARGET Qt6::qmake)
-        get_target_property(_qmake_executable Qt6::qmake IMPORTED_LOCATION)
-        get_filename_component(_qt_bin_dir "${_qmake_executable}" DIRECTORY)
-
-        # Deploy Qt plugins
-        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                COMMAND "${_qt_bin_dir}/windeployqt.exe"
-                --verbose 0
-                --no-compiler-runtime
-                --no-translations
-                --no-system-d3d-compiler
-                \"$<TARGET_FILE:${PROJECT_NAME}>\"
-                COMMENT "Deploying Qt dependencies..."
-        )
+    set(QT_INSTALL_PATH "${CMAKE_PREFIX_PATH}")
+    if(NOT EXISTS "${QT_INSTALL_PATH}/bin")
+        set(QT_INSTALL_PATH "${QT_INSTALL_PATH}/..")
+        if(NOT EXISTS "${QT_INSTALL_PATH}/bin")
+            set(QT_INSTALL_PATH "${QT_INSTALL_PATH}/..")
+        endif()
     endif()
-
-    # Deploy MinGW runtime DLLs
-    set(MINGW_BIN_PATH "C:/Qt/Tools/mingw1120_64/bin")
-    foreach(MINGW_DLL
-            libgcc_s_seh-1.dll
-            libstdc++-6.dll
-            libwinpthread-1.dll)
+    if(EXISTS "${QT_INSTALL_PATH}/plugins/platforms/qwindows${DEBUG_SUFFIX}.dll")
         add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${MINGW_BIN_PATH}/${MINGW_DLL}"
-                "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
-                COMMENT "Copying ${MINGW_DLL}..."
-        )
-    endforeach()
+                COMMAND ${CMAKE_COMMAND} -E make_directory
+                "$<TARGET_FILE_DIR:${PROJECT_NAME}>/plugins/platforms/")
+        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy
+                "${QT_INSTALL_PATH}/plugins/platforms/qwindows${DEBUG_SUFFIX}.dll"
+                "$<TARGET_FILE_DIR:${PROJECT_NAME}>/plugins/platforms/")
+    endif()
+    foreach(QT_LIB Core Gui Widgets SerialPort)
+        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy
+                "${QT_INSTALL_PATH}/bin/Qt6${QT_LIB}${DEBUG_SUFFIX}.dll"
+                "$<TARGET_FILE_DIR:${PROJECT_NAME}>")
+    endforeach(QT_LIB)
 endif()

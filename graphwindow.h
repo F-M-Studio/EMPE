@@ -19,6 +19,7 @@ public:
     GraphWindow(MainWindow *mainWindow, QWidget *parent = nullptr);
     ~GraphWindow();
     void setUpdateInterval(int interval);
+    QChart* getChart() const { return chart; }
 
 
 private slots:

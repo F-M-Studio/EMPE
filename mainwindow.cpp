@@ -7,6 +7,12 @@
 #include <QSerialPort>
 #include <QSerialPortInfo>
 #include <QRegularExpression>
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QTextStream>
+#include <QDir>
+#include <QFile>
+#include <QLineSeries>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), isReading(false), portSettings(new PortSettings(this)) {
@@ -93,12 +99,81 @@ void MainWindow::createControls() {
 
     connect(stopBtn, &QPushButton::clicked, this, &MainWindow::handleStartStopButton);
 
-    connect(saveDataBtn, &QPushButton::clicked, this, []() {
-        qDebug("Save Data clicked!");
-    });
+    connect(saveDataBtn, &QPushButton::clicked, this, [this]() {
+    QString fileName = QFileDialog::getSaveFileName(this,
+        tr("Save Data"), "",
+        tr("CSV Files (*.csv)"));
 
-    connect(clearGraphBtn, &QPushButton::clicked, this, []() {
-        qDebug("Clear Graph clicked!");
+    // Add .csv extension if not present
+    if (!fileName.endsWith(".csv", Qt::CaseInsensitive)) {
+        fileName += ".csv";
+    }
+
+    if (fileName.isEmpty()) {
+        return;
+    }
+
+    // Check if file exists
+    QFile file(fileName);
+    if (file.exists()) {
+        QMessageBox::StandardButton reply = QMessageBox::question(this,
+            tr("File exists"),
+            tr("The file %1 already exists.\nDo you want to replace it?")
+            .arg(QDir::toNativeSeparators(fileName)),
+            QMessageBox::Yes | QMessageBox::No);
+
+        if (reply == QMessageBox::No) {
+            return;
+        }
+    }
+
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QMessageBox::warning(this, tr("Error"),
+            tr("Cannot write file %1:\n%2.")
+            .arg(QDir::toNativeSeparators(fileName),
+                file.errorString()));
+        return;
+    }
+
+    QTextStream out(&file);
+
+    // Write CSV header
+    out << "Distance,Time (mm:ss),Milliseconds,Raw Time (ms)\n";
+
+    // Parse and write data from dataDisplay
+    QString rawData = dataDisplay->toPlainText();
+    QStringList lines = rawData.split('\n');
+    QRegularExpression regex("YY(\\d+)T(\\d+)E");
+
+    for (const QString& line : lines) {
+        QRegularExpressionMatch match = regex.match(line);
+        if (match.hasMatch()) {
+            QString distance = match.captured(1);
+            int timeMs = match.captured(2).toInt();
+
+            // Convert milliseconds to components
+            int minutes = timeMs / 60000;
+            int seconds = (timeMs % 60000) / 1000;
+            int milliseconds = timeMs % 1000;
+
+            // Format time as mm:ss
+            QString timeFormatted = QString("%1:%2")
+                .arg(minutes, 2, 10, QChar('0'))
+                .arg(seconds, 2, 10, QChar('0'));
+
+            out << QString("%1,%2,%3,%4\n")
+                .arg(distance)
+                .arg(timeFormatted)
+                .arg(milliseconds)
+                .arg(timeMs);
+        }
+    }
+
+    file.close();
+
+    QMessageBox::information(this, tr("Success"),
+        tr("Data has been saved to %1")
+        .arg(QDir::toNativeSeparators(fileName)));
     });
 
     QGridLayout *controlsLayout = new QGridLayout();
@@ -124,7 +199,7 @@ void MainWindow::createControls() {
 
     // Connect the checkbox state change to window flag update
 
-    connect(alwaysOnTopCheckbox, &QCheckBox::stateChanged, this, [this](int state) {
+    connect(alwaysOnTopCheckbox, &QCheckBox::checkStateChanged, this, [this](int state) {
         Qt::WindowFlags flags = windowFlags();
         if (state == Qt::Checked) {
             flags |= Qt::WindowStaysOnTopHint;
@@ -197,18 +272,22 @@ void MainWindow::parseData(const QString &data) {
     QRegularExpression regex("YY(\\d+)T(\\d+)E");
     QRegularExpressionMatch match = regex.match(data);
 
-    QString distanceStr = match.captured(1);
-    QString timeStr = match.captured(2);
-    distance = distanceStr.toInt();
-    timeInMilliseconds = timeStr.toInt();
-    minutes = timeInMilliseconds / 60000;
-    seconds = (timeInMilliseconds % 60000) / 1000;
-    milliseconds = timeInMilliseconds % 1000;
+    if (match.hasMatch()) {
+        QString distanceStr = match.captured(1);
+        QString timeStr = match.captured(2);
+        distance = distanceStr.toInt();
+        timeInMilliseconds = timeStr.toInt();
+        minutes = timeInMilliseconds / 60000;
+        seconds = (timeInMilliseconds % 60000) / 1000;
+        milliseconds = timeInMilliseconds % 1000;
 
-    distanceInput->setText(QString::number(distance));
-    timeInput->setTime(QTime(0, minutes, seconds, milliseconds));
+        // Store the data point
+        dataPoints.append({distance, timeInMilliseconds});
+
+        distanceInput->setText(QString::number(distance));
+        timeInput->setTime(QTime(0, minutes, seconds, milliseconds));
+    }
 }
-
 void MainWindow::stopReading() {
     if (serialPort && serialPort->isOpen()) {
         serialPort->close();
