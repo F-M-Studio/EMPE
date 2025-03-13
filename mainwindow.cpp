@@ -118,14 +118,12 @@ void MainWindow::createControls() {
 
     mainLayout->addLayout(controlsLayout);
 
-    connect(yAxisSlider, &QSlider::valueChanged, this, [this](int value) {
-        maxYInput->setText(QString::number(value));
-    });
     // Create and add the "Always on Top" checkbox
     alwaysOnTopCheckbox = new QCheckBox("Always on Top", this);
     mainLayout->addWidget(alwaysOnTopCheckbox);
 
     // Connect the checkbox state change to window flag update
+
     connect(alwaysOnTopCheckbox, &QCheckBox::stateChanged, this, [this](int state) {
         Qt::WindowFlags flags = windowFlags();
         if (state == Qt::Checked) {
