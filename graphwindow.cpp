@@ -12,11 +12,21 @@
 GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(parent), ui(new Ui::GraphWindow), mainWindow(mainWindow) {
     ui->setupUi(this);
 
+    ui->frame->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
+    ui->frame->setMinimumSize(0, 0);
+
+    // Make sure the frame fills the central widget
+    ui->centralwidget->setLayout(new QVBoxLayout());
+    ui->centralwidget->layout()->setContentsMargins(0, 0, 0, 0);
+    ui->centralwidget->layout()->addWidget(ui->frame);
+
     delete ui->frame->layout();
 
     series = new QLineSeries();
     chart = new QChart();
     const auto chartView = new QChartView(chart);
+
+    chartView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     QSurfaceFormat format;
     format.setSamples(4);
@@ -188,6 +198,13 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
 
 GraphWindow::~GraphWindow() {
     delete ui;
+}
+
+void GraphWindow::resizeEvent(QResizeEvent* event) {
+    QMainWindow::resizeEvent(event);
+    if (chart) {
+        chart->resize(event->size());
+    }
 }
 
 void GraphWindow::updateGraph() const {

@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'graphwindow.ui'
 **
-** Created by: Qt User Interface Compiler version 5.15.16
+** Created by: Qt User Interface Compiler version 6.8.2
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -32,30 +32,26 @@ public:
     void setupUi(QMainWindow *GraphWindow)
     {
         if (GraphWindow->objectName().isEmpty())
-            GraphWindow->setObjectName(QString::fromUtf8("GraphWindow"));
+            GraphWindow->setObjectName("GraphWindow");
         GraphWindow->resize(800, 600);
         centralwidget = new QWidget(GraphWindow);
-        centralwidget->setObjectName(QString::fromUtf8("centralwidget"));
+        centralwidget->setObjectName("centralwidget");
         frame = new QFrame(centralwidget);
-        frame->setObjectName(QString::fromUtf8("frame"));
+        frame->setObjectName("frame");
         frame->setGeometry(QRect(10, 10, 780, 550));
-        QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-        sizePolicy.setHorizontalStretch(0);
-        sizePolicy.setVerticalStretch(0);
-        sizePolicy.setHeightForWidth(frame->sizePolicy().hasHeightForWidth());
-        frame->setSizePolicy(sizePolicy);
+        frame->setMaximumSize(QSize(780, 550));
         frame->setLayoutDirection(Qt::LayoutDirection::LeftToRight);
         frame->setAutoFillBackground(false);
         horizontalLayout = new QHBoxLayout(frame);
         horizontalLayout->setSpacing(1);
-        horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
+        horizontalLayout->setObjectName("horizontalLayout");
         GraphWindow->setCentralWidget(centralwidget);
         menubar = new QMenuBar(GraphWindow);
-        menubar->setObjectName(QString::fromUtf8("menubar"));
+        menubar->setObjectName("menubar");
         menubar->setGeometry(QRect(0, 0, 800, 23));
         GraphWindow->setMenuBar(menubar);
         statusbar = new QStatusBar(GraphWindow);
-        statusbar->setObjectName(QString::fromUtf8("statusbar"));
+        statusbar->setObjectName("statusbar");
         GraphWindow->setStatusBar(statusbar);
 
         retranslateUi(GraphWindow);

@@ -22,6 +22,9 @@ public:
     QChart* getChart() const { return chart; }
 
 
+protected:
+    void resizeEvent(QResizeEvent* event) override;
+
 private slots:
     void updateGraph() const;
 
