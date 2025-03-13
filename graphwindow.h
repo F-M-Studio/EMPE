@@ -21,6 +21,9 @@ public:
     void setUpdateInterval(int interval);
     QChart* getChart() const { return chart; }
 
+    // In the private section of GraphWindow class:
+protected:
+    void resizeEvent(QResizeEvent* event) override;
 
 private slots:
     void updateGraph() const;
