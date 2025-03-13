@@ -77,7 +77,7 @@ void PortSettings::setupUI() {
     setLayout(layout);
 }
 
-void PortSettings::refreshPorts() {
+void PortSettings::refreshPorts() const {
     portBox->clear();
     foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts()) {
         portBox->addItem(info.portName());

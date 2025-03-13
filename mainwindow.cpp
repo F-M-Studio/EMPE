@@ -14,8 +14,7 @@
 #include <QFile>
 #include <QLineSeries>
 
-MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), isReading(false), portSettings(new PortSettings(this)) {
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), portSettings(new PortSettings(this)), isReading(false) {
     centralWidget = new QWidget(this);
     setCentralWidget(centralWidget);
 
@@ -58,7 +57,7 @@ void MainWindow::createMenu() {
     });
 
     connect(graphAction, &QAction::triggered, this, [this]() {
-        GraphWindow *graphWindow = new GraphWindow(this);
+        auto *graphWindow = new GraphWindow(this);
         graphWindow->show();
     });
 
@@ -72,7 +71,7 @@ void MainWindow::createMenu() {
 }
 
 void MainWindow::createControls() {
-    QHBoxLayout *buttonLayout = new QHBoxLayout();
+    auto *buttonLayout = new QHBoxLayout();
 
     portSettingsBtn = new QPushButton("PORT settings");
     showGraphBtn = new QPushButton("Show GRAPH");
@@ -93,7 +92,7 @@ void MainWindow::createControls() {
     });
 
     connect(showGraphBtn, &QPushButton::clicked, this, [this]() {
-        GraphWindow *graphWindow = new GraphWindow(this);
+        auto *graphWindow = new GraphWindow(this);
         graphWindow->show();
     });
 
@@ -146,15 +145,14 @@ void MainWindow::createControls() {
     QRegularExpression regex("YY(\\d+)T(\\d+)E");
 
     for (const QString& line : lines) {
-        QRegularExpressionMatch match = regex.match(line);
-        if (match.hasMatch()) {
+        if (QRegularExpressionMatch match = regex.match(line); match.hasMatch()) {
             QString distance = match.captured(1);
-            int timeMs = match.captured(2).toInt();
+            const int timeMs = match.captured(2).toInt();
 
             // Convert milliseconds to components
-            int minutes = timeMs / 60000;
-            int seconds = (timeMs % 60000) / 1000;
-            int milliseconds = timeMs % 1000;
+            const int minutes = timeMs / 60000;
+            const int seconds = (timeMs % 60000) / 1000;
+            const int milliseconds = timeMs % 1000;
 
             // Format time as mm:ss
             QString timeFormatted = QString("%1:%2")
@@ -162,8 +160,7 @@ void MainWindow::createControls() {
                 .arg(seconds, 2, 10, QChar('0'));
 
             out << QString("%1,%2,%3,%4\n")
-                .arg(distance)
-                .arg(timeFormatted)
+                .arg(distance, timeFormatted)
                 .arg(milliseconds)
                 .arg(timeMs);
         }
@@ -176,12 +173,12 @@ void MainWindow::createControls() {
         .arg(QDir::toNativeSeparators(fileName)));
     });
 
-    QGridLayout *controlsLayout = new QGridLayout();
+    auto *controlsLayout = new QGridLayout();
 
-    QLabel *distanceLabel = new QLabel("Distance:");
+    auto *distanceLabel = new QLabel("Distance:");
     distanceInput = new QLineEdit("00");
     distanceInput->setReadOnly(true);  // Make the distance label non-editable
-    QLabel *timeLabel = new QLabel("Time:");
+    auto *timeLabel = new QLabel("Time:");
     timeInput = new QTimeEdit();
     timeInput->setDisplayFormat("mm:ss.zzz");  // Set the display format to include milliseconds
     timeInput->setReadOnly(true);  // Make the time label non-editable

@@ -13,27 +13,27 @@ class PortSettings : public QDialog {
 public:
     explicit PortSettings(QWidget *parent = nullptr);
 
-    QString getPortName() const;
-    int getBaudRate() const;
-    int getDataBits() const;
-    int getStopBits() const;
-    int getParity() const;
-    int getFlowControl() const;
+    [[nodiscard]] QString getPortName() const;
+    [[nodiscard]] int getBaudRate() const;
+    [[nodiscard]] int getDataBits() const;
+    [[nodiscard]] int getStopBits() const;
+    [[nodiscard]] int getParity() const;
+    [[nodiscard]] int getFlowControl() const;
 
 private slots:
-    void refreshPorts();
+    void refreshPorts() const;
 
 private:
-    QComboBox *portBox;
-    QComboBox *baudRateBox;
-    QComboBox *dataBitsBox;
-    QComboBox *stopBitsBox;
-    QComboBox *parityBox;
-    QComboBox *flowControlBox;
+    QComboBox *portBox{};
+    QComboBox *baudRateBox{};
+    QComboBox *dataBitsBox{};
+    QComboBox *stopBitsBox{};
+    QComboBox *parityBox{};
+    QComboBox *flowControlBox{};
 
-    QPushButton *okButton;
-    QPushButton *cancelButton;
-    QPushButton *refreshButton;
+    QPushButton *okButton{};
+    QPushButton *cancelButton{};
+    QPushButton *refreshButton{};
 
     void setupUI();
 };

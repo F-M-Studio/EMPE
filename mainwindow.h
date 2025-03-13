@@ -24,10 +24,10 @@ class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
-    ~MainWindow();
-    bool Reading;
-    int distance, timeInMilliseconds, minutes, seconds, milliseconds;
+    explicit MainWindow(QWidget *parent = nullptr);
+    ~MainWindow() override;
+    bool Reading{};
+    int distance{}, timeInMilliseconds{}, minutes{}, seconds{}, milliseconds{};
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;
@@ -44,34 +44,34 @@ private:
 
     QWidget *centralWidget;
     QVBoxLayout *mainLayout;
-    QComboBox *portBox;
-    QCheckBox *alwaysOnTopCheckbox;
+    QComboBox *portBox{};
+    QCheckBox *alwaysOnTopCheckbox{};
 
     // Menu Bar
-    QMenuBar *menuBar;
-    QMenu *mainMenu;
+    QMenuBar *menuBar{};
+    QMenu *mainMenu{};
     PortSettings *portSettings;
-    QAction *portSettingsAction;
-    QAction *graphAction;
-    QAction *startMeasurementAction;
-    QAction *saveDataAction;
+    QAction *portSettingsAction{};
+    QAction *graphAction{};
+    QAction *startMeasurementAction{};
+    QAction *saveDataAction{};
 
     // Buttons
-    QPushButton *portSettingsBtn;
-    QPushButton *showGraphBtn;
-    QPushButton *stopBtn;
-    QPushButton *saveDataBtn;
-    QPushButton *clearGraphBtn;
+    QPushButton *portSettingsBtn{};
+    QPushButton *showGraphBtn{};
+    QPushButton *stopBtn{};
+    QPushButton *saveDataBtn{};
+    QPushButton *clearGraphBtn{};
 
     // Sliders & Controls
-    QSlider *yAxisSlider;
-    QLineEdit *maxYInput;
-    QLineEdit *distanceInput;
-    QTimeEdit *timeInput;
-    QLabel *yAxisValueLabel;      // Label to display Y axis scale value
+    QSlider *yAxisSlider{};
+    QLineEdit *maxYInput{};
+    QLineEdit *distanceInput{};
+    QTimeEdit *timeInput{};
+    QLabel *yAxisValueLabel{};      // Label to display Y axis scale value
 
     // Serial port
-    QSerialPort *serialPort;
+    QSerialPort *serialPort{};
 
     QTextEdit *dataDisplay;  // TextEdit to display data from COM port
     bool isReading;  // Flag to indicate if reading is in progress

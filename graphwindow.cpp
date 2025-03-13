@@ -16,7 +16,7 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
 
     series = new QLineSeries();
     chart = new QChart();
-    auto chartView = new QChartView(chart);
+    const auto chartView = new QChartView(chart);
 
     QSurfaceFormat format;
     format.setSamples(4);
@@ -93,30 +93,30 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     pointsLimitSlider->setValue(100);
 
     // Create widgets for sliders
-    QWidget* recordingSliderWidget = new QWidget();
-    QHBoxLayout* recordingLayout = new QHBoxLayout(recordingSliderWidget);
+    auto* recordingSliderWidget = new QWidget();
+    auto* recordingLayout = new QHBoxLayout(recordingSliderWidget);
     recordingLayout->addWidget(recordingTitleLabel);
     recordingLayout->addWidget(recordingSlider);
     recordingLayout->addWidget(recordingEdit);
     recordingSliderWidget->setLayout(recordingLayout);
 
-    QWidget* yAxisSliderWidget = new QWidget();
-    QHBoxLayout* yAxisLayout = new QHBoxLayout(yAxisSliderWidget);
+    auto* yAxisSliderWidget = new QWidget();
+    auto* yAxisLayout = new QHBoxLayout(yAxisSliderWidget);
     yAxisLayout->addWidget(yAxisToggle);
     yAxisLayout->addWidget(yAxisTitleLabel);
     yAxisLayout->addWidget(yAxisSlider);
     yAxisLayout->addWidget(yAxisEdit);
     yAxisSliderWidget->setLayout(yAxisLayout);
 
-    QWidget* pointsLimitWidget = new QWidget();
-    QHBoxLayout* pointsLayout = new QHBoxLayout(pointsLimitWidget);
+    auto* pointsLimitWidget = new QWidget();
+    auto* pointsLayout = new QHBoxLayout(pointsLimitWidget);
     pointsLayout->addWidget(autoRemoveToggle);
     pointsLayout->addWidget(pointsLimitLabel);
     pointsLayout->addWidget(pointsLimitSlider);
     pointsLayout->addWidget(pointsLimitEdit);
     pointsLimitWidget->setLayout(pointsLayout);
 
-    QVBoxLayout* mainLayout = new QVBoxLayout(ui->frame);
+    auto* mainLayout = new QVBoxLayout(ui->frame);
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->addWidget(chartView, 1);
     mainLayout->addWidget(recordingSliderWidget);

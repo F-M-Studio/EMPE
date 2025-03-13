@@ -10,5 +10,5 @@ int main(int argc, char *argv[]) {
     w.resize(600, 400);
     w.show();
 
-    return a.exec();
+    return QApplication::exec();
 }
