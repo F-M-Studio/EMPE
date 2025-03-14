@@ -13,6 +13,9 @@
 #include <QDir>
 #include <QFile>
 #include <QLineSeries>
+#include <QMenu>
+#include <QAction>
+#include <QApplication>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), portSettings(new PortSettings(this)), isReading(false) {
     centralWidget = new QWidget(this);

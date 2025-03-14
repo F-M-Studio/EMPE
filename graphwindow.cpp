@@ -202,9 +202,6 @@ GraphWindow::~GraphWindow() {
 
 void GraphWindow::resizeEvent(QResizeEvent* event) {
     QMainWindow::resizeEvent(event);
-    if (chart) {
-        chart->resize(event->size());
-    }
 }
 
 void GraphWindow::updateGraph() const {
