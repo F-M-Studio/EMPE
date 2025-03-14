@@ -80,13 +80,11 @@ void MainWindow::createControls() {
     showGraphBtn = new QPushButton("Show GRAPH");
     stopBtn = new QPushButton("START");
     saveDataBtn = new QPushButton("SAVE data to file");
-    clearGraphBtn = new QPushButton("Clear GRAPH");
 
     buttonLayout->addWidget(portSettingsBtn);
     buttonLayout->addWidget(showGraphBtn);
     buttonLayout->addWidget(stopBtn);
     buttonLayout->addWidget(saveDataBtn);
-    buttonLayout->addWidget(clearGraphBtn);
 
     mainLayout->addLayout(buttonLayout);
 

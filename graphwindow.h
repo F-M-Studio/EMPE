@@ -28,6 +28,8 @@ protected:
 private slots:
     void updateGraph() const;
 
+    void clearGraph() const;
+
 private:
     Ui::GraphWindow *ui;
     MainWindow *mainWindow;
@@ -45,6 +47,8 @@ private:
     QLabel *yAxisTitleLabel;
     QLineEdit *recordingEdit;
     QLineEdit *yAxisEdit;
+
+    QPushButton *clearGraphBtn;
 
     QCheckBox *yAxisToggle;
     QSlider *yAxisSlider;

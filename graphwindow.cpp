@@ -22,6 +22,19 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
 
     delete ui->frame->layout();
 
+    // Create Clear Graph button
+    clearGraphBtn = new QPushButton("Clear Graph");
+    clearGraphBtn->setFixedWidth(120);
+    auto* clearBtnContainer = new QWidget();
+    auto* clearBtnLayout = new QHBoxLayout(clearBtnContainer);
+    clearBtnLayout->addStretch();
+    clearBtnLayout->addWidget(clearGraphBtn);
+    clearBtnLayout->addStretch();
+    clearBtnContainer->setLayout(clearBtnLayout);
+
+    // Connect clear button
+    connect(clearGraphBtn, &QPushButton::clicked, this, &GraphWindow::clearGraph);
+
     series = new QLineSeries();
     chart = new QChart();
     const auto chartView = new QChartView(chart);
@@ -32,7 +45,7 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     format.setSamples(4);
     format.setSwapInterval(1);
 
-    auto glWidget = new QOpenGLWidget();
+    const auto glWidget = new QOpenGLWidget();
     glWidget->setFormat(format);
     chartView->setViewport(glWidget);
 
@@ -128,6 +141,7 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
 
     auto* mainLayout = new QVBoxLayout(ui->frame);
     mainLayout->setContentsMargins(0, 0, 0, 0);
+    mainLayout->addWidget(clearBtnContainer);
     mainLayout->addWidget(chartView, 1);
     mainLayout->addWidget(recordingSliderWidget);
     mainLayout->addWidget(yAxisSliderWidget);
@@ -194,6 +208,10 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     });
 
     updateTimer->start(recordingSlider->value());
+}
+
+void GraphWindow::clearGraph() const {
+    series->clear();
 }
 
 GraphWindow::~GraphWindow() {
