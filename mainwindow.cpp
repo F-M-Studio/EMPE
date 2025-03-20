@@ -207,6 +207,14 @@ void MainWindow::createControls() {
         setWindowFlags(flags);
         show(); // Need to show the window again after changing flags
     });
+
+    rawDataToggle = new QCheckBox("Get Raw Data", this);
+    rawDataToggle->setChecked(false); // Default is smoothed data
+    mainLayout->addWidget(rawDataToggle);
+
+    connect(rawDataToggle, &QCheckBox::toggled, this, [this](bool checked) {
+        useRawData = checked;
+    });
 }
 
 
@@ -267,17 +275,29 @@ void MainWindow::startReading() {
 }
 
 void MainWindow::parseData(const QString &data) {
-    QRegularExpression regex("YY(\\d+)T(\\d+)E");
-    QRegularExpressionMatch match = regex.match(data);
+    const QRegularExpression regex("YY(\\d+)T(\\d+)E");
 
-    if (match.hasMatch()) {
-        QString distanceStr = match.captured(1);
-        QString timeStr = match.captured(2);
-        distance = distanceStr.toInt();
+    if (const QRegularExpressionMatch match = regex.match(data); match.hasMatch()) {
+        const QString distanceStr = match.captured(1);
+        const QString timeStr = match.captured(2);
+        const int newDistance = distanceStr.toInt();
         timeInMilliseconds = timeStr.toInt();
         minutes = timeInMilliseconds / 60000;
         seconds = (timeInMilliseconds % 60000) / 1000;
         milliseconds = timeInMilliseconds % 1000;
+
+        // Apply smoothing logic if not using raw data
+        if (!useRawData) {
+            // Only update if it's the first reading or if the change is more than 2 units
+            if (lastValidDistance == 0 || abs(newDistance - lastValidDistance) > 2) {
+                distance = newDistance;
+                lastValidDistance = newDistance;
+            }
+        } else {
+            // Use raw data directly
+            distance = newDistance;
+            lastValidDistance = newDistance;
+        }
 
         // Store the data point
         dataPoints.append({distance, timeInMilliseconds});
@@ -286,6 +306,7 @@ void MainWindow::parseData(const QString &data) {
         timeInput->setTime(QTime(0, minutes, seconds, milliseconds));
     }
 }
+
 void MainWindow::stopReading() {
     if (serialPort && serialPort->isOpen()) {
         serialPort->close();

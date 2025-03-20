@@ -81,6 +81,10 @@ private:
     void startReading();
     void stopReading();
     void parseData(const QString &data);
+
+    QCheckBox *rawDataToggle{};
+    bool useRawData = false;
+    int lastValidDistance = 0;
 };
 
 #endif // MAINWINDOW_H
