@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icons/EMPE.png</file>
+        <file>icons/EMPE.ico</file>
+        <file>icons/EMPE.icns</file>
+    </qresource>
+</RCC>
