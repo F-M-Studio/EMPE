@@ -283,7 +283,7 @@ void MainWindow::parseData(const QString &data) {
         const int newDistance = distanceStr.toInt();
         timeInMilliseconds = timeStr.toInt();
         minutes = timeInMilliseconds / 60000;
-        seconds = (timeInMilliseconds % 60000) / 1000;
+        seconds = timeInMilliseconds % 60000 / 1000;
         milliseconds = timeInMilliseconds % 1000;
 
         // Apply smoothing logic if not using raw data
