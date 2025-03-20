@@ -33,39 +33,46 @@ target_link_libraries(lidar
         Qt6::Charts
 )
 
-# Windows platform-specific settings
-if(WIN32 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
-    set(DEBUG_SUFFIX)
-    if(MSVC AND CMAKE_BUILD_TYPE MATCHES "Debug")
+# Add deployment
+include(GNUInstallDirs)
+if(WIN32)
+    set(DEBUG_SUFFIX "")
+    if(CMAKE_BUILD_TYPE MATCHES "Debug")
         set(DEBUG_SUFFIX "d")
     endif()
-    set(QT_INSTALL_PATH "${CMAKE_PREFIX_PATH}")
-    if(NOT EXISTS "${QT_INSTALL_PATH}/bin")
-        set(QT_INSTALL_PATH "${QT_INSTALL_PATH}/..")
-        if(NOT EXISTS "${QT_INSTALL_PATH}/bin")
-            set(QT_INSTALL_PATH "${QT_INSTALL_PATH}/..")
-        endif()
-    endif()
-    if(EXISTS "${QT_INSTALL_PATH}/plugins/platforms/qwindows${DEBUG_SUFFIX}.dll")
-        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E make_directory
-                "$<TARGET_FILE_DIR:${PROJECT_NAME}>/plugins/platforms/")
-        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy
-                "${QT_INSTALL_PATH}/plugins/platforms/qwindows${DEBUG_SUFFIX}.dll"
-                "$<TARGET_FILE_DIR:${PROJECT_NAME}>/plugins/platforms/")
-    endif()
-    foreach(QT_LIB Core Gui Widgets SerialPort Charts)
-        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy
-                "${QT_INSTALL_PATH}/bin/Qt6${QT_LIB}${DEBUG_SUFFIX}.dll"
-                "$<TARGET_FILE_DIR:${PROJECT_NAME}>")
-    endforeach(QT_LIB)
-
-    # Add Windows resource file for icon
     set(WINDOWS_ICON_RC ${CMAKE_CURRENT_BINARY_DIR}/app_icon.rc)
     file(WRITE ${WINDOWS_ICON_RC} "IDI_ICON1 ICON \"${CMAKE_CURRENT_SOURCE_DIR}/icons/EMPE.ico\"")
     target_sources(lidar PRIVATE ${WINDOWS_ICON_RC})
+    # Deploy Qt runtime files
+    if(TARGET Qt6::qmake)
+        get_target_property(_qmake_executable Qt6::qmake IMPORTED_LOCATION)
+        get_filename_component(_qt_bin_dir "${_qmake_executable}" DIRECTORY)
+
+        # Deploy Qt plugins
+        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+                COMMAND "${_qt_bin_dir}/windeployqt.exe"
+                --verbose 0
+                --no-compiler-runtime
+                --no-translations
+                --no-system-d3d-compiler
+                \"$<TARGET_FILE:${PROJECT_NAME}>\"
+                COMMENT "Deploying Qt dependencies..."
+        )
+    endif()
+
+    # Deploy MinGW runtime DLLs
+    set(MINGW_BIN_PATH "C:/Qt/Tools/mingw1120_64/bin")
+    foreach(MINGW_DLL
+            libgcc_s_seh-1.dll
+            libstdc++-6.dll
+            libwinpthread-1.dll)
+        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${MINGW_BIN_PATH}/${MINGW_DLL}"
+                "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+                COMMENT "Copying ${MINGW_DLL}..."
+        )
+    endforeach()
 endif()
 
 # macOS platform-specific settings

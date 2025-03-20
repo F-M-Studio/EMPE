@@ -55,22 +55,10 @@ void MainWindow::createMenu() {
     mainMenu->addAction(startMeasurementAction);
     mainMenu->addAction(saveDataAction);
 
-    connect(portSettingsAction, &QAction::triggered, this, [this]() {
-        portSettings->exec();
-    });
-
-    connect(graphAction, &QAction::triggered, this, [this]() {
-        auto *graphWindow = new GraphWindow(this);
-        graphWindow->show();
-    });
-
-    connect(startMeasurementAction, &QAction::triggered, this, []() {
-        qDebug("Start measurement triggered!");
-    });
-
-    connect(saveDataAction, &QAction::triggered, this, []() {
-        qDebug("Save data to file triggered!");
-    });
+    connect(portSettingsAction, &QAction::triggered, this, &MainWindow::openPortSettings);
+    connect(graphAction, &QAction::triggered, this, &MainWindow::openGraphWindow);
+    connect(startMeasurementAction, &QAction::triggered, this, &MainWindow::handleStartStopButton);
+    connect(saveDataAction, &QAction::triggered, this, &MainWindow::saveDataToFile);
 }
 
 void MainWindow::createControls() {
@@ -88,18 +76,66 @@ void MainWindow::createControls() {
 
     mainLayout->addLayout(buttonLayout);
 
-    connect(portSettingsBtn, &QPushButton::clicked, this, [this]() {
-        portSettings->exec();
-    });
-
-    connect(showGraphBtn, &QPushButton::clicked, this, [this]() {
-        auto *graphWindow = new GraphWindow(this);
-        graphWindow->show();
-    });
-
+    // Connect buttons to the same functions as menu items
+    connect(portSettingsBtn, &QPushButton::clicked, this, &MainWindow::openPortSettings);
+    connect(showGraphBtn, &QPushButton::clicked, this, &MainWindow::openGraphWindow);
     connect(stopBtn, &QPushButton::clicked, this, &MainWindow::handleStartStopButton);
+    connect(saveDataBtn, &QPushButton::clicked, this, &MainWindow::saveDataToFile);
 
-    connect(saveDataBtn, &QPushButton::clicked, this, [this]() {
+    // Rest of your existing controls setup...
+    auto *controlsLayout = new QGridLayout();
+
+    auto *distanceLabel = new QLabel("Distance:");
+    distanceInput = new QLineEdit("00");
+    distanceInput->setReadOnly(true);  // Make the distance label non-editable
+    auto *timeLabel = new QLabel("Time:");
+    timeInput = new QTimeEdit();
+    timeInput->setDisplayFormat("mm:ss.zzz");  // Set the display format to include milliseconds
+    timeInput->setReadOnly(true);  // Make the time label non-editable
+
+    controlsLayout->addWidget(distanceLabel, 0, 0);
+    controlsLayout->addWidget(distanceInput, 0, 1);
+    controlsLayout->addWidget(timeLabel, 1, 0);
+    controlsLayout->addWidget(timeInput, 1, 1);
+
+    mainLayout->addLayout(controlsLayout);
+
+    // Create and add the "Always on Top" checkbox
+    alwaysOnTopCheckbox = new QCheckBox("Always on Top", this);
+    mainLayout->addWidget(alwaysOnTopCheckbox);
+
+    // Connect the checkbox state change to window flag update
+
+    connect(alwaysOnTopCheckbox, &QCheckBox::checkStateChanged, this, [this](int state) {
+        Qt::WindowFlags flags = windowFlags();
+        if (state == Qt::Checked) {
+            flags |= Qt::WindowStaysOnTopHint;
+        } else {
+            flags &= ~Qt::WindowStaysOnTopHint;
+        }
+        setWindowFlags(flags);
+        show(); // Need to show the window again after changing flags
+    });
+
+    rawDataToggle = new QCheckBox("Get Raw Data", this);
+    rawDataToggle->setChecked(false); // Default is smoothed data
+    mainLayout->addWidget(rawDataToggle);
+
+    connect(rawDataToggle, &QCheckBox::toggled, this, [this](bool checked) {
+        useRawData = checked;
+    });
+}
+
+void MainWindow::openPortSettings() const {
+    portSettings->exec();
+}
+
+void MainWindow::openGraphWindow() {
+    auto *graphWindow = new GraphWindow(this);
+    graphWindow->show();
+}
+
+void MainWindow::saveDataToFile() {
     QString fileName = QFileDialog::getSaveFileName(this,
         tr("Save Data"), "",
         tr("CSV Files (*.csv)"));
@@ -172,52 +208,7 @@ void MainWindow::createControls() {
     QMessageBox::information(this, tr("Success"),
         tr("Data has been saved to %1")
         .arg(QDir::toNativeSeparators(fileName)));
-    });
-
-    auto *controlsLayout = new QGridLayout();
-
-    auto *distanceLabel = new QLabel("Distance:");
-    distanceInput = new QLineEdit("00");
-    distanceInput->setReadOnly(true);  // Make the distance label non-editable
-    auto *timeLabel = new QLabel("Time:");
-    timeInput = new QTimeEdit();
-    timeInput->setDisplayFormat("mm:ss.zzz");  // Set the display format to include milliseconds
-    timeInput->setReadOnly(true);  // Make the time label non-editable
-
-    controlsLayout->addWidget(distanceLabel, 0, 0);
-    controlsLayout->addWidget(distanceInput, 0, 1);
-    controlsLayout->addWidget(timeLabel, 1, 0);
-    controlsLayout->addWidget(timeInput, 1, 1);
-
-    mainLayout->addLayout(controlsLayout);
-
-    // Create and add the "Always on Top" checkbox
-    alwaysOnTopCheckbox = new QCheckBox("Always on Top", this);
-    mainLayout->addWidget(alwaysOnTopCheckbox);
-
-    // Connect the checkbox state change to window flag update
-
-    connect(alwaysOnTopCheckbox, &QCheckBox::checkStateChanged, this, [this](int state) {
-        Qt::WindowFlags flags = windowFlags();
-        if (state == Qt::Checked) {
-            flags |= Qt::WindowStaysOnTopHint;
-        } else {
-            flags &= ~Qt::WindowStaysOnTopHint;
-        }
-        setWindowFlags(flags);
-        show(); // Need to show the window again after changing flags
-    });
-
-    rawDataToggle = new QCheckBox("Get Raw Data", this);
-    rawDataToggle->setChecked(false); // Default is smoothed data
-    mainLayout->addWidget(rawDataToggle);
-
-    connect(rawDataToggle, &QCheckBox::toggled, this, [this](bool checked) {
-        useRawData = checked;
-    });
 }
-
-
 
 void MainWindow::handleStartStopButton() {
     if (isReading) {

@@ -34,6 +34,9 @@ protected:
 
 private slots:
     void handleStartStopButton();
+    void openPortSettings() const;
+    void openGraphWindow();
+    void saveDataToFile();
 
 private:
     struct DataPoint {
