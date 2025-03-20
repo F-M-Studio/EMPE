@@ -115,6 +115,34 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     pointsLimitSlider->setRange(10, 10000);
     pointsLimitSlider->setValue(100);
 
+    // Create smoothing controls (add after the other controls)
+    smoothingToggle = new QCheckBox("Smooth Graph");
+    smoothingToggle->setChecked(false);
+    smoothingLevelLabel = new QLabel("Smoothing:");
+    smoothingLevelSlider = new QSlider(Qt::Horizontal);
+    smoothingLevelEdit = new QLineEdit("5");
+    smoothingLevelEdit->setAlignment(Qt::AlignRight);
+    smoothingLevelEdit->setFixedWidth(50);
+    smoothingLevelEdit->setValidator(new QIntValidator(1, 10, this));
+
+    smoothingLevelSlider->setRange(1, 10);
+    smoothingLevelSlider->setValue(5);
+    smoothingLevelSlider->setEnabled(false);
+    smoothingLevelLabel->setEnabled(false);
+    smoothingLevelEdit->setEnabled(false);
+
+    // Create the widget for smoothing controls
+    auto* smoothingWidget = new QWidget();
+    auto* smoothingLayout = new QHBoxLayout(smoothingWidget);
+    smoothingLayout->addWidget(smoothingToggle);
+    smoothingLayout->addWidget(smoothingLevelLabel);
+    smoothingLayout->addWidget(smoothingLevelSlider);
+    smoothingLayout->addWidget(smoothingLevelEdit);
+    smoothingWidget->setLayout(smoothingLayout);
+
+    // Initialize the splineSeries but don't add it to the chart yet
+    splineSeries = new QSplineSeries();
+
     // Create widgets for sliders
     auto* recordingSliderWidget = new QWidget();
     auto* recordingLayout = new QHBoxLayout(recordingSliderWidget);
@@ -151,18 +179,18 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     updateTimer = new QTimer(this);
     connect(updateTimer, &QTimer::timeout, this, &GraphWindow::updateGraph);
 
-    connect(recordingSlider, &QSlider::valueChanged, this, [this](int value) {
+    connect(recordingSlider, &QSlider::valueChanged, this, [this](const int value) {
         recordingEdit->setText(QString::number(value));
         updateTimer->setInterval(value);
     });
 
-    connect(recordingEdit, &QLineEdit::editingFinished, this, [this]() {
+    connect(recordingEdit, &QLineEdit::editingFinished, this, [this] {
         int value = recordingEdit->text().toInt();
         recordingSlider->setValue(value);
         updateTimer->setInterval(value);
     });
 
-    connect(yAxisToggle, &QCheckBox::toggled, this, [this](bool checked) {
+    connect(yAxisToggle, &QCheckBox::toggled, this, [this](const bool checked) {
         yAxisSlider->setEnabled(checked);
         yAxisTitleLabel->setEnabled(checked);
         yAxisEdit->setEnabled(checked);
@@ -174,7 +202,7 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
         }
     });
 
-    connect(yAxisSlider, &QSlider::valueChanged, this, [this](int value) {
+    connect(yAxisSlider, &QSlider::valueChanged, this, [this](const int value) {
         yAxisEdit->setText(QString::number(value));
         if (manualYAxisControl) {
             axisY->setRange(-1, value + 1);
@@ -189,29 +217,147 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
         }
     });
 
-    connect(autoRemoveToggle, &QCheckBox::toggled, this, [this](bool checked) {
+    connect(autoRemoveToggle, &QCheckBox::toggled, this, [this](const bool checked) {
         pointsLimitSlider->setEnabled(checked);
         pointsLimitLabel->setEnabled(checked);
         pointsLimitEdit->setEnabled(checked);
         autoRemovePoints = checked;
     });
 
-    connect(pointsLimitSlider, &QSlider::valueChanged, this, [this](int value) {
+    connect(pointsLimitSlider, &QSlider::valueChanged, this, [this](const int value) {
         pointsLimitEdit->setText(QString::number(value));
         pointsLimit = value;
     });
 
-    connect(pointsLimitEdit, &QLineEdit::editingFinished, this, [this]() {
-        int value = pointsLimitEdit->text().toInt();
+    connect(pointsLimitEdit, &QLineEdit::editingFinished, this, [this] {
+        const int value = pointsLimitEdit->text().toInt();
         pointsLimitSlider->setValue(value);
         pointsLimit = value;
+    });
+
+    mainLayout->addWidget(smoothingWidget);
+
+    // Modify the smoothingToggle connection
+    connect(smoothingToggle, &QCheckBox::toggled, this, [this](bool checked) {
+        useSpline = checked;
+        smoothingLevelSlider->setEnabled(checked);
+        smoothingLevelLabel->setEnabled(checked);
+        smoothingLevelEdit->setEnabled(checked);
+
+        if (checked) {
+            // Apply smoothing to existing points
+            applySmoothing();
+
+            // Show the smoothed series
+            chart->removeSeries(series);
+            chart->addSeries(splineSeries);
+            splineSeries->attachAxis(axisX);
+            splineSeries->attachAxis(axisY);
+        } else {
+            // Switch back to original series
+            chart->removeSeries(splineSeries);
+            chart->addSeries(series);
+            series->attachAxis(axisX);
+            series->attachAxis(axisY);
+        }
+    });
+
+    // Update the smoothing level slider connection
+    connect(smoothingLevelSlider, &QSlider::valueChanged, this, [this](int value) {
+        smoothingLevelEdit->setText(QString::number(value));
+        if (useSpline) {
+            applySmoothing();
+        }
+    });
+
+    // Connect smoothing level edit
+    connect(smoothingLevelEdit, &QLineEdit::editingFinished, this, [this] {
+        int value = smoothingLevelEdit->text().toInt();
+        smoothingLevelSlider->setValue(value);
     });
 
     updateTimer->start(recordingSlider->value());
 }
 
+/* Barely working auto random gen data
+void GraphWindow::keyPressEvent(QKeyEvent *event) {
+    if (event->key() == Qt::Key_F5) {
+        Gen = !Gen;
+
+        if (Gen) {
+            mainWindow->Reading = true;
+            // Start generating random data
+            auto *genTimer = new QTimer(this);
+            connect(genTimer, &QTimer::timeout, this, [this, genTimer]() {
+                if (!Gen) {
+                    genTimer->stop();
+                    genTimer->deleteLater();
+                    return;
+                }
+
+                // Generate random distance and incrementing time
+                static int timeValue = 0;
+                timeValue += 10;
+                mainWindow->distance = rand() % 50;
+                mainWindow->timeInMilliseconds = timeValue;
+
+                // Force an immediate graph update
+                updateGraph();
+                qDebug() << "GraphWindow::keyPressEvent";
+                qDebug() << "timeValue: " << mainWindow->timeInMilliseconds;
+                qDebug() << "distance: " << mainWindow->distance;
+            });
+            genTimer->start(100);
+        }
+    } else {
+        mainWindow->Reading = false;
+        QMainWindow::keyPressEvent(event);
+    }
+}
+*/
+
+void GraphWindow::applySmoothing() const {
+    if (!useSpline || series->count() < 2) {
+        return;
+    }
+
+    // Get window size from smoothing level (1-25)
+    int windowSize = 1 + (smoothingLevelSlider->value()*10 / 4);
+    if (windowSize % 2 == 0) windowSize++; // Make sure it's odd
+
+    // Create a copy of original points
+    QVector<QPointF> originalPoints;
+    for (int i = 0; i < series->count(); ++i) {
+        originalPoints.append(series->at(i));
+    }
+
+    // Clear the spline series
+    splineSeries->clear();
+
+    // Apply smoothing to ALL points
+    const int halfWindow = windowSize / 2;
+    for (int i = 0; i < originalPoints.size(); ++i) {
+        qreal sumX = 0;
+        qreal sumY = 0;
+        int count = 0;
+
+        // Use available points within the window
+        for (int j = qMax(0, i - halfWindow); j <= qMin(i + halfWindow, originalPoints.size() - 1); ++j) {
+            sumX += originalPoints[j].x();
+            sumY += originalPoints[j].y();
+            count++;
+        }
+
+        // Add the smoothed point
+        if (count > 0) {
+            splineSeries->append(sumX / count, sumY / count);
+        }
+    }
+}
+
 void GraphWindow::clearGraph() const {
     series->clear();
+    splineSeries->clear();
 }
 
 GraphWindow::~GraphWindow() {
@@ -224,6 +370,7 @@ void GraphWindow::resizeEvent(QResizeEvent* event) {
 
 void GraphWindow::updateGraph() const {
     if (mainWindow->Reading) {
+        // Always add to the original series
         series->append(mainWindow->timeInMilliseconds, mainWindow->distance);
 
         if (autoRemovePoints) {
@@ -232,15 +379,25 @@ void GraphWindow::updateGraph() const {
             }
         }
 
-        if (series->count() > 0) {
-            qreal xMin = series->at(0).x();
-            qreal xMax = mainWindow->timeInMilliseconds;
+        // Apply smoothing if enabled
+        if (useSpline) {
+            this->applySmoothing();
+        }
+
+        // Calculate min/max values for axes
+        const QXYSeries *activeSeries = useSpline ?
+            static_cast<QXYSeries*>(splineSeries) :
+            static_cast<QXYSeries*>(series);
+
+        if (activeSeries->count() > 0) {
+            const qreal xMin = activeSeries->at(0).x();
+            const qreal xMax = mainWindow->timeInMilliseconds;
             qreal yMin = mainWindow->distance;
             qreal yMax = mainWindow->distance;
 
-            for (int i = 0; i < series->count(); ++i) {
-                yMin = qMin(yMin, series->at(i).y());
-                yMax = qMax(yMax, series->at(i).y());
+            for (int i = 0; i < activeSeries->count(); ++i) {
+                yMin = qMin(yMin, activeSeries->at(i).y());
+                yMax = qMax(yMax, activeSeries->at(i).y());
             }
 
             axisX->setRange(xMin, xMax);
