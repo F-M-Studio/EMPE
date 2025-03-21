@@ -1,7 +1,5 @@
 .DS_Store
-/cmake-build-debug/
-/cmake-build-release/
-/.github/
-cmake-build-debug/.ninja_deps
-/cmake-build-debug
-.DS_Store
+cmake-build-debug
+cmake-build-release
+.github
+.idea
