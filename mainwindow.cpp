@@ -214,16 +214,44 @@ void MainWindow::handleStartStopButton() {
     if (isReading) {
         stopReading();
         stopBtn->setText("START");
+        isReading = false;
     } else {
-        startReading();
-        stopBtn->setText("STOP");
+        // Try to start reading
+        if (startReading()) {
+            stopBtn->setText("STOP");
+            isReading = true;
+        }
     }
-    isReading = !isReading;
 }
 
 
-void MainWindow::startReading() {
+bool MainWindow::startReading() {
     QString portName = portSettings->getPortName();
+
+    // Pre-validate the port name before attempting to open
+    QList<QString> likelyInvalidPorts = {
+        "wlan-debug", "Bluetooth", "iPhone", "iPad", "SOC", "debug"
+    };
+
+    bool isLikelyInvalid = false;
+    for (const QString& pattern : likelyInvalidPorts) {
+        if (portName.contains(pattern, Qt::CaseInsensitive)) {
+            isLikelyInvalid = true;
+            break;
+        }
+    }
+
+    if (isLikelyInvalid) {
+        QMessageBox::warning(this, "Inappropriate Device",
+            "The selected port \"" + portName + "\" does not appear to be a proper serial device.\n\n"
+            "This application requires a standard serial port, typically named:\n"
+            "• cu.usbserial-*\n"
+            "• cu.usbmodem*\n"
+            "• cu.SLAB_*\n\n"
+            "Please select a different COM port in Port Settings.");
+        return false;
+    }
+
     int baudRate = portSettings->getBaudRate();
     int dataBits = portSettings->getDataBits();
     int stopBits = portSettings->getStopBits();
@@ -238,6 +266,7 @@ void MainWindow::startReading() {
              << "Parity:" << parity
              << "FlowControl:" << flowControl;
 
+    // Create the serial port object
     serialPort = new QSerialPort(this);
     serialPort->setPortName(portName);
     serialPort->setBaudRate(baudRate);
@@ -246,23 +275,64 @@ void MainWindow::startReading() {
     serialPort->setParity(static_cast<QSerialPort::Parity>(parity));
     serialPort->setFlowControl(static_cast<QSerialPort::FlowControl>(flowControl));
 
+    // Try to open the port
     if (!serialPort->open(QIODevice::ReadOnly)) {
-        qDebug() << "Failed to open port" << portName << "Error:" << serialPort->errorString();
+        QMessageBox::critical(this, "Port Error",
+            "Could not open port " + portName + ".\n\n"
+            "This may be because:\n"
+            "• The port is already in use by another application\n"
+            "• You don't have sufficient permissions\n\n"
+            "Error: " + serialPort->errorString());
         delete serialPort;
         serialPort = nullptr;
-        return;
+        return false;
     }
 
-    qDebug() << "Started reading from port" << portName;
+    // Reset validation state
+    deviceValidated = false;
 
+    // Set up validation timer
+    validationTimer = new QTimer(this);
+    validationTimer->setSingleShot(true);
+    validationTimer->start(VALIDATION_TIMEOUT);
 
-
-    connect(serialPort, &QSerialPort::readyRead, this, [this]() {
-        Reading = true;
-        QByteArray data = serialPort->readAll();
-        dataDisplay->append(data);
-        parseData(QString::fromUtf8(data));
+    // Connect validation timeout handler
+    connect(validationTimer, &QTimer::timeout, this, [this]() {
+        QMessageBox::warning(this, "Incorrect Device",
+            "No valid data received from the device.\n\n"
+            "Expected data format: YY(distance)T(time)E\n\n"
+            "Please select a different COM port in Port Settings.");
+        stopReading();
+        isReading = false;
+        stopBtn->setText("START");
     });
+
+    // Connect read signal
+    connect(serialPort, &QSerialPort::readyRead, this, [this]() {
+        QByteArray data = serialPort->readAll();
+        dataDisplay->append(QString::fromUtf8(data));
+
+        // Check if data matches our expected pattern
+        const QRegularExpression regex("YY(\\d+)T(\\d+)E");
+        QRegularExpressionMatch match = regex.match(QString::fromUtf8(data));
+
+        if (match.hasMatch() && !deviceValidated) {
+            // Valid data received - device is validated
+            deviceValidated = true;
+            if (validationTimer) {
+                validationTimer->stop();
+                delete validationTimer;
+                validationTimer = nullptr;
+            }
+            Reading = true;
+        }
+
+        if (deviceValidated) {
+            parseData(QString::fromUtf8(data));
+        }
+    });
+
+    return true;
 }
 
 void MainWindow::parseData(const QString &data) {
@@ -299,6 +369,12 @@ void MainWindow::parseData(const QString &data) {
 }
 
 void MainWindow::stopReading() {
+    if (validationTimer) {
+        validationTimer->stop();
+        delete validationTimer;
+        validationTimer = nullptr;
+    }
+
     if (serialPort && serialPort->isOpen()) {
         serialPort->close();
         qDebug() << "Stopped reading from port";
@@ -306,7 +382,10 @@ void MainWindow::stopReading() {
         delete serialPort;
         serialPort = nullptr;
     }
+
+    deviceValidated = false;
 }
+
 
 void MainWindow::keyPressEvent(QKeyEvent *event) {
     if (event->key() == Qt::Key_F7) {

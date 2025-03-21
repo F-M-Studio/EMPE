@@ -16,22 +16,21 @@ class GraphWindow : public QMainWindow {
     Q_OBJECT
 
 public:
-    GraphWindow(MainWindow *mainWindow, QWidget *parent = nullptr);
+    explicit GraphWindow(MainWindow *mainWindow, QWidget *parent = nullptr);
 
    // void keyPressEvent(QKeyEvent *event) override;
 
-    ~GraphWindow();
-    void setUpdateInterval(int interval);
-    QChart* getChart() const { return chart; }
+    ~GraphWindow() override;
+    [[nodiscard]] QChart* getChart() const { return chart; }
 
 
 protected:
     void resizeEvent(QResizeEvent* event) override;
 
 private slots:
-    void updateGraph() const;
+    void updateGraph();
 
-    void clearGraph() const;
+    void clearGraph();
 
 private:
     bool Gen = false;
@@ -75,6 +74,10 @@ private:
     QLabel *smoothingLevelLabel;
     bool useSpline = false;
     void applySmoothing() const;
+
+    QCheckBox *timeAxisToggle;
+    bool useAbsoluteTime = true;
+    qint64 initialTime = 0;
 };
 
 #endif // GRAPHWINDOW_H

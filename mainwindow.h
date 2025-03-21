@@ -39,6 +39,10 @@ private slots:
     void saveDataToFile();
 
 private:
+    QTimer *validationTimer{};
+    bool deviceValidated = false;
+    const int VALIDATION_TIMEOUT = 500;
+
     struct DataPoint {
         int distance;
         int timeInMilliseconds;
@@ -81,7 +85,7 @@ private:
 
     void createMenu();
     void createControls();
-    void startReading();
+    bool startReading();
     void stopReading();
     void parseData(const QString &data);
 

@@ -217,7 +217,7 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
         }
     });
 
-    connect(autoRemoveToggle, &QCheckBox::toggled, this, [this](const bool checked) {
+    connect(autoRemoveToggle, &QCheckBox::toggled, this, [this](bool checked) {
         pointsLimitSlider->setEnabled(checked);
         pointsLimitLabel->setEnabled(checked);
         pointsLimitEdit->setEnabled(checked);
@@ -274,6 +274,30 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     connect(smoothingLevelEdit, &QLineEdit::editingFinished, this, [this] {
         int value = smoothingLevelEdit->text().toInt();
         smoothingLevelSlider->setValue(value);
+    });
+
+    timeAxisToggle = new QCheckBox("Use Relative Time");
+    timeAxisToggle->setChecked(false);
+
+
+    auto* timeAxisWidget = new QWidget();
+    auto* timeAxisLayout = new QHBoxLayout(timeAxisWidget);
+    timeAxisLayout->addWidget(timeAxisToggle);
+    timeAxisWidget->setLayout(timeAxisLayout);
+
+    mainLayout->addWidget(timeAxisWidget);
+
+    connect(timeAxisToggle, &QCheckBox::toggled, this, [this, mainWindow](bool checked) {
+    useAbsoluteTime = !checked; // Toggle is for "Relative Time" so invert the logic
+
+    // If switching to relative time, set initial time
+    if (!useAbsoluteTime && mainWindow->Reading) {
+        initialTime = mainWindow->timeInMilliseconds;
+    }
+
+    // Clear and redraw the chart with new time axis setting
+    series->clear();
+    splineSeries->clear();
     });
 
     updateTimer->start(recordingSlider->value());
@@ -355,10 +379,15 @@ void GraphWindow::applySmoothing() const {
     }
 }
 
-void GraphWindow::clearGraph() const {
+void GraphWindow::clearGraph() {
     series->clear();
     splineSeries->clear();
+
+    if (!useAbsoluteTime && mainWindow->Reading) {
+        initialTime = mainWindow->timeInMilliseconds;
+    }
 }
+
 
 GraphWindow::~GraphWindow() {
     delete ui;
@@ -368,11 +397,23 @@ void GraphWindow::resizeEvent(QResizeEvent* event) {
     QMainWindow::resizeEvent(event);
 }
 
-void GraphWindow::updateGraph() const {
+void GraphWindow::updateGraph() {
     if (mainWindow->Reading) {
-        // Always add to the original series
-        series->append(mainWindow->timeInMilliseconds, mainWindow->distance);
+        // Calculate X coordinate based on mode
+        qreal xValue = useAbsoluteTime ?
+            mainWindow->timeInMilliseconds :
+            mainWindow->timeInMilliseconds - initialTime;
 
+        // If this is first point in relative mode, set initial time
+        if (!useAbsoluteTime && series->count() == 0) {
+            initialTime = mainWindow->timeInMilliseconds;
+            xValue = 0;
+        }
+
+        // Always add to the original series
+        series->append(xValue, mainWindow->distance);
+
+        // Rest of the function remains unchanged
         if (autoRemovePoints) {
             while (series->count() > pointsLimit) {
                 series->remove(0);
@@ -391,7 +432,7 @@ void GraphWindow::updateGraph() const {
 
         if (activeSeries->count() > 0) {
             const qreal xMin = activeSeries->at(0).x();
-            const qreal xMax = mainWindow->timeInMilliseconds;
+            const qreal xMax = xValue;
             qreal yMin = mainWindow->distance;
             qreal yMax = mainWindow->distance;
 
