@@ -4,3 +4,4 @@
 /.github/
 cmake-build-debug/.ninja_deps
 /cmake-build-debug
+.DS_Store
