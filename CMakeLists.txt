@@ -12,18 +12,36 @@ find_package(Qt6 COMPONENTS
         Widgets
         SerialPort
         Charts
+        LinguistTools
         REQUIRED)
 
-add_executable(lidar main.cpp
-        mainwindow.h
-        mainwindow.cpp
-        portsettings.cpp
-        portsettings.h
-        graphwindow.cpp
-        graphwindow.h
-        graphwindow.ui
-        resources.qrc
-)
+if(WIN32)
+    add_executable(lidar WIN32 main.cpp
+            mainwindow.h
+            mainwindow.cpp
+            portsettings.cpp
+            portsettings.h
+            graphwindow.cpp
+            graphwindow.h
+            graphwindow.ui
+            resources.qrc
+            translations.qrc
+    )
+endif ()
+
+if (UNIX OR APPLE)
+    add_executable(lidar main.cpp
+            mainwindow.h
+            mainwindow.cpp
+            portsettings.cpp
+            portsettings.h
+            graphwindow.cpp
+            graphwindow.h
+            graphwindow.ui
+            resources.qrc
+            translations.qrc
+    )
+endif ()
 
 target_link_libraries(lidar
         Qt6::Core
