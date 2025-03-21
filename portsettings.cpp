@@ -7,62 +7,62 @@ PortSettings::PortSettings(QWidget *parent)
 }
 
 void PortSettings::setupUI() {
-    setWindowTitle("Setup");
+    setWindowTitle(tr("Setup"));
 
     auto *layout = new QGridLayout(this);
 
     // Labels
-    layout->addWidget(new QLabel("<b>Settings</b>"), 0, 0, 1, 2);
+    layout->addWidget(new QLabel(tr("<b>Settings</b>")), 0, 0, 1, 2);
 
     // Port Selection
-    layout->addWidget(new QLabel("Port"), 1, 0);
+    layout->addWidget(new QLabel(tr("Port")), 1, 0);
     portBox = new QComboBox();
     refreshPorts();
     layout->addWidget(portBox, 1, 1);
 
     // Refresh Button
-    refreshButton = new QPushButton("Refresh");
+    refreshButton = new QPushButton(tr("Refresh"));
     layout->addWidget(refreshButton, 1, 2);
     connect(refreshButton, &QPushButton::clicked, this, &PortSettings::refreshPorts);
 
     // Baud Rate
-    layout->addWidget(new QLabel("Baud rate"), 2, 0);
+    layout->addWidget(new QLabel(tr("Baud rate")), 2, 0);
     baudRateBox = new QComboBox();
     baudRateBox->addItems({"9600", "19200", "38400", "57600", "115200"});
     baudRateBox->setCurrentText("115200");
     layout->addWidget(baudRateBox, 2, 1);
 
     // Data Bits
-    layout->addWidget(new QLabel("Data bits"), 3, 0);
+    layout->addWidget(new QLabel(tr("Data bits")), 3, 0);
     dataBitsBox = new QComboBox();
     dataBitsBox->addItems({"6", "7", "8"});
     dataBitsBox->setCurrentText("8");
     layout->addWidget(dataBitsBox, 3, 1);
 
     // Stop Bits
-    layout->addWidget(new QLabel("Stop bits"), 4, 0);
+    layout->addWidget(new QLabel(tr("Stop bits")), 4, 0);
     stopBitsBox = new QComboBox();
     stopBitsBox->addItems({"1", "1.5", "2"});
     stopBitsBox->setCurrentText("1");
     layout->addWidget(stopBitsBox, 4, 1);
 
     // Parity
-    layout->addWidget(new QLabel("Parity"), 5, 0);
+    layout->addWidget(new QLabel(tr("Parity")), 5, 0);
     parityBox = new QComboBox();
-    parityBox->addItems({"None", "Even", "Odd", "Mark", "Space"});
+    parityBox->addItems({tr("None"), tr("Even"), tr("Odd"), tr("Mark"), tr("Space")});
     parityBox->setCurrentText("None");
     layout->addWidget(parityBox, 5, 1);
 
     // Flow Control
-    layout->addWidget(new QLabel("Flow control"), 6, 0);
+    layout->addWidget(new QLabel(tr("Flow control")), 6, 0);
     flowControlBox = new QComboBox();
-    flowControlBox->addItems({"None", "Software", "Hardware"});
+    flowControlBox->addItems({tr("None"), tr("Software"), tr("Hardware")});
     flowControlBox->setCurrentText("Hardware");
     layout->addWidget(flowControlBox, 6, 1);
 
     // Buttons
-    okButton = new QPushButton("OK");
-    cancelButton = new QPushButton("Cancel");
+    okButton = new QPushButton(tr("OK"));
+    cancelButton = new QPushButton(tr("Cancel"));
 
     auto *buttonLayout = new QHBoxLayout();
     buttonLayout->addWidget(okButton);

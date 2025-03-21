@@ -23,7 +23,7 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     delete ui->frame->layout();
 
     // Create Clear Graph button
-    clearGraphBtn = new QPushButton("Clear Graph");
+    clearGraphBtn = new QPushButton(tr("Clear Graph"));
     clearGraphBtn->setFixedWidth(120);
     auto* clearBtnContainer = new QWidget();
     auto* clearBtnLayout = new QHBoxLayout(clearBtnContainer);
@@ -51,8 +51,8 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
 
     axisX = new QValueAxis();
     axisY = new QValueAxis();
-    axisX->setTitleText("Time (min:ms)");
-    axisY->setTitleText("Distance");
+    axisX->setTitleText(tr("Time (min:ms)"));
+    axisY->setTitleText(tr("Distance"));
     axisX->setRange(mainWindow->distance, mainWindow->distance + 1000);
     axisY->setRange(mainWindow->milliseconds, mainWindow->milliseconds + 100);
 
@@ -77,7 +77,7 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     chartView->setFrameStyle(QFrame::NoFrame);
 
     // Create recording slider components
-    recordingTitleLabel = new QLabel("Recording period [ms]:");
+    recordingTitleLabel = new QLabel(tr("Recording period [ms]:"));
     recordingSlider = new QSlider(Qt::Horizontal);
     recordingEdit = new QLineEdit("100");
     recordingEdit->setAlignment(Qt::AlignRight);
@@ -88,8 +88,8 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     recordingSlider->setValue(100);
 
     // Create Y-axis control components
-    yAxisToggle = new QCheckBox("Set Y");
-    yAxisTitleLabel = new QLabel("Y axis range:");
+    yAxisToggle = new QCheckBox(tr("Set Y"));
+    yAxisTitleLabel = new QLabel(tr("Y axis range:"));
     yAxisSlider = new QSlider(Qt::Horizontal);
     yAxisEdit = new QLineEdit("100");
     yAxisEdit->setAlignment(Qt::AlignRight);
@@ -103,9 +103,9 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     yAxisEdit->setEnabled(false);
 
     // Create auto-remove points control components
-    autoRemoveToggle = new QCheckBox("Auto-remove points");
+    autoRemoveToggle = new QCheckBox(tr("Auto-remove points"));
     autoRemoveToggle->setChecked(true);
-    pointsLimitLabel = new QLabel("Points limit:");
+    pointsLimitLabel = new QLabel(tr("Points limit:"));
     pointsLimitSlider = new QSlider(Qt::Horizontal);
     pointsLimitEdit = new QLineEdit("100");
     pointsLimitEdit->setAlignment(Qt::AlignRight);
@@ -116,9 +116,9 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     pointsLimitSlider->setValue(100);
 
     // Create smoothing controls (add after the other controls)
-    smoothingToggle = new QCheckBox("Smooth Graph");
+    smoothingToggle = new QCheckBox(tr("Smooth Graph"));
     smoothingToggle->setChecked(false);
-    smoothingLevelLabel = new QLabel("Smoothing:");
+    smoothingLevelLabel = new QLabel(tr("Smoothing:"));
     smoothingLevelSlider = new QSlider(Qt::Horizontal);
     smoothingLevelEdit = new QLineEdit("5");
     smoothingLevelEdit->setAlignment(Qt::AlignRight);
@@ -276,7 +276,7 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
         smoothingLevelSlider->setValue(value);
     });
 
-    timeAxisToggle = new QCheckBox("Use Relative Time");
+    timeAxisToggle = new QCheckBox(tr("Use Relative Time"));
     timeAxisToggle->setChecked(false);
 
 

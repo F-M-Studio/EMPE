@@ -59,6 +59,21 @@ void MainWindow::createMenu() {
     connect(graphAction, &QAction::triggered, this, &MainWindow::openGraphWindow);
     connect(startMeasurementAction, &QAction::triggered, this, &MainWindow::handleStartStopButton);
     connect(saveDataAction, &QAction::triggered, this, &MainWindow::saveDataToFile);
+
+    languageAction = new QAction("Language", this);
+    QMenu *languageMenu = new QMenu(this);
+    QAction *englishAction = new QAction("English", this);
+    QAction *polishAction = new QAction("Polski", this);
+    englishAction->setCheckable(true);
+    polishAction->setCheckable(true);
+    englishAction->setChecked(true);
+    languageMenu->addAction(englishAction);
+    languageMenu->addAction(polishAction);
+    languageAction->setMenu(languageMenu);
+    mainMenu->addAction(languageAction);
+
+    connect(englishAction, &QAction::triggered, this, [this]() { loadLanguage("en"); });
+    connect(polishAction, &QAction::triggered, this, [this]() { loadLanguage("pl"); });
 }
 
 void MainWindow::createControls() {
@@ -393,4 +408,49 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
     } else {
         QMainWindow::keyPressEvent(event);
     }
+}
+
+void MainWindow::loadLanguage(const QString &language) {
+    // Remove previous translator if it exists
+    if (translator) {
+        QApplication::removeTranslator(translator);
+        delete translator;
+        translator = nullptr;
+    }
+
+    if (language == "pl") {
+        translator = new QTranslator(this);
+        // Try both resource and file paths
+        bool loaded = translator->load(":/translations/lidar_pl.qm");
+        if (!loaded) {
+            // Try direct file path as fallback
+            loaded = translator->load("translations/lidar_pl.qm");
+        }
+
+        if (loaded) {
+            QApplication::installTranslator(translator);
+            qDebug() << "Polish translation loaded successfully";
+        } else {
+            qDebug() << "Failed to load Polish translation";
+        }
+    }
+
+    // Retranslate the UI
+    this->setWindowTitle(tr("EMPE"));
+    mainMenu->setTitle(tr("☰ Menu"));
+    portSettingsAction->setText(tr("Port settings"));
+    graphAction->setText(tr("Graph"));
+    startMeasurementAction->setText(tr("Start measurement"));
+    saveDataAction->setText(tr("Save data to file"));
+    languageAction->setText(tr("Language"));
+
+    // Buttons
+    portSettingsBtn->setText(tr("PORT settings"));
+    showGraphBtn->setText(tr("Show GRAPH"));
+    stopBtn->setText(isReading ? tr("STOP") : tr("START"));
+    saveDataBtn->setText(tr("SAVE data to file"));
+
+    // Other UI elements
+    alwaysOnTopCheckbox->setText(tr("Always on Top"));
+    rawDataToggle->setText(tr("Get Raw Data"));
 }
