@@ -1,7 +1,10 @@
 // mainwindow.cpp
 
 #include "mainwindow.h"
+#include "portsettings.h"
+#include "appmenu.h"
 #include "graphwindow.h"
+
 #include <QDebug>
 #include <QTimer>
 #include <QSerialPort>
@@ -23,7 +26,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), portSettings(new 
 
     mainLayout = new QVBoxLayout(centralWidget);
 
-    createMenu();
+    // Create menu using the new AppMenu class
+    appMenu = new AppMenu(this, this);
+    connect(appMenu, &AppMenu::portSettingsRequested, this, &MainWindow::openPortSettings);
+    connect(appMenu, &AppMenu::graphWindowRequested, this, &MainWindow::openGraphWindow);
+    connect(appMenu, &AppMenu::startStopRequested, this, &MainWindow::handleStartStopButton);
+    connect(appMenu, &AppMenu::saveDataRequested, this, &MainWindow::saveDataToFile);
+    connect(appMenu, &AppMenu::languageChanged, this, &MainWindow::loadLanguage);
+
     createControls();
 
     dataDisplay = new QTextEdit(this);
@@ -38,60 +48,13 @@ MainWindow::~MainWindow() {
     }
 }
 
-void MainWindow::createMenu() {
-    menuBar = new QMenuBar(this);
-    setMenuBar(menuBar);
-
-    mainMenu = new QMenu("☰ Menu", this);
-    menuBar->addMenu(mainMenu);
-
-    portSettingsAction = new QAction("Port settings", this);
-    graphAction = new QAction("Graph", this);
-    startMeasurementAction = new QAction("Start measurement", this);
-    saveDataAction = new QAction("Save data to file", this);
-
-    mainMenu->addAction(portSettingsAction);
-    mainMenu->addAction(graphAction);
-    mainMenu->addAction(startMeasurementAction);
-    mainMenu->addAction(saveDataAction);
-
-    connect(portSettingsAction, &QAction::triggered, this, &MainWindow::openPortSettings);
-    connect(graphAction, &QAction::triggered, this, &MainWindow::openGraphWindow);
-    connect(startMeasurementAction, &QAction::triggered, this, &MainWindow::handleStartStopButton);
-    connect(saveDataAction, &QAction::triggered, this, &MainWindow::saveDataToFile);
-
-    // In mainwindow.cpp, modify the createMenu() function where the language menu is set up:
-    languageAction = new QAction("Language", this);
-    QMenu *languageMenu = new QMenu(this);
-    QActionGroup *languageGroup = new QActionGroup(this); // Add this line
-    languageGroup->setExclusive(true); // Only one language can be selected
-
-    QAction *englishAction = new QAction("English", this);
-    QAction *polishAction = new QAction("Polski", this);
-    englishAction->setCheckable(true);
-    polishAction->setCheckable(true);
-    englishAction->setChecked(true);
-
-    // Add actions to group
-    languageGroup->addAction(englishAction);
-    languageGroup->addAction(polishAction);
-
-    languageMenu->addAction(englishAction);
-    languageMenu->addAction(polishAction);
-    languageAction->setMenu(languageMenu);
-    mainMenu->addAction(languageAction);
-
-    connect(englishAction, &QAction::triggered, this, [this]() { loadLanguage("en"); });
-    connect(polishAction, &QAction::triggered, this, [this]() { loadLanguage("pl"); });
-}
-
 void MainWindow::createControls() {
     auto *buttonLayout = new QHBoxLayout();
 
-    portSettingsBtn = new QPushButton("PORT settings");
-    showGraphBtn = new QPushButton("Show GRAPH");
-    stopBtn = new QPushButton("START");
-    saveDataBtn = new QPushButton("SAVE data to file");
+    portSettingsBtn = new QPushButton("Port settings");
+    showGraphBtn = new QPushButton("Show Graph");
+    stopBtn = new QPushButton("Start");
+    saveDataBtn = new QPushButton("Save data to file");
 
     buttonLayout->addWidget(portSettingsBtn);
     buttonLayout->addWidget(showGraphBtn);
@@ -111,11 +74,11 @@ void MainWindow::createControls() {
 
     auto *distanceLabel = new QLabel("Distance:");
     distanceInput = new QLineEdit("00");
-    distanceInput->setReadOnly(true);  // Make the distance label non-editable
+    distanceInput->setReadOnly(true); // Make the distance label non-editable
     auto *timeLabel = new QLabel("Time:");
     timeInput = new QTimeEdit();
-    timeInput->setDisplayFormat("mm:ss.zzz");  // Set the display format to include milliseconds
-    timeInput->setReadOnly(true);  // Make the time label non-editable
+    timeInput->setDisplayFormat("mm:ss.zzz"); // Set the display format to include milliseconds
+    timeInput->setReadOnly(true); // Make the time label non-editable
 
     controlsLayout->addWidget(distanceLabel, 0, 0);
     controlsLayout->addWidget(distanceInput, 0, 1);
@@ -151,6 +114,7 @@ void MainWindow::createControls() {
 }
 
 void MainWindow::openPortSettings() const {
+    portSettings->retranslateUi();
     portSettings->exec();
 }
 
@@ -160,9 +124,7 @@ void MainWindow::openGraphWindow() {
 }
 
 void MainWindow::saveDataToFile() {
-    QString fileName = QFileDialog::getSaveFileName(this,
-        tr("Save Data"), "",
-        tr("CSV Files (*.csv)"));
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Save Data"), "", tr("CSV Files (*.csv)"));
 
     // Add .csv extension if not present
     if (!fileName.endsWith(".csv", Qt::CaseInsensitive)) {
@@ -177,10 +139,11 @@ void MainWindow::saveDataToFile() {
     QFile file(fileName);
     if (file.exists()) {
         QMessageBox::StandardButton reply = QMessageBox::question(this,
-            tr("File exists"),
-            tr("The file %1 already exists.\nDo you want to replace it?")
-            .arg(QDir::toNativeSeparators(fileName)),
-            QMessageBox::Yes | QMessageBox::No);
+                                                                  tr("File exists"),
+                                                                  tr(
+                                                                      "The file %1 already exists.\nDo you want to replace it?")
+                                                                  .arg(QDir::toNativeSeparators(fileName)),
+                                                                  QMessageBox::Yes | QMessageBox::No);
 
         if (reply == QMessageBox::No) {
             return;
@@ -189,9 +152,9 @@ void MainWindow::saveDataToFile() {
 
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QMessageBox::warning(this, tr("Error"),
-            tr("Cannot write file %1:\n%2.")
-            .arg(QDir::toNativeSeparators(fileName),
-                file.errorString()));
+                             tr("Cannot write file %1:\n%2.")
+                             .arg(QDir::toNativeSeparators(fileName),
+                                  file.errorString()));
         return;
     }
 
@@ -205,7 +168,7 @@ void MainWindow::saveDataToFile() {
     QStringList lines = rawData.split('\n');
     QRegularExpression regex("YY(\\d+)T(\\d+)E");
 
-    for (const QString& line : lines) {
+    for (const QString &line: lines) {
         if (QRegularExpressionMatch match = regex.match(line); match.hasMatch()) {
             QString distance = match.captured(1);
             const int timeMs = match.captured(2).toInt();
@@ -217,32 +180,32 @@ void MainWindow::saveDataToFile() {
 
             // Format time as mm:ss
             QString timeFormatted = QString("%1:%2")
-                .arg(minutes, 2, 10, QChar('0'))
-                .arg(seconds, 2, 10, QChar('0'));
+                    .arg(minutes, 2, 10, QChar('0'))
+                    .arg(seconds, 2, 10, QChar('0'));
 
             out << QString("%1;%2;%3;%4\n")
-                .arg(distance, timeFormatted)
-                .arg(milliseconds)
-                .arg(timeMs);
+                    .arg(distance, timeFormatted)
+                    .arg(milliseconds)
+                    .arg(timeMs);
         }
     }
 
     file.close();
 
     QMessageBox::information(this, tr("Success"),
-        tr("Data has been saved to %1")
-        .arg(QDir::toNativeSeparators(fileName)));
+                             tr("Data has been saved to %1")
+                             .arg(QDir::toNativeSeparators(fileName)));
 }
 
 void MainWindow::handleStartStopButton() {
     if (isReading) {
         stopReading();
-        stopBtn->setText("START");
+        stopBtn->setText("Start");
         isReading = false;
     } else {
         // Try to start reading
         if (startReading()) {
-            stopBtn->setText("STOP");
+            stopBtn->setText("Stop");
             isReading = true;
         }
     }
@@ -258,7 +221,7 @@ bool MainWindow::startReading() {
     };
 
     bool isLikelyInvalid = false;
-    for (const QString& pattern : likelyInvalidPorts) {
+    for (const QString &pattern: likelyInvalidPorts) {
         if (portName.contains(pattern, Qt::CaseInsensitive)) {
             isLikelyInvalid = true;
             break;
@@ -267,12 +230,14 @@ bool MainWindow::startReading() {
 
     if (isLikelyInvalid) {
         QMessageBox::warning(this, "Inappropriate Device",
-            "The selected port \"" + portName + "\" does not appear to be a proper serial device.\n\n"
-            "This application requires a standard serial port, typically named:\n"
-            "• cu.usbserial-*\n"
-            "• cu.usbmodem*\n"
-            "• cu.SLAB_*\n\n"
-            "Please select a different COM port in Port Settings.");
+                             "The selected port \"" + portName + "\" does not appear to be a proper serial device.\n\n"
+                             "This application requires a standard serial port, typically named:\n"
+                             "• cu.usbserial-*\n"
+                             "• tty.usbserial-*\n"
+                             "• C0M*\n"
+                             "• cu.usbmodem*\n"
+                             "• cu.SLAB_*\n\n"
+                             "Please select a different COM port in Port Settings.");
         return false;
     }
 
@@ -283,12 +248,12 @@ bool MainWindow::startReading() {
     int flowControl = portSettings->getFlowControl();
 
     qDebug() << "Attempting to open port" << portName
-             << "with settings:"
-             << "BaudRate:" << baudRate
-             << "DataBits:" << dataBits
-             << "StopBits:" << stopBits
-             << "Parity:" << parity
-             << "FlowControl:" << flowControl;
+            << "with settings:"
+            << "BaudRate:" << baudRate
+            << "DataBits:" << dataBits
+            << "StopBits:" << stopBits
+            << "Parity:" << parity
+            << "FlowControl:" << flowControl;
 
     // Create the serial port object
     serialPort = new QSerialPort(this);
@@ -302,11 +267,11 @@ bool MainWindow::startReading() {
     // Try to open the port
     if (!serialPort->open(QIODevice::ReadOnly)) {
         QMessageBox::critical(this, "Port Error",
-            "Could not open port " + portName + ".\n\n"
-            "This may be because:\n"
-            "• The port is already in use by another application\n"
-            "• You don't have sufficient permissions\n\n"
-            "Error: " + serialPort->errorString());
+                              "Could not open port " + portName + ".\n\n"
+                              "This may be because:\n"
+                              "• The port is already in use by another application\n"
+                              "• You don't have sufficient permissions\n\n"
+                              "Error: " + serialPort->errorString());
         delete serialPort;
         serialPort = nullptr;
         return false;
@@ -323,12 +288,12 @@ bool MainWindow::startReading() {
     // Connect validation timeout handler
     connect(validationTimer, &QTimer::timeout, this, [this]() {
         QMessageBox::warning(this, "Incorrect Device",
-            "No valid data received from the device.\n\n"
-            "Expected data format: YY(distance)T(time)E\n\n"
-            "Please select a different COM port in Port Settings.");
+                             "No valid data received from the device.\n\n"
+                             "Expected data format: YY(distance)T(time)E\n\n"
+                             "Please select a different COM port in Port Settings.");
         stopReading();
         isReading = false;
-        stopBtn->setText("START");
+        stopBtn->setText("Start");
     });
 
     // Connect read signal
@@ -427,42 +392,59 @@ void MainWindow::loadLanguage(const QString &language) {
         translator = nullptr;
     }
 
-    // Create a new translator regardless of language
     translator = new QTranslator(this);
     QString translationFile = ":/translations/lidar_" + language + ".qm";
     bool loaded = translator->load(translationFile);
 
     if (!loaded) {
-        // Try direct file path as fallback
-        loaded = translator->load("translations/lidar_" + language + ".qm");
+        qDebug() << "Failed to load translation file:" << translationFile;
     }
 
     if (loaded) {
         QApplication::installTranslator(translator);
-        qDebug() << language << "translation loaded successfully";
-    } else {
-        qDebug() << "Failed to load" << language << "translation";
     }
 
-    // Force update of all UI elements
+    // Update all UI elements in this window
     retranslateUi();
+
+    // Update the main window's AppMenu
+    appMenu->retranslateUi();  // Add this line
+    appMenu->setLanguage(language);
+
+    // Update all other windows
+    for (QWidget *widget : QApplication::topLevelWidgets()) {
+        // Update GraphWindow instances
+        GraphWindow *graphWindow = qobject_cast<GraphWindow*>(widget);
+        if (graphWindow) {
+            graphWindow->retranslateUi();
+
+            // Find and update the AppMenu in this GraphWindow
+            for (QObject* child : graphWindow->children()) {
+                AppMenu* menu = qobject_cast<AppMenu*>(child);
+                if (menu) {
+                    menu->retranslateUi();  // Make sure this is called too
+                    menu->setLanguage(language);
+                }
+            }
+        }
+    }
+
+    // Update PortSettings if it exists
+    if (portSettings) {
+        portSettings->retranslateUi();
+    }
 }
 
 // Add this new method to handle retranslation
 void MainWindow::retranslateUi() {
     this->setWindowTitle(tr("EMPE"));
-    mainMenu->setTitle(tr("☰ Menu"));
-    portSettingsAction->setText(tr("Port settings"));
-    graphAction->setText(tr("Graph"));
-    startMeasurementAction->setText(tr("Start measurement"));
-    saveDataAction->setText(tr("Save data to file"));
-    languageAction->setText(tr("Language"));
+    appMenu->retranslateUi();
 
     // Buttons
-    portSettingsBtn->setText(tr("PORT settings"));
-    showGraphBtn->setText(tr("Show GRAPH"));
-    stopBtn->setText(isReading ? tr("STOP") : tr("START"));
-    saveDataBtn->setText(tr("SAVE data to file"));
+    portSettingsBtn->setText(tr("Port settings"));
+    showGraphBtn->setText(tr("Show Graph"));
+    stopBtn->setText(isReading ? tr("Stop") : tr("Start"));
+    saveDataBtn->setText(tr("Save data to file"));
 
     // Other UI elements
     alwaysOnTopCheckbox->setText(tr("Always on Top"));

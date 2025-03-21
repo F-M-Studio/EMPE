@@ -15,10 +15,13 @@
 #include <QTimeEdit>
 #include <QTextEdit>
 #include <QKeyEvent>
-#include <QSerialPort>  // Include QSerialPort header
+#include <QSerialPort>
 #include <QtWidgets>
+#include <QTranslator>
 
-#include "portsettings.h"
+// Replace include with forward declaration
+class PortSettings;
+class AppMenu;
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -29,24 +32,24 @@ public:
     bool Reading{};
     int distance{}, timeInMilliseconds{}, minutes{}, seconds{}, milliseconds{};
 
-protected:
-    void keyPressEvent(QKeyEvent *event) override;
-
-private slots:
+    void loadLanguage(const QString &language);
     void handleStartStopButton();
     void openPortSettings() const;
     void openGraphWindow();
     void saveDataToFile();
 
+protected:
+    void keyPressEvent(QKeyEvent *event) override;
+
 private:
+    AppMenu* appMenu;
+
     QTimer *validationTimer{};
     bool deviceValidated = false;
     const int VALIDATION_TIMEOUT = 500;
 
     QTranslator *translator = nullptr;
-    QAction *languageAction;
-    void changeLanguage();
-    void loadLanguage(const QString &language);
+    QAction *languageAction{};
     void retranslateUi();
 
     struct DataPoint {
@@ -81,15 +84,14 @@ private:
     QLineEdit *maxYInput{};
     QLineEdit *distanceInput{};
     QTimeEdit *timeInput{};
-    QLabel *yAxisValueLabel{};      // Label to display Y axis scale value
+    QLabel *yAxisValueLabel{};
 
     // Serial port
     QSerialPort *serialPort{};
 
-    QTextEdit *dataDisplay;  // TextEdit to display data from COM port
-    bool isReading;  // Flag to indicate if reading is in progress
+    QTextEdit *dataDisplay;
+    bool isReading;
 
-    void createMenu();
     void createControls();
     bool startReading();
     void stopReading();

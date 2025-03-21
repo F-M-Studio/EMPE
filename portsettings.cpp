@@ -1,9 +1,48 @@
 #include "portsettings.h"
 #include <QtSerialPort/QSerialPortInfo>
+#include "mainwindow.h"
 
-PortSettings::PortSettings(QWidget *parent)
-    : QDialog(parent) {
+
+PortSettings::PortSettings(QWidget *parent) : QDialog(parent) {
     setupUI();
+    retranslateUi();
+}
+
+void PortSettings::retranslateUi() {
+    setWindowTitle(tr("Setup"));
+
+    refreshButton->setText(tr("Refresh"));
+    okButton->setText(tr("OK"));
+    cancelButton->setText(tr("Cancel"));
+
+    QList<QLabel *> labels = findChildren<QLabel *>();
+    for (QLabel *label: labels) {
+        if (label->text() == "<b>Settings</b>")
+            label->setText(tr("<b>Settings</b>"));
+        else if (label->text().contains("Port"))
+            label->setText(tr("Port"));
+        else if (label->text().contains("Baud"))
+            label->setText(tr("Baud rate"));
+        else if (label->text().contains("Data bits"))
+            label->setText(tr("Data bits"));
+        else if (label->text().contains("Stop bits"))
+            label->setText(tr("Stop bits"));
+        else if (label->text().contains("Parity"))
+            label->setText(tr("Parity"));
+        else if (label->text().contains("Flow"))
+            label->setText(tr("Flow control"));
+    }
+
+    // Update combo boxes that have translatable items
+    const int parityIndex = parityBox->currentIndex();
+    parityBox->clear();
+    parityBox->addItems({tr("None"), tr("Even"), tr("Odd"), tr("Mark"), tr("Space")});
+    parityBox->setCurrentIndex(parityIndex);
+
+    const int flowIndex = flowControlBox->currentIndex();
+    flowControlBox->clear();
+    flowControlBox->addItems({tr("None"), tr("Software"), tr("Hardware")});
+    flowControlBox->setCurrentIndex(flowIndex);
 }
 
 void PortSettings::setupUI() {
@@ -79,7 +118,7 @@ void PortSettings::setupUI() {
 
 void PortSettings::refreshPorts() const {
     portBox->clear();
-    foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts()) {
+    foreach(const QSerialPortInfo &info, QSerialPortInfo::availablePorts()) {
         portBox->addItem(info.portName());
     }
 }

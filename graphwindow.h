@@ -16,6 +16,7 @@ class GraphWindow : public QMainWindow {
     Q_OBJECT
 
 public:
+    void retranslateUi();
     explicit GraphWindow(MainWindow *mainWindow, QWidget *parent = nullptr);
 
    // void keyPressEvent(QKeyEvent *event) override;
@@ -33,6 +34,8 @@ private slots:
     void clearGraph();
 
 private:
+    AppMenu* appMenu;
+
     bool Gen = false;
 
     Ui::GraphWindow *ui;

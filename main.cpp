@@ -8,11 +8,9 @@ int main(int argc, char *argv[]) {
 
     // Set up translator
     QTranslator translator;
-    const QStringList uiLanguages = QLocale::system().uiLanguages();
-    for (const QString &locale : uiLanguages) {
-        const QString baseName = "lidar_" + QLocale(locale).name().split('_').first();
-        if (translator.load(":/translations/" + baseName)) {
-            a.installTranslator(&translator);
+    for (const QStringList uiLanguages = QLocale::system().uiLanguages(); const QString &locale : uiLanguages) {
+        if (const QString baseName = "lidar_" + QLocale(locale).name().split('_').first(); translator.load(":/translations/" + baseName)) {
+            QApplication::installTranslator(&translator);
             break;
         }
     }

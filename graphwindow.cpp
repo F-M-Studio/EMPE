@@ -1,6 +1,7 @@
 #include "graphwindow.h"
 #include "./ui_graphwindow.h"
 #include "mainwindow.h"
+#include "appmenu.h"
 #include <QtCharts>
 #include <QLineSeries>
 #include <QChartView>
@@ -19,6 +20,13 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     ui->centralwidget->setLayout(new QVBoxLayout());
     ui->centralwidget->layout()->setContentsMargins(0, 0, 0, 0);
     ui->centralwidget->layout()->addWidget(ui->frame);
+
+    AppMenu* appMenu = new AppMenu(this, mainWindow);
+    connect(appMenu, &AppMenu::portSettingsRequested, mainWindow, &MainWindow::openPortSettings);
+    connect(appMenu, &AppMenu::graphWindowRequested, mainWindow, &MainWindow::openGraphWindow);
+    connect(appMenu, &AppMenu::startStopRequested, mainWindow, &MainWindow::handleStartStopButton);
+    connect(appMenu, &AppMenu::saveDataRequested, mainWindow, &MainWindow::saveDataToFile);
+    connect(appMenu, &AppMenu::languageChanged, mainWindow, &MainWindow::loadLanguage);
 
     delete ui->frame->layout();
 
@@ -447,4 +455,19 @@ void GraphWindow::updateGraph() {
             }
         }
     }
+}
+
+void GraphWindow::retranslateUi() {
+    setWindowTitle(tr("Graph"));
+    clearGraphBtn->setText(tr("Clear Graph"));
+    axisX->setTitleText(tr("Time (min:ms)"));
+    axisY->setTitleText(tr("Distance"));
+    recordingTitleLabel->setText(tr("Recording period [ms]:"));
+    yAxisToggle->setText(tr("Set Y"));
+    yAxisTitleLabel->setText(tr("Y axis range:"));
+    autoRemoveToggle->setText(tr("Auto-remove points"));
+    pointsLimitLabel->setText(tr("Points limit:"));
+    smoothingToggle->setText(tr("Smooth Graph"));
+    smoothingLevelLabel->setText(tr("Smoothing:"));
+    timeAxisToggle->setText(tr("Use Relative Time"));
 }

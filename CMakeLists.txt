@@ -13,7 +13,15 @@ find_package(Qt6 COMPONENTS
         SerialPort
         Charts
         LinguistTools
-        REQUIRED)
+        REQUIRED
+)
+
+qt_add_translations(lidar
+        TS_FILES
+        translations/lidar_pl.ts
+        translations/lidar_en.ts
+        QM_FILES_OUTPUT_VARIABLE QM_FILES
+)
 
 if(WIN32)
     add_executable(lidar WIN32 main.cpp
@@ -25,6 +33,8 @@ if(WIN32)
             graphwindow.h
             graphwindow.ui
             resources.qrc
+            appmenu.h
+            appmenu.cpp
     )
 endif ()
 
@@ -38,6 +48,8 @@ if (UNIX OR APPLE)
             graphwindow.h
             graphwindow.ui
             resources.qrc
+            appmenu.h
+            appmenu.cpp
     )
 endif ()
 
