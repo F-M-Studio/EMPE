@@ -6,6 +6,7 @@
 PortSettings::PortSettings(QWidget *parent) : QDialog(parent) {
     setupUI();
     retranslateUi();
+    refreshPorts();
 }
 
 void PortSettings::retranslateUi() {

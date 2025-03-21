@@ -128,8 +128,7 @@ if(UNIX AND NOT APPLE)
     install(TARGETS lidar DESTINATION bin)
 
     # Install desktop file
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/linux/empe.desktop.in
-            ${CMAKE_CURRENT_BINARY_DIR}/empe.desktop @ONLY)
+
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/empe.desktop
             DESTINATION share/applications)
 
