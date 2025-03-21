@@ -96,7 +96,8 @@ void PortSettings::setupUI() {
     layout->addWidget(new QLabel(tr("Flow control")), 6, 0);
     flowControlBox = new QComboBox();
     flowControlBox->addItems({tr("None"), tr("Software"), tr("Hardware")});
-    flowControlBox->setCurrentText("Hardware");
+   // flowControlBox->setCurrentText("Hardware");
+    flowControlBox->setCurrentIndex(2); // Set Hardware as default by index
     layout->addWidget(flowControlBox, 6, 1);
 
     // Buttons
