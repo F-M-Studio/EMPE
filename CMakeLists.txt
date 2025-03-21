@@ -6,22 +6,6 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-# Add custom target to update and release translations
-find_program(LUPDATE_EXECUTABLE lupdate)
-find_program(LRELEASE_EXECUTABLE lrelease)
-
-add_custom_target(update_translations
-        COMMAND ${LUPDATE_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR} -ts ${TS_FILES}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        COMMENT "Updating translations..."
-)
-
-add_custom_target(release_translations
-        COMMAND ${LRELEASE_EXECUTABLE} ${TS_FILES}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        COMMENT "Generating QM files..."
-)
-
 find_package(Qt6 COMPONENTS
         Core
         Gui
@@ -29,28 +13,35 @@ find_package(Qt6 COMPONENTS
         SerialPort
         Charts
         LinguistTools
-        REQUIRED
-)
+        REQUIRED)
 
-set(TS_FILES
-        translations/lidar_pl.ts
-)
+if(WIN32)
+    add_executable(lidar WIN32 main.cpp
+            mainwindow.h
+            mainwindow.cpp
+            portsettings.cpp
+            portsettings.h
+            graphwindow.cpp
+            graphwindow.h
+            graphwindow.ui
+            resources.qrc
+            translations.qrc
+    )
+endif ()
 
-qt_add_translations(lidar
-        TS_FILES ${TS_FILES}
-        QM_FILES_OUTPUT_VARIABLE QM_FILES
-)
-
-add_executable(lidar main.cpp
-        mainwindow.h
-        mainwindow.cpp
-        portsettings.cpp
-        portsettings.h
-        graphwindow.cpp
-        graphwindow.h
-        graphwindow.ui
-        resources.qrc
-)
+if (UNIX OR APPLE)
+    add_executable(lidar main.cpp
+            mainwindow.h
+            mainwindow.cpp
+            portsettings.cpp
+            portsettings.h
+            graphwindow.cpp
+            graphwindow.h
+            graphwindow.ui
+            resources.qrc
+            translations.qrc
+    )
+endif ()
 
 target_link_libraries(lidar
         Qt6::Core
