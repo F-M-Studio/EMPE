@@ -60,13 +60,22 @@ void MainWindow::createMenu() {
     connect(startMeasurementAction, &QAction::triggered, this, &MainWindow::handleStartStopButton);
     connect(saveDataAction, &QAction::triggered, this, &MainWindow::saveDataToFile);
 
+    // In mainwindow.cpp, modify the createMenu() function where the language menu is set up:
     languageAction = new QAction("Language", this);
     QMenu *languageMenu = new QMenu(this);
+    QActionGroup *languageGroup = new QActionGroup(this); // Add this line
+    languageGroup->setExclusive(true); // Only one language can be selected
+
     QAction *englishAction = new QAction("English", this);
     QAction *polishAction = new QAction("Polski", this);
     englishAction->setCheckable(true);
     polishAction->setCheckable(true);
     englishAction->setChecked(true);
+
+    // Add actions to group
+    languageGroup->addAction(englishAction);
+    languageGroup->addAction(polishAction);
+
     languageMenu->addAction(englishAction);
     languageMenu->addAction(polishAction);
     languageAction->setMenu(languageMenu);
@@ -418,24 +427,29 @@ void MainWindow::loadLanguage(const QString &language) {
         translator = nullptr;
     }
 
-    if (language == "pl") {
-        translator = new QTranslator(this);
-        // Try both resource and file paths
-        bool loaded = translator->load(":/translations/lidar_pl.qm");
-        if (!loaded) {
-            // Try direct file path as fallback
-            loaded = translator->load("translations/lidar_pl.qm");
-        }
+    // Create a new translator regardless of language
+    translator = new QTranslator(this);
+    QString translationFile = ":/translations/lidar_" + language + ".qm";
+    bool loaded = translator->load(translationFile);
 
-        if (loaded) {
-            QApplication::installTranslator(translator);
-            qDebug() << "Polish translation loaded successfully";
-        } else {
-            qDebug() << "Failed to load Polish translation";
-        }
+    if (!loaded) {
+        // Try direct file path as fallback
+        loaded = translator->load("translations/lidar_" + language + ".qm");
     }
 
-    // Retranslate the UI
+    if (loaded) {
+        QApplication::installTranslator(translator);
+        qDebug() << language << "translation loaded successfully";
+    } else {
+        qDebug() << "Failed to load" << language << "translation";
+    }
+
+    // Force update of all UI elements
+    retranslateUi();
+}
+
+// Add this new method to handle retranslation
+void MainWindow::retranslateUi() {
     this->setWindowTitle(tr("EMPE"));
     mainMenu->setTitle(tr("☰ Menu"));
     portSettingsAction->setText(tr("Port settings"));

@@ -47,6 +47,7 @@ private:
     QAction *languageAction;
     void changeLanguage();
     void loadLanguage(const QString &language);
+    void retranslateUi();
 
     struct DataPoint {
         int distance;

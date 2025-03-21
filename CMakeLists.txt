@@ -25,7 +25,6 @@ if(WIN32)
             graphwindow.h
             graphwindow.ui
             resources.qrc
-            translations.qrc
     )
 endif ()
 
@@ -39,7 +38,6 @@ if (UNIX OR APPLE)
             graphwindow.h
             graphwindow.ui
             resources.qrc
-            translations.qrc
     )
 endif ()
 

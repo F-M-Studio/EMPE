@@ -4,5 +4,6 @@
         <file>icons/EMPE.ico</file>
         <file>icons/EMPE.icns</file>
         <file>translations/lidar_pl.qm</file>
+        <file>translations/lidar_en.qm</file>
     </qresource>
 </RCC>
