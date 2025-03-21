@@ -15,22 +15,25 @@ void PortSettings::retranslateUi() {
     okButton->setText(tr("OK"));
     cancelButton->setText(tr("Cancel"));
 
+    const QMap<QString, QString> labelMap = {
+        {"<b>Settings</b>", tr("<b>Settings</b>")},
+        {"Port", tr("Port")},
+        {"Baud", tr("Baud rate")},
+        {"Data bits", tr("Data bits")},
+        {"Stop bits", tr("Stop bits")},
+        {"Parity", tr("Parity")},
+        {"Flow", tr("Flow control")}
+    };
+
     QList<QLabel *> labels = findChildren<QLabel *>();
-    for (QLabel *label: labels) {
-        if (label->text() == "<b>Settings</b>")
-            label->setText(tr("<b>Settings</b>"));
-        else if (label->text().contains("Port"))
-            label->setText(tr("Port"));
-        else if (label->text().contains("Baud"))
-            label->setText(tr("Baud rate"));
-        else if (label->text().contains("Data bits"))
-            label->setText(tr("Data bits"));
-        else if (label->text().contains("Stop bits"))
-            label->setText(tr("Stop bits"));
-        else if (label->text().contains("Parity"))
-            label->setText(tr("Parity"));
-        else if (label->text().contains("Flow"))
-            label->setText(tr("Flow control"));
+    for (QLabel *label : labels) {
+        const QString text = label->text();
+        for (auto it = labelMap.begin(); it != labelMap.end(); ++it) {
+            if (text.contains(it.key())) {
+                label->setText(it.value());
+                break;
+            }
+        }
     }
 
     // Update combo boxes that have translatable items
