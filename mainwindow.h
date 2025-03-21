@@ -43,6 +43,11 @@ private:
     bool deviceValidated = false;
     const int VALIDATION_TIMEOUT = 500;
 
+    QTranslator *translator = nullptr;
+    QAction *languageAction;
+    void changeLanguage();
+    void loadLanguage(const QString &language);
+
     struct DataPoint {
         int distance;
         int timeInMilliseconds;

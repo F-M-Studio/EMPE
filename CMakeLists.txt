@@ -6,13 +6,40 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
+# Add custom target to update and release translations
+find_program(LUPDATE_EXECUTABLE lupdate)
+find_program(LRELEASE_EXECUTABLE lrelease)
+
+add_custom_target(update_translations
+        COMMAND ${LUPDATE_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR} -ts ${TS_FILES}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "Updating translations..."
+)
+
+add_custom_target(release_translations
+        COMMAND ${LRELEASE_EXECUTABLE} ${TS_FILES}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "Generating QM files..."
+)
+
 find_package(Qt6 COMPONENTS
         Core
         Gui
         Widgets
         SerialPort
         Charts
-        REQUIRED)
+        LinguistTools
+        REQUIRED
+)
+
+set(TS_FILES
+        translations/lidar_pl.ts
+)
+
+qt_add_translations(lidar
+        TS_FILES ${TS_FILES}
+        QM_FILES_OUTPUT_VARIABLE QM_FILES
+)
 
 add_executable(lidar main.cpp
         mainwindow.h
