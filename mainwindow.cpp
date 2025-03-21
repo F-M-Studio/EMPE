@@ -198,7 +198,7 @@ void MainWindow::saveDataToFile() {
     QTextStream out(&file);
 
     // Write CSV header
-    out << "Distance,Time (mm:ss),Milliseconds,Raw Time (ms)\n";
+    out << "Distance;Time (mm:ss);Milliseconds;Raw Time (ms)\n";
 
     // Parse and write data from dataDisplay
     QString rawData = dataDisplay->toPlainText();
@@ -220,7 +220,7 @@ void MainWindow::saveDataToFile() {
                 .arg(minutes, 2, 10, QChar('0'))
                 .arg(seconds, 2, 10, QChar('0'));
 
-            out << QString("%1,%2,%3,%4\n")
+            out << QString("%1;%2;%3;%4\n")
                 .arg(distance, timeFormatted)
                 .arg(milliseconds)
                 .arg(timeMs);
