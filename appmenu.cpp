@@ -2,10 +2,10 @@
 #include "appmenu.h"
 #include "mainwindow.h"
 
-AppMenu::AppMenu(QMainWindow* window, MainWindow* mainWindow) : QObject(window), window(window), mainWindow(mainWindow) {
-
-    auto* englishAction = new QAction(tr("English"), window);
-    auto* polishAction = new QAction(tr("Polish"), window);
+AppMenu::AppMenu(QMainWindow *window, MainWindow *mainWindow) : QObject(window), window(window),
+                                                                mainWindow(mainWindow) {
+    auto *englishAction = new QAction(tr("English"), window);
+    auto *polishAction = new QAction(tr("Polish"), window);
     this->englishAction = englishAction;
     this->polishAction = polishAction;
 
@@ -33,8 +33,8 @@ AppMenu::AppMenu(QMainWindow* window, MainWindow* mainWindow) : QObject(window),
 
     // Language submenu
     languageAction = new QAction(tr("Language"), window);
-    auto* languageMenu = new QMenu(window);
-    auto* languageGroup = new QActionGroup(window);
+    auto *languageMenu = new QMenu(window);
+    auto *languageGroup = new QActionGroup(window);
     languageGroup->setExclusive(true);
 
     englishAction->setCheckable(true);
@@ -58,7 +58,7 @@ AppMenu::AppMenu(QMainWindow* window, MainWindow* mainWindow) : QObject(window),
     });
 }
 
-void AppMenu::retranslateUi() {
+void AppMenu::retranslateUi() const {
     mainMenu->setTitle(tr("☰ Menu"));
     portSettingsAction->setText(tr("Port settings"));
     graphAction->setText(tr("Graph"));
@@ -70,7 +70,7 @@ void AppMenu::retranslateUi() {
     polishAction->setText(tr("Polish"));
 }
 
-void AppMenu::setLanguage(const QString& language) {
+void AppMenu::setLanguage(const QString &language) const {
     if (language == "en") {
         englishAction->setChecked(true);
     } else if (language == "pl") {
@@ -78,6 +78,6 @@ void AppMenu::setLanguage(const QString& language) {
     }
 }
 
-void AppMenu::updateStartStopAction(bool isReading) {
+void AppMenu::updateStartStopAction(bool isReading) const {
     startMeasurementAction->setText(isReading ? tr("Stop measurement") : tr("Start measurement"));
 }

@@ -8,7 +8,7 @@ int main(int argc, char *argv[]) {
 
     // Set up translator
     QTranslator translator;
-    for (const QStringList uiLanguages = QLocale::system().uiLanguages(); const QString &locale : uiLanguages) {
+    for (const QStringList uiLanguages = QLocale::system().uiLanguages(); const QString &locale: uiLanguages) {
         if (const QString baseName = "lidar_" + QLocale(locale).name().split('_').first(); translator.load(":/translations/" + baseName)) {
             QApplication::installTranslator(&translator);
             break;

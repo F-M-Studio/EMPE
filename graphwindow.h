@@ -34,7 +34,7 @@ private slots:
     void clearGraph();
 
 private:
-    AppMenu* appMenu;
+    AppMenu* appMenu{};
 
     bool Gen = false;
 

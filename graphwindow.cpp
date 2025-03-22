@@ -10,7 +10,8 @@
 #include <QCheckBox>
 #include <QLineEdit>
 
-GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(parent), ui(new Ui::GraphWindow), mainWindow(mainWindow) {
+GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(parent), ui(new Ui::GraphWindow),
+                                                                    mainWindow(mainWindow) {
     ui->setupUi(this);
 
     ui->frame->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
@@ -21,7 +22,7 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     ui->centralwidget->layout()->setContentsMargins(0, 0, 0, 0);
     ui->centralwidget->layout()->addWidget(ui->frame);
 
-    AppMenu* appMenu = new AppMenu(this, mainWindow);
+    auto *appMenu = new AppMenu(this, mainWindow);
     connect(appMenu, &AppMenu::portSettingsRequested, mainWindow, &MainWindow::openPortSettings);
     connect(appMenu, &AppMenu::graphWindowRequested, mainWindow, &MainWindow::openGraphWindow);
     connect(appMenu, &AppMenu::startStopRequested, mainWindow, &MainWindow::handleStartStopButton);
@@ -33,8 +34,8 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     // Create Clear Graph button
     clearGraphBtn = new QPushButton(tr("Clear Graph"));
     clearGraphBtn->setFixedWidth(120);
-    auto* clearBtnContainer = new QWidget();
-    auto* clearBtnLayout = new QHBoxLayout(clearBtnContainer);
+    auto *clearBtnContainer = new QWidget();
+    auto *clearBtnLayout = new QHBoxLayout(clearBtnContainer);
     clearBtnLayout->addStretch();
     clearBtnLayout->addWidget(clearGraphBtn);
     clearBtnLayout->addStretch();
@@ -140,8 +141,8 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     smoothingLevelEdit->setEnabled(false);
 
     // Create the widget for smoothing controls
-    auto* smoothingWidget = new QWidget();
-    auto* smoothingLayout = new QHBoxLayout(smoothingWidget);
+    auto *smoothingWidget = new QWidget();
+    auto *smoothingLayout = new QHBoxLayout(smoothingWidget);
     smoothingLayout->addWidget(smoothingToggle);
     smoothingLayout->addWidget(smoothingLevelLabel);
     smoothingLayout->addWidget(smoothingLevelSlider);
@@ -152,30 +153,30 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     splineSeries = new QSplineSeries();
 
     // Create widgets for sliders
-    auto* recordingSliderWidget = new QWidget();
-    auto* recordingLayout = new QHBoxLayout(recordingSliderWidget);
+    auto *recordingSliderWidget = new QWidget();
+    auto *recordingLayout = new QHBoxLayout(recordingSliderWidget);
     recordingLayout->addWidget(recordingTitleLabel);
     recordingLayout->addWidget(recordingSlider);
     recordingLayout->addWidget(recordingEdit);
     recordingSliderWidget->setLayout(recordingLayout);
 
-    auto* yAxisSliderWidget = new QWidget();
-    auto* yAxisLayout = new QHBoxLayout(yAxisSliderWidget);
+    auto *yAxisSliderWidget = new QWidget();
+    auto *yAxisLayout = new QHBoxLayout(yAxisSliderWidget);
     yAxisLayout->addWidget(yAxisToggle);
     yAxisLayout->addWidget(yAxisTitleLabel);
     yAxisLayout->addWidget(yAxisSlider);
     yAxisLayout->addWidget(yAxisEdit);
     yAxisSliderWidget->setLayout(yAxisLayout);
 
-    auto* pointsLimitWidget = new QWidget();
-    auto* pointsLayout = new QHBoxLayout(pointsLimitWidget);
+    auto *pointsLimitWidget = new QWidget();
+    auto *pointsLayout = new QHBoxLayout(pointsLimitWidget);
     pointsLayout->addWidget(autoRemoveToggle);
     pointsLayout->addWidget(pointsLimitLabel);
     pointsLayout->addWidget(pointsLimitSlider);
     pointsLayout->addWidget(pointsLimitEdit);
     pointsLimitWidget->setLayout(pointsLayout);
 
-    auto* mainLayout = new QVBoxLayout(ui->frame);
+    auto *mainLayout = new QVBoxLayout(ui->frame);
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->addWidget(clearBtnContainer);
     mainLayout->addWidget(chartView, 1);
@@ -288,24 +289,24 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     timeAxisToggle->setChecked(false);
 
 
-    auto* timeAxisWidget = new QWidget();
-    auto* timeAxisLayout = new QHBoxLayout(timeAxisWidget);
+    auto *timeAxisWidget = new QWidget();
+    auto *timeAxisLayout = new QHBoxLayout(timeAxisWidget);
     timeAxisLayout->addWidget(timeAxisToggle);
     timeAxisWidget->setLayout(timeAxisLayout);
 
     mainLayout->addWidget(timeAxisWidget);
 
     connect(timeAxisToggle, &QCheckBox::toggled, this, [this, mainWindow](bool checked) {
-    useAbsoluteTime = !checked; // Toggle is for "Relative Time" so invert the logic
+        useAbsoluteTime = !checked; // Toggle is for "Relative Time" so invert the logic
 
-    // If switching to relative time, set initial time
-    if (!useAbsoluteTime && mainWindow->Reading) {
-        initialTime = mainWindow->timeInMilliseconds;
-    }
+        // If switching to relative time, set initial time
+        if (!useAbsoluteTime && mainWindow->Reading) {
+            initialTime = mainWindow->timeInMilliseconds;
+        }
 
-    // Clear and redraw the chart with new time axis setting
-    series->clear();
-    splineSeries->clear();
+        // Clear and redraw the chart with new time axis setting
+        series->clear();
+        splineSeries->clear();
     });
 
     updateTimer->start(recordingSlider->value());
@@ -354,7 +355,7 @@ void GraphWindow::applySmoothing() const {
     }
 
     // Get window size from smoothing level (1-25)
-    int windowSize = 1 + (smoothingLevelSlider->value()*10 / 4);
+    int windowSize = 1 + (smoothingLevelSlider->value() * 10 / 4);
     if (windowSize % 2 == 0) windowSize++; // Make sure it's odd
 
     // Create a copy of original points
@@ -369,8 +370,8 @@ void GraphWindow::applySmoothing() const {
     // Apply smoothing to ALL points
     const int halfWindow = windowSize / 2;
     for (int i = 0; i < originalPoints.size(); ++i) {
-        qreal sumX = 0;
-        qreal sumY = 0;
+        double sumX = 0;
+        double sumY = 0;
         int count = 0;
 
         // Use available points within the window
@@ -401,16 +402,14 @@ GraphWindow::~GraphWindow() {
     delete ui;
 }
 
-void GraphWindow::resizeEvent(QResizeEvent* event) {
+void GraphWindow::resizeEvent(QResizeEvent *event) {
     QMainWindow::resizeEvent(event);
 }
 
 void GraphWindow::updateGraph() {
     if (mainWindow->Reading) {
         // Calculate X coordinate based on mode
-        qreal xValue = useAbsoluteTime ?
-            mainWindow->timeInMilliseconds :
-            mainWindow->timeInMilliseconds - initialTime;
+        double xValue = useAbsoluteTime ? mainWindow->timeInMilliseconds : mainWindow->timeInMilliseconds - initialTime;
 
         // If this is first point in relative mode, set initial time
         if (!useAbsoluteTime && series->count() == 0) {
@@ -434,15 +433,15 @@ void GraphWindow::updateGraph() {
         }
 
         // Calculate min/max values for axes
-        const QXYSeries *activeSeries = useSpline ?
-            static_cast<QXYSeries*>(splineSeries) :
-            static_cast<QXYSeries*>(series);
+        const QXYSeries *activeSeries = useSpline
+                                            ? static_cast<QXYSeries *>(splineSeries)
+                                            : static_cast<QXYSeries *>(series);
 
         if (activeSeries->count() > 0) {
-            const qreal xMin = activeSeries->at(0).x();
-            const qreal xMax = xValue;
-            qreal yMin = mainWindow->distance;
-            qreal yMax = mainWindow->distance;
+            const double xMin = activeSeries->at(0).x();
+            const double xMax = xValue;
+            double yMin = mainWindow->distance;
+            double yMax = mainWindow->distance;
 
             for (int i = 0; i < activeSeries->count(); ++i) {
                 yMin = qMin(yMin, activeSeries->at(i).y());

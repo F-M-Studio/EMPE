@@ -27,7 +27,7 @@ void PortSettings::retranslateUi() {
     };
 
     QList<QLabel *> labels = findChildren<QLabel *>();
-    for (QLabel *label : labels) {
+    for (QLabel *label: labels) {
         const QString text = label->text();
         for (auto it = labelMap.begin(); it != labelMap.end(); ++it) {
             if (text.contains(it.key())) {
@@ -100,7 +100,7 @@ void PortSettings::setupUI() {
     layout->addWidget(new QLabel(tr("Flow control")), 6, 0);
     flowControlBox = new QComboBox();
     flowControlBox->addItems({tr("None"), tr("Software"), tr("Hardware")});
-   // flowControlBox->setCurrentText("Hardware");
+    // flowControlBox->setCurrentText("Hardware");
     flowControlBox->setCurrentIndex(2); // Set Hardware as default by index
     layout->addWidget(flowControlBox, 6, 1);
 

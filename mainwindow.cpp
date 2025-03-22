@@ -408,21 +408,18 @@ void MainWindow::loadLanguage(const QString &language) {
     retranslateUi();
 
     // Update the main window's AppMenu
-    appMenu->retranslateUi();  // Add this line
+    appMenu->retranslateUi(); // Add this line
     appMenu->setLanguage(language);
 
     // Update all other windows
-    for (QWidget *widget : QApplication::topLevelWidgets()) {
-        // Update GraphWindow instances
-        GraphWindow *graphWindow = qobject_cast<GraphWindow*>(widget);
-        if (graphWindow) {
+    for (QWidget *widget: QApplication::topLevelWidgets()) {
+        if (auto *graphWindow = qobject_cast<GraphWindow *>(widget)) {
             graphWindow->retranslateUi();
 
             // Find and update the AppMenu in this GraphWindow
-            for (QObject* child : graphWindow->children()) {
-                AppMenu* menu = qobject_cast<AppMenu*>(child);
-                if (menu) {
-                    menu->retranslateUi();  // Make sure this is called too
+            for (QObject *child: graphWindow->children()) {
+                if (auto *menu = qobject_cast<AppMenu *>(child)) {
+                    menu->retranslateUi(); // Make sure this is called too
                     menu->setLanguage(language);
                 }
             }

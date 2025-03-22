@@ -14,14 +14,14 @@ class AppMenu : public QObject {
     Q_OBJECT
 
 public:
-    void setLanguage(const QString& language);
+    void setLanguage(const QString& language) const;
 
     explicit AppMenu(QMainWindow* window, MainWindow* mainWindow = nullptr);
-    ~AppMenu() = default;
+    ~AppMenu() override = default;
 
-    QMenu* getMainMenu() const { return mainMenu; }
-    void retranslateUi();
-    void updateStartStopAction(bool isReading);
+    [[nodiscard]] QMenu* getMainMenu() const { return mainMenu; }
+    void retranslateUi() const;
+    void updateStartStopAction(bool isReading) const;
 
     signals:
         void portSettingsRequested();
