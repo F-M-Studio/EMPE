@@ -16,12 +16,7 @@ find_package(Qt6 COMPONENTS
         REQUIRED
 )
 
-qt_add_translations(lidar
-        TS_FILES
-        translations/lidar_pl.ts
-        translations/lidar_en.ts
-        QM_FILES_OUTPUT_VARIABLE QM_FILES
-)
+
 
 if(WIN32)
     add_executable(lidar WIN32 main.cpp
@@ -52,6 +47,13 @@ if (UNIX OR APPLE)
             appmenu.cpp
     )
 endif ()
+
+qt_add_translations(lidar
+        TS_FILES
+        translations/lidar_pl.ts
+        translations/lidar_en.ts
+        QM_FILES_OUTPUT_VARIABLE QM_FILES
+)
 
 target_link_libraries(lidar
         Qt6::Core
