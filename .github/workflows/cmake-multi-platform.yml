@@ -61,6 +61,16 @@ jobs:
             -DCMAKE_EXE_LINKER_FLAGS="-lssp"
           cmake --build build --config ${{ env.BUILD_TYPE }} --parallel
           
+      - name: Deploy Qt dependencies
+        run: |
+          $MingwPath = "C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin"
+          $QtBinPath = "$env:QT_PATH\mingw_64\bin"
+          
+          # Copy required MinGW DLLs
+          Copy-Item "$MingwPath\libgcc_s_seh-1.dll" -Destination "build"
+          Copy-Item "$MingwPath\libstdc++-6.dll" -Destination "build"
+          Copy-Item "$MingwPath\libwinpthread-1.dll" -Destination "build"
+          
       - name: Package Windows Build
         run: |
           mkdir output
