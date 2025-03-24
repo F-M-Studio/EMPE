@@ -22,6 +22,18 @@ if(DEFINED ENV{GITHUB_ACTIONS})
 endif()
 
 if(WIN32)
+    add_executable(lidar WIN32 main.cpp
+            mainwindow.h
+            mainwindow.cpp
+            portsettings.cpp
+            portsettings.h
+            graphwindow.cpp
+            graphwindow.h
+            graphwindow.ui
+            resources.qrc
+            appmenu.h
+            appmenu.cpp
+    )
         if(CI_MODE)
                 message(STATUS "Configuring for GitHub Actions CI")
                 
