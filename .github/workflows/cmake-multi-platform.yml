@@ -28,81 +28,57 @@ jobs:
           echo "shorthash=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
           echo "fullhash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
 
-  windows-qt:
+  windows-mingw:
     runs-on: windows-latest
     needs: get-info
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
-
-      - name: Install Ninja
-        run: choco install ninja -y
-
-      - name: Setup Visual Studio Environment
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: amd64
-
+  
+      - name: Install MinGW and Ninja
+        run: choco install mingw -y
+  
+      - name: Set Up MinGW Environment
+        run: |
+          echo "C:\Qt\Tools\mingw1120_64\bin" >> $GITHUB_PATH
+          echo "CMAKE_C_COMPILER=C:/Qt/Tools/mingw1120_64/bin/gcc.exe" >> $GITHUB_ENV
+          echo "CMAKE_CXX_COMPILER=C:/Qt/Tools/mingw1120_64/bin/g++.exe" >> $GITHUB_ENV
+  
       - name: Setup Qt
         uses: jurplel/install-qt-action@v4
         with:
           version: 6.8.2
           host: windows
           target: desktop
-          arch: win64_msvc2022_64
-          modules: qtserialport qtcharts
+          arch: mingw_64
           cache: true
-        id: qt
-
-      - name: Set Qt Path
-        shell: cmd
+          modules: qtserialport qtcharts
+  
+      - name: Configure CMake for MinGW
         run: |
-          setx Qt6_DIR "${{ steps.qt.outputs.Qt6_DIR }}"
-          echo "Qt6_DIR set to: %Qt6_DIR%"
-
-      - name: Configure CMake
-        shell: cmd
-        run: |
-          cmake -G "Ninja" -B build ^
-            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} ^
-            -DCMAKE_C_COMPILER=cl ^
-            -DCMAKE_CXX_COMPILER=cl ^
-            -DCMAKE_PREFIX_PATH="%Qt6_DIR%"
-
-      - name: Build
-        shell: cmd
+          cmake -G "MinGW Makefiles" -B build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
+  
+      - name: Build with MinGW
         run: cmake --build build --config ${{ env.BUILD_TYPE }} --parallel
-
-      - name: Deploy Qt Dependencies
-        shell: cmd
+  
+      - name: Copy MinGW Runtime DLLs
         run: |
-          if exist "build\lidar.exe" (
-            echo "lidar.exe found, running windeployqt"
-            where windeployqt.exe
-            if exist "%Qt6_DIR%\bin\windeployqt.exe" (
-              "%Qt6_DIR%\bin\windeployqt.exe" --release --no-translations --no-system-d3d-compiler ^
-              --dir build build\lidar.exe
-            ) else (
-              echo "ERROR: windeployqt.exe not found!"
-              exit 1
-            )
-          ) else (
-            echo "ERROR: lidar.exe NOT FOUND!"
-            exit 1
-          )
-
+          cp "C:/Qt/Tools/mingw1120_64/bin/libgcc_s_seh-1.dll" build/
+          cp "C:/Qt/Tools/mingw1120_64/bin/libstdc++-6.dll" build/
+          cp "C:/Qt/Tools/mingw1120_64/bin/libwinpthread-1.dll" build/
+  
       - name: Package Windows Build
-        shell: cmd
         run: |
           mkdir output
-          copy build\lidar.exe output\
+          cp build/lidar.exe output/
           7z a lidar-windows-${{ needs.get-info.outputs.shorthash }}.zip output/*
-
+  
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ env.APP_NAME }}-windows-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}
           path: lidar-windows-*.zip
+
   macos-qt:
     runs-on: macos-latest
     needs: get-info
