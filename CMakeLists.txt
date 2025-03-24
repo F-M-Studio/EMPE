@@ -66,18 +66,6 @@ if(WIN32)
                 endforeach()
                 
             else()
-    add_executable(lidar WIN32 main.cpp
-            mainwindow.h
-            mainwindow.cpp
-            portsettings.cpp
-            portsettings.h
-            graphwindow.cpp
-            graphwindow.h
-            graphwindow.ui
-            resources.qrc
-            appmenu.h
-            appmenu.cpp
-    )
     endif()
 endif ()
 
