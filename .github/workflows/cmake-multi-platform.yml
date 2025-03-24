@@ -38,12 +38,12 @@ jobs:
 
       - name: Install Ninja
         run: choco install ninja -y
-      
+
       - name: Setup Visual Studio Environment
         uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: amd64
-      
+
       - name: Setup Qt
         uses: jurplel/install-qt-action@v4
         with:
@@ -53,23 +53,92 @@ jobs:
           arch: win64_msvc2022_64
           modules: qtserialport qtcharts
           cache: true
+        id: qt
 
-      - name: Configure & Build
+      - name: Set Qt Path
+        shell: cmd
         run: |
-          cmake -G "Ninja" -B build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl
-          cmake --build build --config ${{ env.BUILD_TYPE }} --parallel
+          setx Qt6_DIR "${{ steps.qt.outputs.Qt6_DIR }}"
+          echo "Qt6_DIR set to: %Qt6_DIR%"
+
+      - name: Configure CMake
+        shell: cmd
+        run: |
+          cmake -G "Ninja" -B build ^
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} ^
+            -DCMAKE_C_COMPILER=cl ^
+            -DCMAKE_CXX_COMPILER=cl ^
+            -DCMAKE_PREFIX_PATH="%Qt6_DIR%"
+
+      - name: Build
+        shell: cmd
+        run: cmake --build build --config ${{ env.BUILD_TYPE }} --parallel
+
+      - name: Deploy Qt Dependencies
+        shell: cmd
+        run: |
+          if exist "build\lidar.exe" (
+            echo "lidar.exe found, running windeployqt"
+            where windeployqt.exe
+            if exist "%Qt6_DIR%\bin\windeployqt.exe" (
+              "%Qt6_DIR%\bin\windeployqt.exe" --release --no-translations --no-system-d3d-compiler ^
+              --dir build build\lidar.exe
+            ) else (
+              echo "ERROR: windeployqt.exe not found!"
+              exit 1
+            )
+          ) else (
+            echo "ERROR: lidar.exe NOT FOUND!"
+            exit 1
+          )
 
       - name: Package Windows Build
+        shell: cmd
         run: |
           mkdir output
-          copy build\\lidar.exe output\\
+          copy build\lidar.exe output\
           7z a lidar-windows-${{ needs.get-info.outputs.shorthash }}.zip output/*
 
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ env.APP_NAME }}-windows-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}
           path: lidar-windows-*.zip
+  macos-qt:
+    runs-on: macos-latest
+    needs: get-info
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
+      - name: Install Ninja
+        run: brew install ninja
+
+      - name: Setup Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: 6.8.2
+          host: mac
+          target: desktop
+          arch: clang_64
+          modules: qtserialport qtcharts
+
+      - name: Configure & Build
+        run: |
+          cmake -G "Ninja" -B build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
+          cmake --build build --config ${{ env.BUILD_TYPE }} --parallel
+
+      - name: Package macOS Build
+        run: |
+          mkdir output
+          cp -R build/lidar.app output/
+          zip -r lidar-macos-${{ needs.get-info.outputs.shorthash }}.zip output/*
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.APP_NAME }}-macos-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}
+          path: lidar-macos-*.zip
+          
   linux-qt:
     runs-on: ubuntu-24.04
     needs: get-info
