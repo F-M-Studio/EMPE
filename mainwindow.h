@@ -22,6 +22,7 @@
 // Replace include with forward declaration
 class PortSettings;
 class AppMenu;
+class MovingAverageFilterParallel;
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -42,11 +43,17 @@ protected:
     void keyPressEvent(QKeyEvent *event) override;
 
 private:
+    // Add these variables for smoothing
+    std::vector<double> distanceBuffer;
+    MovingAverageFilterParallel* filter = nullptr;
+    int filterWindowSize = 5;  // Default window size
+
+
     AppMenu* appMenu;
 
     QTimer *validationTimer{};
     bool deviceValidated = false;
-    const int VALIDATION_TIMEOUT = 500;
+    const int VALIDATION_TIMEOUT = 3000;
 
     QTranslator *translator = nullptr;
     QAction *languageAction{};

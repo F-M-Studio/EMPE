@@ -55,6 +55,25 @@
     <context>
         <name>MainWindow</name>
         <message>
+            <source>Always on Top</source>
+            <translation>Zawsze na wierzchu</translation>
+        </message>
+        <message>
+            <source>Get Raw Data</source>
+            <translation>Pobierz surowe dane</translation>
+        </message>
+        <message>
+            <source>Distance:</source>
+            <translation>Odległość:</translation>
+        </message>
+        <message>
+            <source>Time:</source>
+            <translation>Czas:</translation>
+        </message>
+    </context>
+    <context>
+        <name>AppMenu</name>
+        <message>
             <source>☰ Menu</source>
             <translation>☰ Menu</translation>
         </message>
@@ -82,42 +101,9 @@
             <source>Language</source>
             <translation>Język</translation>
         </message>
-        <message>
-            <source>Port settings</source>
-            <translation>Ustawienia portu</translation>
-        </message>
-        <message>
-            <source>Show Graph</source>
-            <translation>Pokaż Wykres</translation>
-        </message>
-        <message>
-            <source>Start</source>
-            <translation>Start</translation>
-        </message>
-        <message>
-            <source>Stop</source>
-            <translation>Stop</translation>
-        </message>
-        <message>
-            <source>Save data to file</source>
-            <translation>Zapisz dane do pliku</translation>
-        </message>
-        <message>
-            <source>Always on Top</source>
-            <translation>Zawsze na wierzchu</translation>
-        </message>
-        <message>
-            <source>Get Raw Data</source>
-            <translation>Pobierz surowe dane</translation>
-        </message>
-        <message>
-            <source>Distance:</source>
-            <translation>Odległość:</translation>
-        </message>
-        <message>
-            <source>Time:</source>
-            <translation>Czas:</translation>
-        </message>
+    </context>
+    <context>
+        <name>QFileDialog</name>
         <message>
             <source>Save Data</source>
             <translation>Zapisz dane</translation>
@@ -134,6 +120,9 @@
             <source>The file %1 already exists.\nDo you want to replace it?</source>
             <translation>Plik %1 już istnieje.\nCzy chcesz go zastąpić?</translation>
         </message>
+    </context>
+    <context>
+        <name>QMessageBox</name>
         <message>
             <source>Error</source>
             <translation>Błąd</translation>
@@ -236,14 +225,6 @@
         <message>
             <source>Cancel</source>
             <translation>Anuluj</translation>
-        </message>
-        <message>
-            <source>English</source>
-            <translation>Angielski</translation>
-        </message>
-        <message>
-            <source>Polish</source>
-            <translation>Polski</translation>
         </message>
     </context>
 </TS>

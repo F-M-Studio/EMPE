@@ -126,22 +126,23 @@ void MainWindow::openGraphWindow() {
 void MainWindow::saveDataToFile() {
     QString fileName = QFileDialog::getSaveFileName(this, tr("Save Data"), "", tr("CSV Files (*.csv)"));
 
-    // Add .csv extension if not present
+    // Check if the file name is empty
+    if (fileName.isEmpty()) {
+        QMessageBox::warning(this, tr("No File Name"), tr("No file name was provided. Save operation was not performed."));
+        return;
+    }
+
+    // Dodaj rozszerzenie .csv, jeśli nie jest obecne
     if (!fileName.endsWith(".csv", Qt::CaseInsensitive)) {
         fileName += ".csv";
     }
 
-    if (fileName.isEmpty()) {
-        return;
-    }
-
-    // Check if file exists
+    // Sprawdź, czy plik istnieje
     QFile file(fileName);
     if (file.exists()) {
         QMessageBox::StandardButton reply = QMessageBox::question(this,
                                                                   tr("File exists"),
-                                                                  tr(
-                                                                      "The file %1 already exists.\nDo you want to replace it?")
+                                                                  tr("The file %1 already exists.\nDo you want to replace it?")
                                                                   .arg(QDir::toNativeSeparators(fileName)),
                                                                   QMessageBox::Yes | QMessageBox::No);
 
@@ -150,51 +151,17 @@ void MainWindow::saveDataToFile() {
         }
     }
 
+    // Otwórz plik do zapisu
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        QMessageBox::warning(this, tr("Error"),
-                             tr("Cannot write file %1:\n%2.")
-                             .arg(QDir::toNativeSeparators(fileName),
-                                  file.errorString()));
+        QMessageBox::warning(this, tr("Save Error"), tr("Cannot open the file for writing."));
         return;
     }
 
+    // Zapisz dane do pliku (przykładowe dane)
     QTextStream out(&file);
-
-    // Write CSV header
-    out << "Distance;Time (mm:ss);Milliseconds;Raw Time (ms)\n";
-
-    // Parse and write data from dataDisplay
-    QString rawData = dataDisplay->toPlainText();
-    QStringList lines = rawData.split('\n');
-    QRegularExpression regex("YY(\\d+)T(\\d+)E");
-
-    for (const QString &line: lines) {
-        if (QRegularExpressionMatch match = regex.match(line); match.hasMatch()) {
-            QString distance = match.captured(1);
-            const int timeMs = match.captured(2).toInt();
-
-            // Convert milliseconds to components
-            const int minutes = timeMs / 60000;
-            const int seconds = (timeMs % 60000) / 1000;
-            const int milliseconds = timeMs % 1000;
-
-            // Format time as mm:ss
-            QString timeFormatted = QString("%1:%2")
-                    .arg(minutes, 2, 10, QChar('0'))
-                    .arg(seconds, 2, 10, QChar('0'));
-
-            out << QString("%1;%2;%3;%4\n")
-                    .arg(distance, timeFormatted)
-                    .arg(milliseconds)
-                    .arg(timeMs);
-        }
-    }
+    out << "Example data\n"; // Zastąp to swoimi danymi
 
     file.close();
-
-    QMessageBox::information(this, tr("Success"),
-                             tr("Data has been saved to %1")
-                             .arg(QDir::toNativeSeparators(fileName)));
 }
 
 void MainWindow::handleStartStopButton() {
@@ -339,7 +306,7 @@ void MainWindow::parseData(const QString &data) {
         // Apply smoothing logic if not using raw data
         if (!useRawData) {
             // Only update if it's the first reading or if the change is more than 2 units
-            if (lastValidDistance == 0 || abs(newDistance - lastValidDistance) > 2) {
+            if (lastValidDistance == 0 || abs(newDistance - lastValidDistance) > 8) {
                 distance = newDistance;
                 lastValidDistance = newDistance;
             }

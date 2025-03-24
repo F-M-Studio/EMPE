@@ -19,7 +19,7 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
 
     // Make sure the frame fills the central widget
     ui->centralwidget->setLayout(new QVBoxLayout());
-    ui->centralwidget->layout()->setContentsMargins(0, 0, 0, 0);
+    ui->centralwidget->layout()->setContentsMargins(0, 0, 0, 10);
     ui->centralwidget->layout()->addWidget(ui->frame);
 
     auto *appMenu = new AppMenu(this, mainWindow);
@@ -31,32 +31,33 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
 
     delete ui->frame->layout();
 
-    // Create Clear Graph button
-    clearGraphBtn = new QPushButton(tr("Clear Graph"));
-    clearGraphBtn->setFixedWidth(120);
+    // Create the layout first
     auto *clearBtnContainer = new QWidget();
     auto *clearBtnLayout = new QHBoxLayout(clearBtnContainer);
     clearBtnLayout->addStretch();
+
+    // Add start/stop button first (on left)
+    startStopBtn = new QPushButton(mainWindow->Reading ? tr("Stop") : tr("Start"));
+    startStopBtn->setFixedWidth(120);
+    connect(startStopBtn, &QPushButton::clicked, mainWindow, &MainWindow::handleStartStopButton);
+    connect(startStopBtn, &QPushButton::clicked, this, [this, mainWindow]() {
+        startStopBtn->setText(mainWindow->Reading ? tr("Stop") : tr("Start"));
+    });
+    clearBtnLayout->addWidget(startStopBtn);
+
+    // Then add clear button (on right)
+    clearGraphBtn = new QPushButton(tr("Clear Graph"));
+    clearGraphBtn->setFixedWidth(120);
     clearBtnLayout->addWidget(clearGraphBtn);
     clearBtnLayout->addStretch();
-    clearBtnContainer->setLayout(clearBtnLayout);
 
     // Connect clear button
     connect(clearGraphBtn, &QPushButton::clicked, this, &GraphWindow::clearGraph);
-
     series = new QLineSeries();
     chart = new QChart();
     const auto chartView = new QChartView(chart);
-
+    chart->layout()->setContentsMargins(10, 0, 10, 0);
     chartView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-
-    QSurfaceFormat format;
-    format.setSamples(4);
-    format.setSwapInterval(1);
-
-    const auto glWidget = new QOpenGLWidget();
-    glWidget->setFormat(format);
-    chartView->setViewport(glWidget);
 
     axisX = new QValueAxis();
     axisY = new QValueAxis();
@@ -78,9 +79,8 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     chart->legend()->hide();
 
     chart->setBackgroundVisible(true);
-    chart->setBackgroundBrush(QBrush(Qt::white));
     chart->setPlotAreaBackgroundVisible(true);
-    chart->setPlotAreaBackgroundBrush(QBrush(Qt::white));
+    updateChartTheme();
 
     chartView->setRenderHint(QPainter::Antialiasing);
     chartView->setFrameStyle(QFrame::NoFrame);
@@ -99,6 +99,7 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     // Create Y-axis control components
     yAxisToggle = new QCheckBox(tr("Set Y"));
     yAxisTitleLabel = new QLabel(tr("Y axis range:"));
+    yAxisTitleLabel->setContentsMargins(10, 0, 0, 0);
     yAxisSlider = new QSlider(Qt::Horizontal);
     yAxisEdit = new QLineEdit("100");
     yAxisEdit->setAlignment(Qt::AlignRight);
@@ -115,6 +116,7 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     autoRemoveToggle = new QCheckBox(tr("Auto-remove points"));
     autoRemoveToggle->setChecked(true);
     pointsLimitLabel = new QLabel(tr("Points limit:"));
+    pointsLimitLabel->setContentsMargins(10, 0, 0, 0);
     pointsLimitSlider = new QSlider(Qt::Horizontal);
     pointsLimitEdit = new QLineEdit("100");
     pointsLimitEdit->setAlignment(Qt::AlignRight);
@@ -128,6 +130,7 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     smoothingToggle = new QCheckBox(tr("Smooth Graph"));
     smoothingToggle->setChecked(false);
     smoothingLevelLabel = new QLabel(tr("Smoothing:"));
+    smoothingLevelLabel->setContentsMargins(10, 0, 0, 0);
     smoothingLevelSlider = new QSlider(Qt::Horizontal);
     smoothingLevelEdit = new QLineEdit("5");
     smoothingLevelEdit->setAlignment(Qt::AlignRight);
@@ -143,6 +146,9 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     // Create the widget for smoothing controls
     auto *smoothingWidget = new QWidget();
     auto *smoothingLayout = new QHBoxLayout(smoothingWidget);
+    // Set the margins and spacing for the layout (change if shitty)
+    smoothingLayout->setContentsMargins(11, 2, 11, 2);
+    smoothingLayout->setSpacing(4);
     smoothingLayout->addWidget(smoothingToggle);
     smoothingLayout->addWidget(smoothingLevelLabel);
     smoothingLayout->addWidget(smoothingLevelSlider);
@@ -155,6 +161,11 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     // Create widgets for sliders
     auto *recordingSliderWidget = new QWidget();
     auto *recordingLayout = new QHBoxLayout(recordingSliderWidget);
+    // Set the margins and spacing for the layout (change if shitty)
+    recordingLayout->setContentsMargins(11, 2, 11, 2);
+    recordingLayout->setSpacing(4);
+
+
     recordingLayout->addWidget(recordingTitleLabel);
     recordingLayout->addWidget(recordingSlider);
     recordingLayout->addWidget(recordingEdit);
@@ -162,6 +173,10 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
 
     auto *yAxisSliderWidget = new QWidget();
     auto *yAxisLayout = new QHBoxLayout(yAxisSliderWidget);
+    // Set the margins and spacing for the layout (change if shitty)
+    yAxisLayout->setContentsMargins(11, 2, 11, 2);
+    yAxisLayout->setSpacing(4);
+
     yAxisLayout->addWidget(yAxisToggle);
     yAxisLayout->addWidget(yAxisTitleLabel);
     yAxisLayout->addWidget(yAxisSlider);
@@ -170,6 +185,10 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
 
     auto *pointsLimitWidget = new QWidget();
     auto *pointsLayout = new QHBoxLayout(pointsLimitWidget);
+    // Set the margins and spacing for the layout (change if shitty)
+    pointsLayout->setContentsMargins(11, 2, 11, 2);
+    pointsLayout->setSpacing(4);
+
     pointsLayout->addWidget(autoRemoveToggle);
     pointsLayout->addWidget(pointsLimitLabel);
     pointsLayout->addWidget(pointsLimitSlider);
@@ -185,6 +204,52 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     mainLayout->addWidget(pointsLimitWidget);
     ui->frame->setLayout(mainLayout);
 
+    // Enable all rendering hints for high-quality text
+    chartView->setRenderHint(QPainter::Antialiasing);
+    chartView->setRenderHint(QPainter::TextAntialiasing);
+    chartView->setRenderHint(QPainter::SmoothPixmapTransform);
+    chartView->setRenderHint(QPainter::LosslessImageRendering);
+
+    // Set better OpenGL format
+    QSurfaceFormat format;
+    format.setSamples(8); // Increase from 4 to 8 for better anti-aliasing
+    format.setDepthBufferSize(24);
+    format.setStencilBufferSize(8);
+    format.setSwapInterval(1);
+    format.setAlphaBufferSize(8);
+
+    const auto glWidget = new QOpenGLWidget();
+    glWidget->setFormat(format);
+    chartView->setViewport(glWidget);
+
+    // Improve axis label appearance
+    QFont axisFont = axisX->labelsFont();
+    axisFont.setPointSize(axisFont.pointSize() + 1); // Slightly larger font
+    axisFont.setHintingPreference(QFont::PreferFullHinting);
+    axisX->setLabelsFont(axisFont);
+    axisY->setLabelsFont(axisFont);
+
+    // Apply high DPI scaling for the chart
+    chart->setMinimumSize(50, 50); // Force chart to respect size policies
+
+    QFont titleFont = axisX->titleFont();
+    titleFont.setPointSize(titleFont.pointSize() + 1);
+    titleFont.setHintingPreference(QFont::PreferFullHinting);
+    axisX->setTitleFont(titleFont);
+    axisY->setTitleFont(titleFont);
+
+#ifdef Q_OS_MAC
+    // Use SF Pro Display for titles
+    titleFont = QFont("SF Pro Display", 14);
+    titleFont.setWeight(QFont::Bold);
+#else
+    titleFont = axisX->titleFont();
+    titleFont.setPointSize(titleFont.pointSize() + 2);
+#endif
+    titleFont.setHintingPreference(QFont::PreferFullHinting);
+    axisX->setTitleFont(titleFont);
+    axisY->setTitleFont(titleFont);
+
     updateTimer = new QTimer(this);
     connect(updateTimer, &QTimer::timeout, this, &GraphWindow::updateGraph);
 
@@ -194,7 +259,7 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     });
 
     connect(recordingEdit, &QLineEdit::editingFinished, this, [this] {
-        int value = recordingEdit->text().toInt();
+        const int value = recordingEdit->text().toInt();
         recordingSlider->setValue(value);
         updateTimer->setInterval(value);
     });
@@ -219,7 +284,7 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     });
 
     connect(yAxisEdit, &QLineEdit::editingFinished, this, [this]() {
-        int value = yAxisEdit->text().toInt();
+        const int value = yAxisEdit->text().toInt();
         yAxisSlider->setValue(value);
         if (manualYAxisControl) {
             axisY->setRange(-1, value + 1);
@@ -247,7 +312,7 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     mainLayout->addWidget(smoothingWidget);
 
     // Modify the smoothingToggle connection
-    connect(smoothingToggle, &QCheckBox::toggled, this, [this](bool checked) {
+    connect(smoothingToggle, &QCheckBox::toggled, this, [this](const bool checked) {
         useSpline = checked;
         smoothingLevelSlider->setEnabled(checked);
         smoothingLevelLabel->setEnabled(checked);
@@ -281,16 +346,18 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
 
     // Connect smoothing level edit
     connect(smoothingLevelEdit, &QLineEdit::editingFinished, this, [this] {
-        int value = smoothingLevelEdit->text().toInt();
+        const int value = smoothingLevelEdit->text().toInt();
         smoothingLevelSlider->setValue(value);
     });
 
     timeAxisToggle = new QCheckBox(tr("Use Relative Time"));
-    timeAxisToggle->setChecked(false);
+    timeAxisToggle->setChecked(true);
 
 
     auto *timeAxisWidget = new QWidget();
     auto *timeAxisLayout = new QHBoxLayout(timeAxisWidget);
+    timeAxisLayout->setContentsMargins(11, 2, 11, 2);
+    timeAxisLayout->setSpacing(4);
     timeAxisLayout->addWidget(timeAxisToggle);
     timeAxisWidget->setLayout(timeAxisLayout);
 
@@ -299,7 +366,7 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     connect(timeAxisToggle, &QCheckBox::toggled, this, [this, mainWindow](bool checked) {
         useAbsoluteTime = !checked; // Toggle is for "Relative Time" so invert the logic
 
-        // If switching to relative time, set initial time
+        useAbsoluteTime = !timeAxisToggle->isChecked();
         if (!useAbsoluteTime && mainWindow->Reading) {
             initialTime = mainWindow->timeInMilliseconds;
         }
@@ -310,9 +377,14 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     });
 
     updateTimer->start(recordingSlider->value());
+
+    QTimer::singleShot(0, this, &GraphWindow::updateChartTheme);
+    connect(qApp, &QApplication::paletteChanged, this, &GraphWindow::updateChartTheme);
+    updateTimer->start(recordingSlider->value());
+
 }
 
-/* Barely working auto random gen data
+/* Barely working auto random gen data*/
 void GraphWindow::keyPressEvent(QKeyEvent *event) {
     if (event->key() == Qt::Key_F5) {
         Gen = !Gen;
@@ -347,7 +419,92 @@ void GraphWindow::keyPressEvent(QKeyEvent *event) {
         QMainWindow::keyPressEvent(event);
     }
 }
-*/
+
+void GraphWindow::changeEvent(QEvent *event) {
+    if (event->type() == QEvent::PaletteChange) {
+        updateChartTheme();
+    }
+    QMainWindow::changeEvent(event);
+}
+
+void GraphWindow::updateChartTheme() {
+    if (!chart || !axisX || !axisY || !series || !splineSeries) {
+        return; // Guard against null pointers
+    }
+
+    QPalette pal = palette();
+
+    // Determine if we're in dark mode
+    bool isDarkMode = pal.color(QPalette::Window).lightness() < 128;
+
+    // Set chart theme based on system theme
+    chart->setTheme(isDarkMode ? QChart::ChartThemeDark : QChart::ChartThemeLight);
+
+    // Override the chart theme with specific palette colors
+    QColor bgColor = pal.color(QPalette::Window);
+    QColor baseColor = pal.color(QPalette::Base);
+    QColor textColor = pal.color(QPalette::Text);
+
+    // Set chart background properties
+    chart->setBackgroundVisible(true);
+    chart->setBackgroundBrush(QBrush(bgColor));
+    chart->setPlotAreaBackgroundVisible(true);
+    chart->setPlotAreaBackgroundBrush(QBrush(baseColor));
+    chart->setBackgroundPen(QPen(textColor));
+
+    // Set text colors
+    chart->setTitleBrush(QBrush(textColor));
+
+    // Update axes
+    axisX->setLabelsColor(textColor);
+    axisY->setLabelsColor(textColor);
+    axisX->setTitleBrush(QBrush(textColor));
+    axisY->setTitleBrush(QBrush(textColor));
+    axisX->setLinePenColor(textColor);
+    axisY->setLinePenColor(textColor);
+
+    // Make grid lines very light
+    QColor gridColor = textColor;
+    gridColor.setAlpha(30); // Reduced from 50
+    axisX->setGridLineColor(gridColor);
+    axisY->setGridLineColor(gridColor);
+
+    QColor minorGridColor = textColor;
+    minorGridColor.setAlpha(15); // Reduced from 25
+    axisX->setMinorGridLineColor(minorGridColor);
+    axisY->setMinorGridLineColor(minorGridColor);
+
+    // Use high-contrast colors for the series
+    QColor primaryColor;
+    QColor secondaryColor;
+
+    if (isDarkMode) {
+        // Bright colors for dark mode
+        primaryColor = QColor(0, 230, 118);    // Bright green
+        secondaryColor = QColor(255, 128, 0);  // Bright orange
+    } else {
+        // Strong colors for light mode
+        primaryColor = QColor(0, 100, 255);    // Deep blue
+        secondaryColor = QColor(220, 0, 80);   // Deep red
+    }
+
+    // Create new pens with increased width
+    QPen newSeriesPen(primaryColor);
+    newSeriesPen.setWidth(3); // Increased from 2
+    newSeriesPen.setCapStyle(Qt::RoundCap);
+    newSeriesPen.setJoinStyle(Qt::RoundJoin);
+    series->setPen(newSeriesPen);
+
+    QPen newSplinePen(secondaryColor);
+    newSplinePen.setWidth(3); // Increased from 2
+    newSplinePen.setCapStyle(Qt::RoundCap);
+    newSplinePen.setJoinStyle(Qt::RoundJoin);
+    splineSeries->setPen(newSplinePen);
+
+    // Force a complete redraw
+    chart->update();
+    chart->scene()->update();
+}
 
 void GraphWindow::applySmoothing() const {
     if (!useSpline || series->count() < 2) {
@@ -399,7 +556,29 @@ void GraphWindow::clearGraph() {
 
 
 GraphWindow::~GraphWindow() {
+    // First stop the timer to prevent further updates
+    if (updateTimer) {
+        updateTimer->stop();
+        disconnect(updateTimer, nullptr, this, nullptr);
+        delete updateTimer;
+        updateTimer = nullptr;
+    }
+
+    // Clean up chart and series before deleting UI
+    if (chart) {
+        // Remove series from chart before deleting them
+        if (series) chart->removeSeries(series);
+        if (splineSeries) chart->removeSeries(splineSeries);
+    }
+
+    // Now it's safe to delete objects
     delete ui;
+
+    // Delete remaining objects
+    delete series;
+    delete splineSeries;
+    // Note: chart will delete its axes when destroyed
+    delete chart;
 }
 
 void GraphWindow::resizeEvent(QResizeEvent *event) {
@@ -407,6 +586,8 @@ void GraphWindow::resizeEvent(QResizeEvent *event) {
 }
 
 void GraphWindow::updateGraph() {
+    startStopBtn->setText(mainWindow->Reading ? tr("Stop") : tr("Start"));
+
     if (mainWindow->Reading) {
         // Calculate X coordinate based on mode
         double xValue = useAbsoluteTime ? mainWindow->timeInMilliseconds : mainWindow->timeInMilliseconds - initialTime;
@@ -450,7 +631,7 @@ void GraphWindow::updateGraph() {
 
             axisX->setRange(xMin, xMax);
             if (!manualYAxisControl) {
-                axisY->setRange(qMax(0.0, yMin) - 1, yMax + 1);
+                axisY->setRange(qMax(0.0, yMin - 500), yMax + 500);
             }
         }
     }
@@ -459,6 +640,7 @@ void GraphWindow::updateGraph() {
 void GraphWindow::retranslateUi() {
     setWindowTitle(tr("Graph"));
     clearGraphBtn->setText(tr("Clear Graph"));
+    startStopBtn->setText(mainWindow->Reading ? tr("Stop") : tr("Start"));
     axisX->setTitleText(tr("Time (min:ms)"));
     axisY->setTitleText(tr("Distance"));
     recordingTitleLabel->setText(tr("Recording period [ms]:"));

@@ -9,7 +9,11 @@
 #include <QtCharts>
 
 QT_BEGIN_NAMESPACE
-namespace Ui { class GraphWindow; }
+
+namespace Ui {
+    class GraphWindow;
+}
+
 QT_END_NAMESPACE
 
 class GraphWindow : public QMainWindow {
@@ -17,16 +21,18 @@ class GraphWindow : public QMainWindow {
 
 public:
     void retranslateUi();
+
     explicit GraphWindow(MainWindow *mainWindow, QWidget *parent = nullptr);
 
-   // void keyPressEvent(QKeyEvent *event) override;
+    void keyPressEvent(QKeyEvent *event) override;
 
     ~GraphWindow() override;
-    [[nodiscard]] QChart* getChart() const { return chart; }
 
+    [[nodiscard]] QChart *getChart() const { return chart; }
 
 protected:
-    void resizeEvent(QResizeEvent* event) override;
+    void changeEvent(QEvent *event) override;
+    void resizeEvent(QResizeEvent *event) override;
 
 private slots:
     void updateGraph();
@@ -34,7 +40,9 @@ private slots:
     void clearGraph();
 
 private:
-    AppMenu* appMenu{};
+    void updateChartTheme();
+
+    AppMenu *appMenu{};
 
     bool Gen = false;
 
@@ -56,6 +64,7 @@ private:
     QLineEdit *yAxisEdit;
 
     QPushButton *clearGraphBtn;
+    QPushButton *startStopBtn;
 
     QCheckBox *yAxisToggle;
     QSlider *yAxisSlider;
@@ -76,11 +85,12 @@ private:
     QLineEdit *smoothingLevelEdit;
     QLabel *smoothingLevelLabel;
     bool useSpline = false;
+
     void applySmoothing() const;
 
     QCheckBox *timeAxisToggle;
-    bool useAbsoluteTime = true;
-    qint64 initialTime = 0;
+    bool useAbsoluteTime = false;
+    long long initialTime = 0;
 };
 
 #endif // GRAPHWINDOW_H
