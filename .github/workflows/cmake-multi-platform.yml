@@ -52,7 +52,7 @@ jobs:
 
       - name: Configure & Build
         run: |
-          cmake -G "Ninja" -B build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl
+          cmake -G "MinGW Makefiles" -B build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
           cmake --build build --config ${{ env.BUILD_TYPE }} --parallel
 
       - name: Package Windows Build
