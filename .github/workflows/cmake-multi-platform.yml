@@ -36,6 +36,14 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Install Ninja
+        run: choco install ninja -y
+      
+      - name: Setup Visual Studio Environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: amd64
+      
       - name: Setup Qt
         uses: jurplel/install-qt-action@v4
         with:
@@ -43,18 +51,18 @@ jobs:
           host: windows
           target: desktop
           arch: win64_msvc2022_64
-          cache: true
           modules: qtserialport qtcharts
+          cache: true
 
       - name: Configure & Build
         run: |
-          cmake -G "Ninja" -B build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
+          cmake -G "Ninja" -B build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl
           cmake --build build --config ${{ env.BUILD_TYPE }} --parallel
 
       - name: Package Windows Build
         run: |
           mkdir output
-          copy build\lidar.exe output\
+          copy build\\lidar.exe output\\
           7z a lidar-windows-${{ needs.get-info.outputs.shorthash }}.zip output/*
 
       - uses: actions/upload-artifact@v4
@@ -72,7 +80,9 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          sudo apt update && sudo apt install -y ninja-build qt6-base-dev qt6-tools-dev qt6-serialport-dev libqt6charts6-dev
+          sudo apt update && sudo apt install -y \
+          ninja-build qt6-base-dev qt6-tools-dev qt6-serialport-dev libqt6charts6-dev \
+          libxkbcommon-dev libx11-dev libxext-dev libglfw3-dev libgles2-mesa-dev
 
       - name: Configure & Build
         run: |
@@ -89,60 +99,3 @@ jobs:
         with:
           name: ${{ env.APP_NAME }}-linux-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}
           path: lidar-linux-*.tar.gz
-
-  macos-qt:
-    runs-on: macos-latest
-    needs: get-info
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Install Ninja
-        run: brew install ninja
-
-      - name: Setup Qt
-        uses: jurplel/install-qt-action@v4
-        with:
-          version: 6.8.2
-          host: mac
-          target: desktop
-          arch: clang_64
-          modules: qtserialport qtcharts
-
-      - name: Configure & Build
-        run: |
-          cmake -G "Ninja" -B build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
-          cmake --build build --config ${{ env.BUILD_TYPE }} --parallel
-
-      - name: Package macOS Build
-        run: |
-          mkdir output
-          cp -R build/lidar.app output/
-          zip -r lidar-macos-${{ needs.get-info.outputs.shorthash }}.zip output/*
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: ${{ env.APP_NAME }}-macos-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}
-          path: lidar-macos-*.zip
-
-  release:
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    needs: [get-info, windows-qt, linux-qt, macos-qt]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: ./artifacts
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
-        with:
-          name: "${{ env.APP_NAME }} ${{ needs.get-info.outputs.date }} (${{ needs.get-info.outputs.shorthash }})"
-          tag_name: "v${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}"
-          body: "Automated release for commit ${{ needs.get-info.outputs.fullhash }}."
-          prerelease: true
-          files: artifacts/*
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
