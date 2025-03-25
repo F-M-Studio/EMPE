@@ -556,29 +556,7 @@ void GraphWindow::clearGraph() {
 
 
 GraphWindow::~GraphWindow() {
-    // First stop the timer to prevent further updates
-    if (updateTimer) {
-        updateTimer->stop();
-        disconnect(updateTimer, nullptr, this, nullptr);
-        delete updateTimer;
-        updateTimer = nullptr;
-    }
-
-    // Clean up chart and series before deleting UI
-    if (chart) {
-        // Remove series from chart before deleting them
-        if (series) chart->removeSeries(series);
-        if (splineSeries) chart->removeSeries(splineSeries);
-    }
-
-    // Now it's safe to delete objects
     delete ui;
-
-    // Delete remaining objects
-    delete series;
-    delete splineSeries;
-    // Note: chart will delete its axes when destroyed
-    delete chart;
 }
 
 void GraphWindow::resizeEvent(QResizeEvent *event) {
