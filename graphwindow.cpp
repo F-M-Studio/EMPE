@@ -250,6 +250,7 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     axisY->setTitleFont(titleFont);
 
     updateTimer = new QTimer(this);
+    updateChartTheme();
     connect(updateTimer, &QTimer::timeout, this, &GraphWindow::updateGraph);
 
     connect(recordingSlider, &QSlider::valueChanged, this, [this](const int value) {
