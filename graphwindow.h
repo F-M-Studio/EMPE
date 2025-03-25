@@ -30,9 +30,8 @@ public:
 
     [[nodiscard]] QChart *getChart() const { return chart; }
 
-    void changeEvent(QEvent *event) override;
-
 protected:
+    void changeEvent(QEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
 
 private slots:

@@ -379,6 +379,7 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     updateTimer->start(recordingSlider->value());
 
     QTimer::singleShot(0, this, &GraphWindow::updateChartTheme);
+    connect(qApp, &QApplication::paletteChanged, this, &GraphWindow::updateChartTheme);
     updateTimer->start(recordingSlider->value());
 
 }
@@ -420,10 +421,9 @@ void GraphWindow::keyPressEvent(QKeyEvent *event) {
 }
 
 void GraphWindow::changeEvent(QEvent *event) {
-    if (event->type() == QEvent::PaletteChange ||
-        event->type() == QEvent::ApplicationPaletteChange) {
+    if (event->type() == QEvent::PaletteChange) {
         updateChartTheme();
-        }
+    }
     QMainWindow::changeEvent(event);
 }
 
