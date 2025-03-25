@@ -444,6 +444,7 @@ void GraphWindow::updateChartTheme() {
 
     chart->setBackgroundVisible(true);
     chart->setBackgroundBrush(QBrush(bgColor));
+    chart->setBackgroundRoundness(0); // Ensure no rounded corners
     chart->setPlotAreaBackgroundVisible(true);
     chart->setPlotAreaBackgroundBrush(QBrush(baseColor));
 
