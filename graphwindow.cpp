@@ -80,7 +80,6 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
 
     chart->setBackgroundVisible(true);
     chart->setPlotAreaBackgroundVisible(true);
-    updateChartTheme();
 
     chartView->setRenderHint(QPainter::Antialiasing);
     chartView->setFrameStyle(QFrame::NoFrame);
