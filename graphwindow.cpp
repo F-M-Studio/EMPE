@@ -38,7 +38,7 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
 
     // Add start/stop button first (on left)
     startStopBtn = new QPushButton(mainWindow->Reading ? tr("Stop") : tr("Start"));
-    startStopBtn->setFixedWidth(120);
+    startStopBtn->setFixedWidth(80);
     connect(startStopBtn, &QPushButton::clicked, mainWindow, &MainWindow::handleStartStopButton);
     connect(startStopBtn, &QPushButton::clicked, this, [this, mainWindow]() {
         startStopBtn->setText(mainWindow->Reading ? tr("Stop") : tr("Start"));
@@ -47,7 +47,7 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
 
     // Then add clear button (on right)
     clearGraphBtn = new QPushButton(tr("Clear Graph"));
-    clearGraphBtn->setFixedWidth(120);
+    clearGraphBtn->setFixedWidth(140);
     clearBtnLayout->addWidget(clearGraphBtn);
     clearBtnLayout->addStretch();
 
@@ -56,7 +56,7 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     series = new QLineSeries();
     chart = new QChart();
     const auto chartView = new QChartView(chart);
-    chart->layout()->setContentsMargins(10, 0, 10, 0);
+    chart->layout()->setContentsMargins(0, 0, 0, 0);
     chartView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     axisX = new QValueAxis();
@@ -433,24 +433,19 @@ void GraphWindow::updateChartTheme() {
     }
 
     QPalette pal = palette();
-
-    // Determine if we're in dark mode
     bool isDarkMode = pal.color(QPalette::Window).lightness() < 128;
 
     // Set chart theme based on system theme
     chart->setTheme(isDarkMode ? QChart::ChartThemeDark : QChart::ChartThemeLight);
 
-    // Override the chart theme with specific palette colors
     QColor bgColor = pal.color(QPalette::Window);
     QColor baseColor = pal.color(QPalette::Base);
     QColor textColor = pal.color(QPalette::Text);
 
-    // Set chart background properties
     chart->setBackgroundVisible(true);
     chart->setBackgroundBrush(QBrush(bgColor));
     chart->setPlotAreaBackgroundVisible(true);
     chart->setPlotAreaBackgroundBrush(QBrush(baseColor));
-    chart->setBackgroundPen(QPen(textColor));
 
     // Set text colors
     chart->setTitleBrush(QBrush(textColor));
