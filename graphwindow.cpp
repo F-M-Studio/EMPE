@@ -492,13 +492,11 @@ void GraphWindow::updateChartTheme() {
     QPen newSeriesPen(primaryColor);
     newSeriesPen.setWidth(3); // Increased from 2
     newSeriesPen.setCapStyle(Qt::RoundCap);
-    newSeriesPen.setJoinStyle(Qt::RoundJoin);
     series->setPen(newSeriesPen);
 
     QPen newSplinePen(secondaryColor);
     newSplinePen.setWidth(3); // Increased from 2
     newSplinePen.setCapStyle(Qt::RoundCap);
-    newSplinePen.setJoinStyle(Qt::RoundJoin);
     splineSeries->setPen(newSplinePen);
 
     // Force a complete redraw
