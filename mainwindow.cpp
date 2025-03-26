@@ -21,11 +21,11 @@
 #include <QApplication>
 
 MainWindow::MainWindow(QWidget *parent)
-: QMainWindow(parent)
-, portSettings(new PortSettings(this))
-,serialPort(nullptr)
-,serialPort2(nullptr)
-, isReading(false) {
+    : QMainWindow(parent)
+      , portSettings(new PortSettings(this))
+      , serialPort(nullptr)
+      , serialPort2(nullptr)
+      , isReading(false) {
     centralWidget = new QWidget(this);
     setCentralWidget(centralWidget);
 
@@ -87,9 +87,11 @@ void MainWindow::createControls() {
 
     // Add second device controls
     auto *distance2Label = new QLabel("Distance 2:");
+    distance2Label->setObjectName("distance2Label");
     distance2Input = new QLineEdit("00");
     distance2Input->setReadOnly(true);
     auto *time2Label = new QLabel("Time 2:");
+    time2Label->setObjectName("time2Label");
     time2Input = new QTimeEdit();
     time2Input->setDisplayFormat("mm:ss.zzz");
     time2Input->setReadOnly(true);
@@ -155,7 +157,8 @@ void MainWindow::saveDataToFile() {
 
     // Check if the file name is empty
     if (fileName.isEmpty()) {
-        QMessageBox::warning(this, tr("No File Name"), tr("No file name was provided. Save operation was not performed."));
+        QMessageBox::warning(this, tr("No File Name"),
+                             tr("No file name was provided. Save operation was not performed."));
         return;
     }
 
@@ -169,7 +172,8 @@ void MainWindow::saveDataToFile() {
     if (file.exists()) {
         QMessageBox::StandardButton reply = QMessageBox::question(this,
                                                                   tr("File exists"),
-                                                                  tr("The file %1 already exists.\nDo you want to replace it?")
+                                                                  tr(
+                                                                      "The file %1 already exists.\nDo you want to replace it?")
                                                                   .arg(QDir::toNativeSeparators(fileName)),
                                                                   QMessageBox::Yes | QMessageBox::No);
 
@@ -303,12 +307,9 @@ bool MainWindow::startReading() {
         QByteArray data = serialPort->readAll();
         dataDisplay->append(QString::fromUtf8(data));
 
-        // Check if data matches our expected pattern
-        const QRegularExpression regex("YY(\\d+)T(\\d+)E");
-        QRegularExpressionMatch match = regex.match(QString::fromUtf8(data));
-
-        if (match.hasMatch() && !deviceValidated) {
-            // Valid data received - device is validated
+        // Validate device if needed
+        const QString dataStr = QString::fromUtf8(data);
+        if (!deviceValidated && dataStr.contains(QRegularExpression("YY\\d+T\\d+E"))) {
             deviceValidated = true;
             if (validationTimer) {
                 validationTimer->stop();
@@ -319,7 +320,7 @@ bool MainWindow::startReading() {
         }
 
         if (deviceValidated) {
-            parseData(QString::fromUtf8(data));
+            parseData(dataStr, false); // false = first device
         }
     });
 
@@ -329,7 +330,7 @@ bool MainWindow::startReading() {
         // Check if port2 is different from port1
         if (port2Name == portName) {
             QMessageBox::warning(this, "Port Error",
-                                "Cannot use the same port for both devices in dual mode.");
+                                 "Cannot use the same port for both devices in dual mode.");
             return false;
         }
 
@@ -344,8 +345,8 @@ bool MainWindow::startReading() {
 
         if (!serialPort2->open(QIODevice::ReadOnly)) {
             QMessageBox::warning(this, "Port Error",
-                                "Failed to open second port " + port2Name + ".\n\n"
-                                "Error: " + serialPort2->errorString());
+                                 "Failed to open second port " + port2Name + ".\n\n"
+                                 "Error: " + serialPort2->errorString());
             delete serialPort2;
             serialPort2 = nullptr;
 
@@ -395,44 +396,70 @@ void MainWindow::parseData2(const QString &data) {
             time2Input->setTime(QTime(0, minutes2, seconds2, milliseconds2));
 
             // Make sure controls are visible
-            distance2Input->parentWidget()->findChild<QLabel*>("Distance 2:")->setVisible(true);
+            QLabel *distanceLabel = findChild<QLabel *>("distance2Label");
+            if (distanceLabel) distanceLabel->setVisible(true);
             distance2Input->setVisible(true);
-            time2Input->parentWidget()->findChild<QLabel*>("Time 2:")->setVisible(true);
+
+            QLabel *timeLabel = findChild<QLabel *>("time2Label");
+            if (timeLabel) timeLabel->setVisible(true);
             time2Input->setVisible(true);
         }
     }
 }
 
-void MainWindow::parseData(const QString &data) {
+void MainWindow::parseData(const QString &data, bool isSecondDevice = false) {
     const QRegularExpression regex("YY(\\d+)T(\\d+)E");
+    QRegularExpressionMatch match = regex.match(data);
 
-    if (const QRegularExpressionMatch match = regex.match(data); match.hasMatch()) {
-        const QString distanceStr = match.captured(1);
-        const QString timeStr = match.captured(2);
-        const int newDistance = distanceStr.toInt();
-        timeInMilliseconds = timeStr.toInt();
-        minutes = timeInMilliseconds / 60000;
-        seconds = timeInMilliseconds % 60000 / 1000;
-        milliseconds = timeInMilliseconds % 1000;
+    if (match.hasMatch()) {
+        bool ok1 = false, ok2 = false;
+        int newDistance = match.captured(1).toInt(&ok1);
+        int newTime = match.captured(2).toInt(&ok2);
 
-        // Apply smoothing logic if not using raw data
-        if (!useRawData) {
-            // Only update if it's the first reading or if the change is more than 2 units
-            if (lastValidDistance == 0 || abs(newDistance - lastValidDistance) > 8) {
+        if (ok1 && ok2) {
+            // Reference the appropriate variables based on which device we're handling
+            int &distance = isSecondDevice ? distance2 : this->distance;
+            int &lastValidDistance = isSecondDevice ? lastValidDistance2 : this->lastValidDistance;
+            int &timeInMs = isSecondDevice ? timeInMilliseconds2 : timeInMilliseconds;
+
+            // Store the time
+            timeInMs = newTime;
+
+            // Apply consistent smoothing logic
+            if (!useRawData) {
+                if (lastValidDistance == 0 || abs(newDistance - lastValidDistance) <= 8) {
+                    distance = newDistance;
+                    lastValidDistance = newDistance;
+                }
+            } else {
                 distance = newDistance;
                 lastValidDistance = newDistance;
             }
-        } else {
-            // Use raw data directly
-            distance = newDistance;
-            lastValidDistance = newDistance;
+
+            // Store the data point
+            dataPoints.append({distance, timeInMs});
+
+            // Update UI
+            QLineEdit *distanceInput = isSecondDevice ? distance2Input : this->distanceInput;
+            QTimeEdit *timeInput = isSecondDevice ? time2Input : this->timeInput;
+
+            distanceInput->setText(QString::number(distance));
+            int minutes = timeInMs / 60000;
+            int seconds = timeInMs % 60000 / 1000;
+            int milliseconds = timeInMs % 1000;
+            timeInput->setTime(QTime(0, minutes, seconds, milliseconds));
+
+            // Make second device controls visible if needed
+            if (isSecondDevice) {
+                QLabel *distanceLabel = findChild<QLabel *>("distance2Label");
+                if (distanceLabel) distanceLabel->setVisible(true);
+                distance2Input->setVisible(true);
+
+                QLabel *timeLabel = findChild<QLabel *>("time2Label");
+                if (timeLabel) timeLabel->setVisible(true);
+                time2Input->setVisible(true);
+            }
         }
-
-        // Store the data point
-        dataPoints.append({distance, timeInMilliseconds});
-
-        distanceInput->setText(QString::number(distance));
-        timeInput->setTime(QTime(0, minutes, seconds, milliseconds));
     }
 }
 
@@ -490,11 +517,11 @@ void MainWindow::loadLanguage(const QString &language) {
     appMenu->setLanguage(language);
 
     // Update all other windows
-    for (QWidget *widget : QApplication::topLevelWidgets()) {
+    for (QWidget *widget: QApplication::topLevelWidgets()) {
         if (auto *graphWindow = qobject_cast<GraphWindow *>(widget)) {
             graphWindow->retranslateUi();
             // Update AppMenu in GraphWindow
-            for (QObject *child : graphWindow->children()) {
+            for (QObject *child: graphWindow->children()) {
                 if (auto *menu = qobject_cast<AppMenu *>(child)) {
                     menu->retranslateUi();
                     menu->setLanguage(language);
@@ -508,6 +535,7 @@ void MainWindow::loadLanguage(const QString &language) {
         portSettings->retranslateUi();
     }
 }
+
 // Add this new method to handle retranslation
 void MainWindow::retranslateUi() {
     this->setWindowTitle(tr("EMPE"));
@@ -537,11 +565,11 @@ void MainWindow::updateUIValues(int distance1, int time1, int distance2, int tim
         time2Input->setTime(time2Obj);
 
         // Make second device controls visible
-        QLabel* distanceLabel = distance2Input->parentWidget()->findChild<QLabel*>("Distance 2:");
+        QLabel *distanceLabel = findChild<QLabel *>("distance2Label");
         if (distanceLabel) distanceLabel->setVisible(true);
         distance2Input->setVisible(true);
 
-        QLabel* timeLabel = time2Input->parentWidget()->findChild<QLabel*>("Time 2:");
+        QLabel *timeLabel = findChild<QLabel *>("time2Label");
         if (timeLabel) timeLabel->setVisible(true);
         time2Input->setVisible(true);
     }

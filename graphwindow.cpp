@@ -393,15 +393,12 @@ void GraphWindow::keyPressEvent(QKeyEvent *event) {
             connect(genTimer, &QTimer::timeout, this, [this]() {
                 // Generate random distance and incrementing time
                 static int timeValue = 0;
-                timeValue += 100;  // Increment by 100ms
+                timeValue += 100; // Increment by 100ms
 
                 // First device data
                 int randomDistance = QRandomGenerator::global()->bounded(40, 60);
                 mainWindow->distance = randomDistance;
                 mainWindow->timeInMilliseconds = timeValue;
-                mainWindow->minutes = timeValue / 60000;
-                mainWindow->seconds = (timeValue % 60000) / 1000;
-                mainWindow->milliseconds = timeValue % 1000;
                 mainWindow->Reading = true;
 
                 // Second device data (different range to easily distinguish)
@@ -413,7 +410,7 @@ void GraphWindow::keyPressEvent(QKeyEvent *event) {
                 // Enable dual mode to display both graphs
                 dualMode = true;
 
-                // Update UI elements using the new method
+                // Update UI elements using the method we created
                 mainWindow->updateUIValues(
                     randomDistance, timeValue,
                     randomDistance2, timeValue,
@@ -423,10 +420,13 @@ void GraphWindow::keyPressEvent(QKeyEvent *event) {
                 updateGraph();
             });
 
-            genTimer->start(100);  // Generate data every 100ms
+            genTimer->start(100); // Generate data every 100ms
+
+            // Set debug mode label
+            setWindowTitle(tr("Graph Window - DEBUG MODE"));
         } else {
             // Stop all timers except updateTimer
-            for (QTimer *timer : findChildren<QTimer*>()) {
+            for (QTimer *timer: findChildren<QTimer *>()) {
                 if (timer != updateTimer) {
                     timer->stop();
                     timer->deleteLater();
@@ -443,6 +443,9 @@ void GraphWindow::keyPressEvent(QKeyEvent *event) {
             splineSeries->clear();
             series2->clear();
             splineSeries2->clear();
+
+            // Reset window title
+            setWindowTitle(tr("Graph Window"));
         }
     } else {
         QMainWindow::keyPressEvent(event);
@@ -640,78 +643,70 @@ void GraphWindow::resizeEvent(QResizeEvent *event) {
 void GraphWindow::updateGraph() {
     startStopBtn->setText(mainWindow->Reading ? tr("Stop") : tr("Start"));
 
-    if (mainWindow->Reading) {
-        // Handle first device data
-        double xValue = useAbsoluteTime
-                            ? mainWindow->timeInMilliseconds
-                            : mainWindow->timeInMilliseconds - initialTime;
-
-        if (!useAbsoluteTime && series->count() == 0) {
-            initialTime = mainWindow->timeInMilliseconds;
-            xValue = 0;
-        }
-
-        series->append(xValue, mainWindow->distance);
-
-        // Handle second device data if available
-        if (mainWindow->isReading2) {
-            double xValue2 = useAbsoluteTime
-                                 ? mainWindow->timeInMilliseconds2
-                                 : mainWindow->timeInMilliseconds2 - initialTime;
-
-            // Ensure second series is added to chart if not already there
-            if (useSpline) {
-                if (!chart->series().contains(splineSeries2)) {
-                    chart->addSeries(splineSeries2);
-                    splineSeries2->attachAxis(axisX);
-                    splineSeries2->attachAxis(axisY);
-                }
-            } else {
-                if (!chart->series().contains(series2)) {
-                    chart->addSeries(series2);
-                    series2->attachAxis(axisX);
-                    series2->attachAxis(axisY);
-                }
-            }
-
-            series2->append(xValue2, mainWindow->distance2);
-            dualMode = true;
-        } else if (dualMode) {
-            // If no longer in dual mode but was previously, remove second series
-            if (chart->series().contains(series2)) {
-                chart->removeSeries(series2);
-            }
-            if (chart->series().contains(splineSeries2)) {
-                chart->removeSeries(splineSeries2);
-            }
-            dualMode = false;
-        }
-
-        // Apply auto-remove points if enabled
-        if (autoRemovePoints) {
-            while (series->count() > pointsLimit) {
-                series->remove(0);
-            }
-            if (dualMode) {
-                while (series2->count() > pointsLimit) {
-                    series2->remove(0);
-                }
-            }
-        }
-
-        // Apply smoothing if enabled
-        if (useSpline) {
-            applySmoothing();
-            if (dualMode) {
-                applySmoothing2();
-            }
-        }
-
-        // Update axis ranges based on data
-        updateAxisRanges();
+    if (!mainWindow->Reading) {
+        return;
     }
-}
 
+    // Check if we're in dual mode
+    dualMode = mainWindow->isReading2;
+
+    // Get time values from both devices
+    int time1 = mainWindow->timeInMilliseconds;
+    int time2 = mainWindow->timeInMilliseconds2;
+
+    // Initialize reference time for relative timing if needed
+    if (!useAbsoluteTime && series->count() == 0) {
+        // Use the older time as reference when in relative mode
+        initialTime = dualMode ? qMin(time1, time2) : time1;
+    }
+
+    // Calculate x values based on time mode
+    double xValue1 = useAbsoluteTime ? time1 : (time1 - initialTime);
+
+    // Add first device data
+    series->append(xValue1, mainWindow->distance);
+
+    // Add second device data if in dual mode
+    if (dualMode) {
+        // Use same time reference for second series to ensure proper synchronization
+        double xValue2 = useAbsoluteTime ? time2 : (time2 - initialTime);
+        series2->append(xValue2, mainWindow->distance2);
+
+        // Add second series to chart if not already added
+        if (series2->attachedAxes().isEmpty()) {
+            chart->addSeries(series2);
+            series2->attachAxis(axisX);
+            series2->attachAxis(axisY);
+
+            if (useSpline) {
+                chart->addSeries(splineSeries2);
+                splineSeries2->attachAxis(axisX);
+                splineSeries2->attachAxis(axisY);
+            }
+        }
+    }
+
+    // Handle point limiting
+    if (autoRemovePoints) {
+        if (series->count() > pointsLimit) {
+            series->removePoints(0, series->count() - pointsLimit);
+        }
+        if (dualMode && series2->count() > pointsLimit) {
+            series2->removePoints(0, series2->count() - pointsLimit);
+        }
+    }
+
+    // Apply smoothing if enabled
+    if (useSpline) {
+        applySmoothing();
+        if (dualMode) {
+            applySmoothing2();
+        }
+    }
+
+    // Update the axis ranges
+    updateAxisRanges();
+}
 
 void GraphWindow::updateAxisRanges() {
     if (series->count() == 0 && (!dualMode || series2->count() == 0)) {

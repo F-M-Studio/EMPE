@@ -54,6 +54,7 @@ protected:
     void keyPressEvent(QKeyEvent *event) override;
 
 private:
+    int lastValidDistance2 = 0;
 
     // Add these variables for smoothing
     std::vector<double> distanceBuffer;
@@ -118,7 +119,7 @@ private:
     void createControls();
     bool startReading();
     void stopReading();
-    void parseData(const QString &data);
+    void parseData(const QString &data, bool isSecondDevice);
 
     QCheckBox *rawDataToggle{};
     bool useRawData = false;
