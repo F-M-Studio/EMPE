@@ -1,6 +1,8 @@
 #include <QApplication>
 #include <QTranslator>
 #include <QLocale>
+#include <QFontDatabase>
+#include <QDebug>
 #include "mainwindow.h"
 
 int main(int argc, char *argv[]) {
@@ -10,10 +12,16 @@ int main(int argc, char *argv[]) {
     QTranslator translator;
     for (const QStringList uiLanguages = QLocale::system().uiLanguages(); const QString &locale: uiLanguages) {
         if (const QString baseName = "lidar_" + QLocale(locale).name().split('_').first(); translator.load(":/translations/" + baseName)) {
-            QApplication::installTranslator(&translator);
+            a.installTranslator(&translator);
             break;
         }
     }
+
+    QFontDatabase::addApplicationFont(":/fonts/AdwaitaSans-Regular.ttf");
+
+    QFont font;
+    font.setFamilies({QString::fromUtf8("Adwaita Sans")});
+    QApplication::setFont(font);
 
     QApplication::setWindowIcon(QIcon(":/icons/EMPE.png"));
 

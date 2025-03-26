@@ -221,33 +221,6 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     glWidget->setFormat(format);
     chartView->setViewport(glWidget);
 
-    // Improve axis label appearance
-    QFont axisFont = axisX->labelsFont();
-    axisFont.setPointSize(axisFont.pointSize() + 1); // Slightly larger font
-    axisFont.setHintingPreference(QFont::PreferFullHinting);
-    axisX->setLabelsFont(axisFont);
-    axisY->setLabelsFont(axisFont);
-
-    // Apply high DPI scaling for the chart
-    chart->setMinimumSize(50, 50); // Force chart to respect size policies
-
-    QFont titleFont = axisX->titleFont();
-    titleFont.setPointSize(titleFont.pointSize() + 1);
-    titleFont.setHintingPreference(QFont::PreferFullHinting);
-    axisX->setTitleFont(titleFont);
-    axisY->setTitleFont(titleFont);
-
-#ifdef Q_OS_MAC
-    // Use SF Pro Display for titles
-    titleFont = QFont("SF Pro Display", 14);
-    titleFont.setWeight(QFont::Bold);
-#else
-    titleFont = axisX->titleFont();
-    titleFont.setPointSize(titleFont.pointSize() + 2);
-#endif
-    titleFont.setHintingPreference(QFont::PreferFullHinting);
-    axisX->setTitleFont(titleFont);
-    axisY->setTitleFont(titleFont);
 
     updateTimer = new QTimer(this);
     updateChartTheme();
