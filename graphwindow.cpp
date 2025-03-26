@@ -372,8 +372,7 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
         }
 
         // Clear and redraw the chart with new time axis setting
-        series->clear();
-        splineSeries->clear();
+        clearGraph();
     });
 
     updateTimer->start(recordingSlider->value());
