@@ -1,10 +1,7 @@
-// mainwindow.cpp
+// mainwindow.cpp with updated buffering logic
 
 #include "mainwindow.h"
-#include "portsettings.h"
-#include "appmenu.h"
 #include "graphwindow.h"
-
 #include <QDebug>
 #include <QTimer>
 #include <QSerialPort>
@@ -16,35 +13,27 @@
 #include <QDir>
 #include <QFile>
 #include <QLineSeries>
-#include <QMenu>
-#include <QAction>
-#include <QApplication>
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
-      , portSettings(new PortSettings(this))
-      , serialPort(nullptr)
-      , serialPort2(nullptr)
-      , isReading(false) {
+    : QMainWindow(parent), isReading(false),
+      portSettings(new PortSettings(this)) {
     centralWidget = new QWidget(this);
     setCentralWidget(centralWidget);
 
     mainLayout = new QVBoxLayout(centralWidget);
 
-    // Create menu using the new AppMenu class
-    appMenu = new AppMenu(this, this);
-    connect(appMenu, &AppMenu::portSettingsRequested, this, &MainWindow::openPortSettings);
-    connect(appMenu, &AppMenu::graphWindowRequested, this, &MainWindow::openGraphWindow);
-    connect(appMenu, &AppMenu::startStopRequested, this, &MainWindow::handleStartStopButton);
-    connect(appMenu, &AppMenu::saveDataRequested, this, &MainWindow::saveDataToFile);
-    connect(appMenu, &AppMenu::languageChanged, this, &MainWindow::loadLanguage);
-
+    createMenu();
     createControls();
 
     dataDisplay = new QTextEdit(this);
     dataDisplay->setReadOnly(true);
     dataDisplay->hide();
     mainLayout->addWidget(dataDisplay);
+
+    dataDisplay2 = new QTextEdit(this);
+    dataDisplay2->setReadOnly(true);
+    dataDisplay2->hide();
+    mainLayout->addWidget(dataDisplay2);
 }
 
 MainWindow::~MainWindow() {
@@ -53,74 +42,122 @@ MainWindow::~MainWindow() {
     }
 }
 
-void MainWindow::createControls() {
-    auto *buttonLayout = new QHBoxLayout();
+void MainWindow::createMenu() {
+    menuBar = new QMenuBar(this);
+    setMenuBar(menuBar);
 
-    portSettingsBtn = new QPushButton("Port settings");
-    showGraphBtn = new QPushButton("Show Graph");
-    stopBtn = new QPushButton("Start");
-    saveDataBtn = new QPushButton("Save data to file");
+    mainMenu = new QMenu("☰ Menu", this);
+    menuBar->addMenu(mainMenu);
+
+    portSettingsAction = new QAction("Port settings", this);
+    graphAction = new QAction("Graph", this);
+    startMeasurementAction = new QAction("Start measurement", this);
+    saveDataAction = new QAction("Save data to file", this);
+
+    mainMenu->addAction(portSettingsAction);
+    mainMenu->addAction(graphAction);
+    mainMenu->addAction(startMeasurementAction);
+    mainMenu->addAction(saveDataAction);
+
+    connect(portSettingsAction, &QAction::triggered, this, [this]() {
+        portSettings->exec();
+    });
+
+    connect(graphAction, &QAction::triggered, this, [this]() {
+        GraphWindow *graphWindow = new GraphWindow(this);
+        graphWindow->show();
+    });
+
+    connect(startMeasurementAction, &QAction::triggered, this, []() {
+        qDebug("Start measurement triggered!");
+    });
+
+    connect(saveDataAction, &QAction::triggered, this, []() {
+        qDebug("Save data to file triggered!");
+    });
+}
+
+void MainWindow::createControls() {
+    QHBoxLayout *buttonLayout = new QHBoxLayout();
+
+    portSettingsBtn = new QPushButton("PORT settings");
+    showGraphBtn = new QPushButton("Show GRAPH");
+    startStopBtn = new QPushButton("START");
+    saveDataBtn = new QPushButton("SAVE data 1");
+    saveData2Btn = new QPushButton("SAVE data 2");
+    clearGraphBtn = new QPushButton("Clear GRAPH");
+    showRawDataBtn = new QPushButton("Show raw data");
 
     buttonLayout->addWidget(portSettingsBtn);
     buttonLayout->addWidget(showGraphBtn);
-    buttonLayout->addWidget(stopBtn);
+    buttonLayout->addWidget(startStopBtn);
     buttonLayout->addWidget(saveDataBtn);
+    buttonLayout->addWidget(saveData2Btn);
+    buttonLayout->addWidget(clearGraphBtn);
+    buttonLayout->addWidget(showRawDataBtn);
 
     mainLayout->addLayout(buttonLayout);
 
-    // Connect buttons to the same functions as menu items
-    connect(portSettingsBtn, &QPushButton::clicked, this, &MainWindow::openPortSettings);
-    connect(showGraphBtn, &QPushButton::clicked, this, &MainWindow::openGraphWindow);
-    connect(stopBtn, &QPushButton::clicked, this, &MainWindow::handleStartStopButton);
-    connect(saveDataBtn, &QPushButton::clicked, this, &MainWindow::saveDataToFile);
+    connect(portSettingsBtn, &QPushButton::clicked, this, [this]() {
+        portSettings->exec();
+    });
 
-    // Rest of your existing controls setup...
-    auto *controlsLayout = new QGridLayout();
+    connect(showGraphBtn, &QPushButton::clicked, this, [this]() {
+        GraphWindow *graphWindow = new GraphWindow(this);
+        graphWindow->show();
+    });
 
-    auto *distanceLabel = new QLabel("Distance:");
+    connect(startStopBtn, &QPushButton::clicked, this, &MainWindow::handleStartStopButton);
+
+    connect(saveDataBtn, &QPushButton::clicked, this, [this]() {
+        saveDataToFile(dataDisplay, "YY(\\d+)T(\\d+)E");
+    });
+
+    connect(saveData2Btn, &QPushButton::clicked, this, [this]() {
+        saveDataToFile(dataDisplay2, "YY(\\d+)T(\\d+)E");
+    });
+
+    // Connect Show Raw Data button
+    connect(showRawDataBtn, &QPushButton::clicked, this, [this]() {
+        bool visible = !dataDisplay->isVisible();
+        dataDisplay->setVisible(visible);
+        dataDisplay2->setVisible(visible);
+        showRawDataBtn->setText(visible ? "Hide raw data" : "Show raw data");
+    });
+
+    QGridLayout *controlsLayout = new QGridLayout();
+
+    QLabel *distanceLabel = new QLabel("Distance 1:");
     distanceInput = new QLineEdit("00");
     distanceInput->setReadOnly(true);
-    auto *timeLabel = new QLabel("Time:");
+    QLabel *timeLabel = new QLabel("Time 1:");
     timeInput = new QTimeEdit();
     timeInput->setDisplayFormat("mm:ss.zzz");
     timeInput->setReadOnly(true);
 
-    // Add second device controls
-    auto *distance2Label = new QLabel("Distance 2:");
-    distance2Label->setObjectName("distance2Label");
-    distance2Input = new QLineEdit("00");
-    distance2Input->setReadOnly(true);
-    auto *time2Label = new QLabel("Time 2:");
-    time2Label->setObjectName("time2Label");
-    time2Input = new QTimeEdit();
-    time2Input->setDisplayFormat("mm:ss.zzz");
-    time2Input->setReadOnly(true);
+    QLabel *distanceLabel2 = new QLabel("Distance 2:");
+    distanceInput2 = new QLineEdit("00");
+    distanceInput2->setReadOnly(true);
+    QLabel *timeLabel2 = new QLabel("Time 2:");
+    timeInput2 = new QTimeEdit();
+    timeInput2->setDisplayFormat("mm:ss.zzz");
+    timeInput2->setReadOnly(true);
 
-    // First device controls (row 0 and 1)
     controlsLayout->addWidget(distanceLabel, 0, 0);
     controlsLayout->addWidget(distanceInput, 0, 1);
     controlsLayout->addWidget(timeLabel, 1, 0);
     controlsLayout->addWidget(timeInput, 1, 1);
 
-    // Second device controls (row 0 and 1, column 2 and 3)
-    controlsLayout->addWidget(distance2Label, 0, 2);
-    controlsLayout->addWidget(distance2Input, 0, 3);
-    controlsLayout->addWidget(time2Label, 1, 2);
-    controlsLayout->addWidget(time2Input, 1, 3);
+    controlsLayout->addWidget(distanceLabel2, 0, 2);
+    controlsLayout->addWidget(distanceInput2, 0, 3);
+    controlsLayout->addWidget(timeLabel2, 1, 2);
+    controlsLayout->addWidget(timeInput2, 1, 3);
 
     mainLayout->addLayout(controlsLayout);
-
-    // Hide second device controls by default
-    distance2Label->setVisible(false);
-    distance2Input->setVisible(false);
-    time2Label->setVisible(false);
-    time2Input->setVisible(false);
 
     // Create and add the "Always on Top" checkbox
     alwaysOnTopCheckbox = new QCheckBox("Always on Top", this);
     mainLayout->addWidget(alwaysOnTopCheckbox);
-
-    // Connect the checkbox state change to window flag update
 
     connect(alwaysOnTopCheckbox, &QCheckBox::checkStateChanged, this, [this](int state) {
         Qt::WindowFlags flags = windowFlags();
@@ -130,447 +167,309 @@ void MainWindow::createControls() {
             flags &= ~Qt::WindowStaysOnTopHint;
         }
         setWindowFlags(flags);
-        show(); // Need to show the window again after changing flags
-    });
-
-    rawDataToggle = new QCheckBox("Get Raw Data", this);
-    rawDataToggle->setChecked(false); // Default is smoothed data
-    mainLayout->addWidget(rawDataToggle);
-
-    connect(rawDataToggle, &QCheckBox::toggled, this, [this](bool checked) {
-        useRawData = checked;
+        show();
     });
 }
 
-void MainWindow::openPortSettings() const {
-    portSettings->retranslateUi();
-    portSettings->exec();
+void MainWindow::handleStartStopButton() {
+    if (isReading) {
+        stopReading();
+        startStopBtn->setText("START");
+    } else {
+        startReading();
+        startStopBtn->setText("STOP");
+    }
+    isReading = !isReading;
 }
 
-void MainWindow::openGraphWindow() {
-    auto *graphWindow = new GraphWindow(this);
-    graphWindow->show();
-}
+void MainWindow::startReading() {
+    // Clear data buffers
+    dataBuffer1.clear();
+    dataBuffer2.clear();
 
-void MainWindow::saveDataToFile() {
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Save Data"), "", tr("CSV Files (*.csv)"));
+    // Configure and start Port 1
+    QString portName1 = portSettings->getPortName1();
+    int baudRate1 = portSettings->getBaudRate1();
+    int dataBits1 = portSettings->getDataBits1();
+    int stopBits1 = portSettings->getStopBits1();
+    int parity1 = portSettings->getParity1();
+    int flowControl1 = portSettings->getFlowControl1();
 
-    // Check if the file name is empty
-    if (fileName.isEmpty()) {
-        QMessageBox::warning(this, tr("No File Name"),
-                             tr("No file name was provided. Save operation was not performed."));
+    qDebug() << "Attempting to open port 1:" << portName1
+             << "with settings:"
+             << "BaudRate:" << baudRate1
+             << "DataBits:" << dataBits1
+             << "StopBits:" << stopBits1
+             << "Parity:" << parity1
+             << "FlowControl:" << flowControl1;
+
+    serialPort = new QSerialPort(this);
+    serialPort->setPortName(portName1);
+    serialPort->setBaudRate(baudRate1);
+    serialPort->setDataBits(static_cast<QSerialPort::DataBits>(dataBits1));
+    serialPort->setStopBits(static_cast<QSerialPort::StopBits>(stopBits1));
+    serialPort->setParity(static_cast<QSerialPort::Parity>(parity1));
+    serialPort->setFlowControl(static_cast<QSerialPort::FlowControl>(flowControl1));
+
+    if (!serialPort->open(QIODevice::ReadOnly)) {
+        qDebug() << "Failed to open port" << portName1 << "Error:" << serialPort->errorString();
+        QMessageBox::warning(this, tr("Error"),
+                           tr("Failed to open port %1: %2").arg(portName1, serialPort->errorString()));
+        delete serialPort;
+        serialPort = nullptr;
         return;
     }
 
-    // Dodaj rozszerzenie .csv, jeśli nie jest obecne
+    // Configure and start Port 2
+    QString portName2 = portSettings->getPortName2();
+    int baudRate2 = portSettings->getBaudRate2();
+    int dataBits2 = portSettings->getDataBits2();
+    int stopBits2 = portSettings->getStopBits2();
+    int parity2 = portSettings->getParity2();
+    int flowControl2 = portSettings->getFlowControl2();
+
+    qDebug() << "Attempting to open port 2:" << portName2
+             << "with settings:"
+             << "BaudRate:" << baudRate2
+             << "DataBits:" << dataBits2
+             << "StopBits:" << stopBits2
+             << "Parity:" << parity2
+             << "FlowControl:" << flowControl2;
+
+    serialPort2 = new QSerialPort(this);
+    serialPort2->setPortName(portName2);
+    serialPort2->setBaudRate(baudRate2);
+    serialPort2->setDataBits(static_cast<QSerialPort::DataBits>(dataBits2));
+    serialPort2->setStopBits(static_cast<QSerialPort::StopBits>(stopBits2));
+    serialPort2->setParity(static_cast<QSerialPort::Parity>(parity2));
+    serialPort2->setFlowControl(static_cast<QSerialPort::FlowControl>(flowControl2));
+
+    if (!serialPort2->open(QIODevice::ReadOnly)) {
+        qDebug() << "Failed to open port" << portName2 << "Error:" << serialPort2->errorString();
+        QMessageBox::warning(this, tr("Error"),
+                           tr("Failed to open port %1: %2").arg(portName2, serialPort2->errorString()));
+
+        // Close port 1 if it was opened
+        if (serialPort && serialPort->isOpen()) {
+            serialPort->close();
+            delete serialPort;
+            serialPort = nullptr;
+        }
+
+        delete serialPort2;
+        serialPort2 = nullptr;
+        return;
+    }
+
+    qDebug() << "Started reading from both ports";
+    Reading = true;
+
+    // Connect port 1 signal with buffering
+    connect(serialPort, &QSerialPort::readyRead, this, [this]() {
+        QByteArray data = serialPort->readAll();
+        dataBuffer1.append(QString::fromUtf8(data));
+        processBuffer(dataBuffer1, dataDisplay, &MainWindow::parseData);
+    });
+
+    // Connect port 2 signal with buffering
+    connect(serialPort2, &QSerialPort::readyRead, this, [this]() {
+        QByteArray data = serialPort2->readAll();
+        dataBuffer2.append(QString::fromUtf8(data));
+        processBuffer(dataBuffer2, dataDisplay2, &MainWindow::parseData2);
+    });
+}
+
+void MainWindow::processBuffer(QString& buffer, QTextEdit* display, void (MainWindow::*parseFunc)(const QString&)) {
+    static QRegularExpression completePattern("YY\\d+T\\d+E");
+
+    QString processedData;
+    int lastMatchEnd = 0;
+
+    // Find all complete matches in the buffer
+    QRegularExpressionMatchIterator matches = completePattern.globalMatch(buffer);
+
+    while (matches.hasNext()) {
+        QRegularExpressionMatch match = matches.next();
+        QString completeMatch = match.captured(0);
+
+        // Add the complete match to the processed data
+        processedData += completeMatch + "\n";
+
+        // Keep track of the end position of the last match
+        lastMatchEnd = match.capturedEnd();
+    }
+
+    // If we found any complete matches
+    if (!processedData.isEmpty()) {
+        // Add them to the display
+        display->append(processedData);
+
+        // Process data for UI updates (distance, time fields)
+        (this->*parseFunc)(processedData);  // Call the parsing function
+
+        // Remove processed data, keeping only unprocessed portion
+        buffer = buffer.mid(lastMatchEnd);
+    }
+}
+
+void MainWindow::parseData(const QString &data) {
+    // Optimized parsing for first COM port (YYxxxTxxxE format)
+    static QRegularExpression regex("YY(\\d+)T(\\d+)E");
+    QRegularExpressionMatchIterator matchIterator = regex.globalMatch(data);
+
+    while (matchIterator.hasNext()) {
+        QRegularExpressionMatch match = matchIterator.next();
+
+        // Direct numeric conversion
+        distance = match.captured(1).toInt();
+        timeInMilliseconds = match.captured(2).toInt();
+
+        // Calculate time components
+        minutes = timeInMilliseconds / 60000;
+        seconds = (timeInMilliseconds % 60000) / 1000;
+        milliseconds = timeInMilliseconds % 1000;
+
+        // Store the data point
+        dataPoints.append({distance, timeInMilliseconds});
+
+        // Update UI
+        distanceInput->setText(QString::number(distance));
+        timeInput->setTime(QTime(0, minutes, seconds, milliseconds));
+    }
+}
+
+void MainWindow::parseData2(const QString &data) {
+    // Optimized parsing for second COM port (using same format as port 1)
+    static QRegularExpression regex("YY(\\d+)T(\\d+)E");
+    QRegularExpressionMatchIterator matchIterator = regex.globalMatch(data);
+
+    while (matchIterator.hasNext()) {
+        QRegularExpressionMatch match = matchIterator.next();
+
+        // Direct numeric conversion
+        distance2 = match.captured(1).toInt();
+        timeInMilliseconds2 = match.captured(2).toInt();
+
+        // Calculate time components
+        minutes2 = timeInMilliseconds2 / 60000;
+        seconds2 = (timeInMilliseconds2 % 60000) / 1000;
+        milliseconds2 = timeInMilliseconds2 % 1000;
+
+        // Store the data point
+        dataPoints2.append({distance2, timeInMilliseconds2});
+
+        // Update UI
+        distanceInput2->setText(QString::number(distance2));
+        timeInput2->setTime(QTime(0, minutes2, seconds2, milliseconds2));
+    }
+}
+
+void MainWindow::stopReading() {
+    Reading = false;
+
+    // Close port 1
+    if (serialPort && serialPort->isOpen()) {
+        disconnect(serialPort, &QSerialPort::readyRead, nullptr, nullptr);
+        serialPort->close();
+        qDebug() << "Stopped reading from port 1";
+        delete serialPort;
+        serialPort = nullptr;
+    }
+
+    // Close port 2
+    if (serialPort2 && serialPort2->isOpen()) {
+        disconnect(serialPort2, &QSerialPort::readyRead, nullptr, nullptr);
+        serialPort2->close();
+        qDebug() << "Stopped reading from port 2";
+        delete serialPort2;
+        serialPort2 = nullptr;
+    }
+}
+
+void MainWindow::keyPressEvent(QKeyEvent *event) {
+    if (event->key() == Qt::Key_F7) {
+        bool visible = !dataDisplay->isVisible();
+        dataDisplay->setVisible(visible);
+        dataDisplay2->setVisible(visible);
+        showRawDataBtn->setText(visible ? "Hide raw data" : "Show raw data");
+    } else {
+        QMainWindow::keyPressEvent(event);
+    }
+}
+
+void MainWindow::saveDataToFile(const QTextEdit* display, const QString& regexPattern) {
+    QString fileName = QFileDialog::getSaveFileName(this,
+        tr("Save Data"), "",
+        tr("CSV Files (*.csv)"));
+
+    // Add .csv extension if not present
     if (!fileName.endsWith(".csv", Qt::CaseInsensitive)) {
         fileName += ".csv";
     }
 
-    // Sprawdź, czy plik istnieje
+    if (fileName.isEmpty()) {
+        return;
+    }
+
+    // Check if file exists
     QFile file(fileName);
     if (file.exists()) {
         QMessageBox::StandardButton reply = QMessageBox::question(this,
-                                                                  tr("File exists"),
-                                                                  tr(
-                                                                      "The file %1 already exists.\nDo you want to replace it?")
-                                                                  .arg(QDir::toNativeSeparators(fileName)),
-                                                                  QMessageBox::Yes | QMessageBox::No);
+            tr("File exists"),
+            tr("The file %1 already exists.\nDo you want to replace it?")
+            .arg(QDir::toNativeSeparators(fileName)),
+            QMessageBox::Yes | QMessageBox::No);
 
         if (reply == QMessageBox::No) {
             return;
         }
     }
 
-    // Otwórz plik do zapisu
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        QMessageBox::warning(this, tr("Save Error"), tr("Cannot open the file for writing."));
+        QMessageBox::warning(this, tr("Error"),
+            tr("Cannot write file %1:\n%2.")
+            .arg(QDir::toNativeSeparators(fileName),
+                file.errorString()));
         return;
     }
 
-    // Zapisz dane do pliku (przykładowe dane)
     QTextStream out(&file);
-    out << "Example data\n"; // Zastąp to swoimi danymi
+
+    // Write CSV header
+    out << "Distance,Time (mm:ss),Milliseconds,Raw Time (ms)\n";
+
+    // Parse and write data from display
+    QString rawData = display->toPlainText();
+    QStringList lines = rawData.split('\n');
+    QRegularExpression regex(regexPattern);
+
+    for (const QString& line : lines) {
+        QRegularExpressionMatch match = regex.match(line);
+        if (match.hasMatch()) {
+            QString distance = match.captured(1);
+            int timeMs = match.captured(2).toInt();
+
+            // Convert milliseconds to components
+            int minutes = timeMs / 60000;
+            int seconds = (timeMs % 60000) / 1000;
+            int milliseconds = timeMs % 1000;
+
+            // Format time as mm:ss
+            QString timeFormatted = QString("%1:%2")
+                .arg(minutes, 2, 10, QChar('0'))
+                .arg(seconds, 2, 10, QChar('0'));
+
+            out << QString("%1,%2,%3,%4\n")
+                .arg(distance)
+                .arg(timeFormatted)
+                .arg(milliseconds)
+                .arg(timeMs);
+        }
+    }
 
     file.close();
-}
 
-void MainWindow::handleStartStopButton() {
-    if (isReading) {
-        stopReading();
-        stopBtn->setText("Start");
-        isReading = false;
-    } else {
-        // Try to start reading
-        if (startReading()) {
-            stopBtn->setText("Stop");
-            isReading = true;
-        }
-    }
-}
-
-
-bool MainWindow::startReading() {
-    if (serialPort) {
-        delete serialPort;
-        serialPort = nullptr;
-    }
-    if (serialPort2) {
-        delete serialPort2;
-        serialPort2 = nullptr;
-    }
-    QString portName = portSettings->getPortName();
-
-    // Pre-validate the port name before attempting to open
-    QList<QString> likelyInvalidPorts = {
-        "wlan-debug", "Bluetooth", "iPhone", "iPad", "SOC", "debug"
-    };
-
-    bool isLikelyInvalid = false;
-    for (const QString &pattern: likelyInvalidPorts) {
-        if (portName.contains(pattern, Qt::CaseInsensitive)) {
-            isLikelyInvalid = true;
-            break;
-        }
-    }
-
-    if (isLikelyInvalid) {
-        QMessageBox::warning(this, "Inappropriate Device",
-                             "The selected port \"" + portName + "\" does not appear to be a proper serial device.\n\n"
-                             "This application requires a standard serial port, typically named:\n"
-                             "• cu.usbserial-*\n"
-                             "• tty.usbserial-*\n"
-                             "• C0M*\n"
-                             "• cu.usbmodem*\n"
-                             "• cu.SLAB_*\n\n"
-                             "Please select a different COM port in Port Settings.");
-        return false;
-    }
-
-    int baudRate = portSettings->getBaudRate();
-    int dataBits = portSettings->getDataBits();
-    int stopBits = portSettings->getStopBits();
-    int parity = portSettings->getParity();
-    int flowControl = portSettings->getFlowControl();
-
-    qDebug() << "Attempting to open port" << portName
-            << "with settings:"
-            << "BaudRate:" << baudRate
-            << "DataBits:" << dataBits
-            << "StopBits:" << stopBits
-            << "Parity:" << parity
-            << "FlowControl:" << flowControl;
-
-    // Create the serial port object
-    serialPort = new QSerialPort(this);
-    serialPort->setPortName(portName);
-    serialPort->setBaudRate(baudRate);
-    serialPort->setDataBits(static_cast<QSerialPort::DataBits>(dataBits));
-    serialPort->setStopBits(static_cast<QSerialPort::StopBits>(stopBits));
-    serialPort->setParity(static_cast<QSerialPort::Parity>(parity));
-    serialPort->setFlowControl(static_cast<QSerialPort::FlowControl>(flowControl));
-
-    // Try to open the port
-    if (!serialPort->open(QIODevice::ReadOnly)) {
-        QMessageBox::critical(this, "Port Error",
-                              "Could not open port " + portName + ".\n\n"
-                              "This may be because:\n"
-                              "• The port is already in use by another application\n"
-                              "• You don't have sufficient permissions\n\n"
-                              "Error: " + serialPort->errorString());
-        delete serialPort;
-        serialPort = nullptr;
-        return false;
-    }
-
-    // Reset validation state
-    deviceValidated = false;
-
-    // Set up validation timer
-    validationTimer = new QTimer(this);
-    validationTimer->setSingleShot(true);
-    validationTimer->start(VALIDATION_TIMEOUT);
-
-    // Connect validation timeout handler
-    connect(validationTimer, &QTimer::timeout, this, [this]() {
-        QMessageBox::warning(this, "Incorrect Device",
-                             "No valid data received from the device.\n\n"
-                             "Expected data format: YY(distance)T(time)E\n\n"
-                             "Please select a different COM port in Port Settings.");
-        stopReading();
-        isReading = false;
-        stopBtn->setText("Start");
-    });
-
-    // Connect read signal
-    connect(serialPort, &QSerialPort::readyRead, this, [this]() {
-        QByteArray data = serialPort->readAll();
-        dataDisplay->append(QString::fromUtf8(data));
-
-        // Validate device if needed
-        const QString dataStr = QString::fromUtf8(data);
-        if (!deviceValidated && dataStr.contains(QRegularExpression("YY\\d+T\\d+E"))) {
-            deviceValidated = true;
-            if (validationTimer) {
-                validationTimer->stop();
-                delete validationTimer;
-                validationTimer = nullptr;
-            }
-            Reading = true;
-        }
-
-        if (deviceValidated) {
-            parseData(dataStr, false); // false = first device
-        }
-    });
-
-    if (portSettings->isDualModeEnabled()) {
-        QString port2Name = portSettings->getPort2Name();
-
-        // Check if port2 is different from port1
-        if (port2Name == portName) {
-            QMessageBox::warning(this, "Port Error",
-                                 "Cannot use the same port for both devices in dual mode.");
-            return false;
-        }
-
-        serialPort2 = new QSerialPort(this);
-        serialPort2->setPortName(port2Name);
-        // Use same configuration as first port
-        serialPort2->setBaudRate(baudRate);
-        serialPort2->setDataBits(static_cast<QSerialPort::DataBits>(dataBits));
-        serialPort2->setStopBits(static_cast<QSerialPort::StopBits>(stopBits));
-        serialPort2->setParity(static_cast<QSerialPort::Parity>(parity));
-        serialPort2->setFlowControl(static_cast<QSerialPort::FlowControl>(flowControl));
-
-        if (!serialPort2->open(QIODevice::ReadOnly)) {
-            QMessageBox::warning(this, "Port Error",
-                                 "Failed to open second port " + port2Name + ".\n\n"
-                                 "Error: " + serialPort2->errorString());
-            delete serialPort2;
-            serialPort2 = nullptr;
-
-            // Continue with just the first port
-            isReading2 = false;
-        } else {
-            // Successfully opened second port
-            isReading2 = true;
-
-            // Connect read signal for second port
-            connect(serialPort2, &QSerialPort::readyRead, this, [this]() {
-                const QByteArray data = serialPort2->readAll();
-                parseData2(QString::fromUtf8(data));
-            });
-        }
-    }
-
-    return true;
-}
-
-void MainWindow::parseData2(const QString &data) {
-    const QRegularExpression regex("YY(\\d+)T(\\d+)E");
-    QRegularExpressionMatch match = regex.match(data);
-
-    if (match.hasMatch()) {
-        bool ok1 = false, ok2 = false;
-        distance2 = match.captured(1).toInt(&ok1);
-        timeInMilliseconds2 = match.captured(2).toInt(&ok2);
-
-        if (ok1 && ok2) {
-            if (!useRawData) {
-                static int lastValidDistance2 = 0;
-                if (abs(distance2 - lastValidDistance2) > 8) {
-                    distance2 = lastValidDistance2;
-                }
-                lastValidDistance2 = distance2;
-            }
-
-            // Only append valid data points
-            dataPoints.append({distance2, timeInMilliseconds2});
-
-            // Update UI
-            distance2Input->setText(QString::number(distance2));
-            int minutes2 = timeInMilliseconds2 / 60000;
-            int seconds2 = timeInMilliseconds2 % 60000 / 1000;
-            int milliseconds2 = timeInMilliseconds2 % 1000;
-            time2Input->setTime(QTime(0, minutes2, seconds2, milliseconds2));
-
-            // Make sure controls are visible
-            QLabel *distanceLabel = findChild<QLabel *>("distance2Label");
-            if (distanceLabel) distanceLabel->setVisible(true);
-            distance2Input->setVisible(true);
-
-            QLabel *timeLabel = findChild<QLabel *>("time2Label");
-            if (timeLabel) timeLabel->setVisible(true);
-            time2Input->setVisible(true);
-        }
-    }
-}
-
-void MainWindow::parseData(const QString &data, bool isSecondDevice = false) {
-    const QRegularExpression regex("YY(\\d+)T(\\d+)E");
-    QRegularExpressionMatch match = regex.match(data);
-
-    if (match.hasMatch()) {
-        bool ok1 = false, ok2 = false;
-        int newDistance = match.captured(1).toInt(&ok1);
-        int newTime = match.captured(2).toInt(&ok2);
-
-        if (ok1 && ok2) {
-            // Reference the appropriate variables based on which device we're handling
-            int &distance = isSecondDevice ? distance2 : this->distance;
-            int &lastValidDistance = isSecondDevice ? lastValidDistance2 : this->lastValidDistance;
-            int &timeInMs = isSecondDevice ? timeInMilliseconds2 : timeInMilliseconds;
-
-            // Store the time
-            timeInMs = newTime;
-
-            // Apply consistent smoothing logic
-            if (!useRawData) {
-                if (lastValidDistance == 0 || abs(newDistance - lastValidDistance) <= 8) {
-                    distance = newDistance;
-                    lastValidDistance = newDistance;
-                }
-            } else {
-                distance = newDistance;
-                lastValidDistance = newDistance;
-            }
-
-            // Store the data point
-            dataPoints.append({distance, timeInMs});
-
-            // Update UI
-            QLineEdit *distanceInput = isSecondDevice ? distance2Input : this->distanceInput;
-            QTimeEdit *timeInput = isSecondDevice ? time2Input : this->timeInput;
-
-            distanceInput->setText(QString::number(distance));
-            int minutes = timeInMs / 60000;
-            int seconds = timeInMs % 60000 / 1000;
-            int milliseconds = timeInMs % 1000;
-            timeInput->setTime(QTime(0, minutes, seconds, milliseconds));
-
-            // Make second device controls visible if needed
-            if (isSecondDevice) {
-                QLabel *distanceLabel = findChild<QLabel *>("distance2Label");
-                if (distanceLabel) distanceLabel->setVisible(true);
-                distance2Input->setVisible(true);
-
-                QLabel *timeLabel = findChild<QLabel *>("time2Label");
-                if (timeLabel) timeLabel->setVisible(true);
-                time2Input->setVisible(true);
-            }
-        }
-    }
-}
-
-void MainWindow::stopReading() {
-    if (validationTimer) {
-        validationTimer->stop();
-        delete validationTimer;
-        validationTimer = nullptr;
-    }
-
-    if (serialPort && serialPort->isOpen()) {
-        serialPort->close();
-        qDebug() << "Stopped reading from port";
-        Reading = false;
-        delete serialPort;
-        serialPort = nullptr;
-    }
-
-    deviceValidated = false;
-}
-
-
-void MainWindow::keyPressEvent(QKeyEvent *event) {
-    if (event->key() == Qt::Key_F7) {
-        dataDisplay->setVisible(!dataDisplay->isVisible());
-    } else {
-        QMainWindow::keyPressEvent(event);
-    }
-}
-
-void MainWindow::loadLanguage(const QString &language) {
-    // Remove previous translator if it exists
-    if (translator) {
-        QApplication::removeTranslator(translator);
-        delete translator;
-        translator = nullptr;
-    }
-
-    // Only create and load new translator if not switching to English
-    if (language != "en") {
-        translator = new QTranslator(this);
-        QString translationFile = ":/translations/lidar_" + language + ".qm";
-        if (!translator->load(translationFile)) {
-            qDebug() << "Failed to load translation file:" << translationFile;
-            delete translator;
-            translator = nullptr;
-        } else {
-            QApplication::installTranslator(translator);
-        }
-    }
-
-    // Update all UI elements
-    retranslateUi();
-    appMenu->retranslateUi();
-    appMenu->setLanguage(language);
-
-    // Update all other windows
-    for (QWidget *widget: QApplication::topLevelWidgets()) {
-        if (auto *graphWindow = qobject_cast<GraphWindow *>(widget)) {
-            graphWindow->retranslateUi();
-            // Update AppMenu in GraphWindow
-            for (QObject *child: graphWindow->children()) {
-                if (auto *menu = qobject_cast<AppMenu *>(child)) {
-                    menu->retranslateUi();
-                    menu->setLanguage(language);
-                }
-            }
-        }
-    }
-
-    // Update PortSettings if it exists
-    if (portSettings) {
-        portSettings->retranslateUi();
-    }
-}
-
-// Add this new method to handle retranslation
-void MainWindow::retranslateUi() {
-    this->setWindowTitle(tr("EMPE"));
-    appMenu->retranslateUi();
-
-    // Buttons
-    portSettingsBtn->setText(tr("Port settings"));
-    showGraphBtn->setText(tr("Show Graph"));
-    stopBtn->setText(isReading ? tr("Stop") : tr("Start"));
-    saveDataBtn->setText(tr("Save data to file"));
-
-    // Other UI elements
-    alwaysOnTopCheckbox->setText(tr("Always on Top"));
-    rawDataToggle->setText(tr("Get Raw Data"));
-}
-
-void MainWindow::updateUIValues(int distance1, int time1, int distance2, int time2, bool showDevice2) {
-    // Update first device values
-    distanceInput->setText(QString::number(distance1));
-    QTime time(0, time1 / 60000, (time1 % 60000) / 1000, time1 % 1000);
-    timeInput->setTime(time);
-
-    // Update second device values and visibility
-    if (showDevice2) {
-        distance2Input->setText(QString::number(distance2));
-        QTime time2Obj(0, time2 / 60000, (time2 % 60000) / 1000, time2 % 1000);
-        time2Input->setTime(time2Obj);
-
-        // Make second device controls visible
-        QLabel *distanceLabel = findChild<QLabel *>("distance2Label");
-        if (distanceLabel) distanceLabel->setVisible(true);
-        distance2Input->setVisible(true);
-
-        QLabel *timeLabel = findChild<QLabel *>("time2Label");
-        if (timeLabel) timeLabel->setVisible(true);
-        time2Input->setVisible(true);
-    }
+    QMessageBox::information(this, tr("Success"),
+        tr("Data has been saved to %1")
+        .arg(QDir::toNativeSeparators(fileName)));
 }
