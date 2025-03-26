@@ -1,5 +1,3 @@
-// mainwindow.h
-
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
@@ -17,113 +15,85 @@
 #include <QKeyEvent>
 #include <QSerialPort>
 #include <QtWidgets>
-#include <QTranslator>
 
-// Replace include with forward declaration
-class PortSettings;
-class AppMenu;
-class MovingAverageFilterParallel;
+#include "portsettings.h"
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
-    void updateUIValues(int distance1, int time1, int distance2, int time2, bool showDevice2);
-    explicit MainWindow(QWidget *parent = nullptr);
-    ~MainWindow() override;
-    bool Reading{false};
-    int distance{0};
-    int timeInMilliseconds{0};
-    int minutes{0};
-    int seconds{0};
-    int milliseconds{0};
-
-    bool isReading2{false};
-    int distance2{0};
-    int timeInMilliseconds2{0};
-
-    void loadLanguage(const QString &language);
-    void handleStartStopButton();
-    void openPortSettings() const;
-    void openGraphWindow();
-    void saveDataToFile();
-    void parseData2(const QString &data);
-
+    MainWindow(QWidget *parent = nullptr);
+    ~MainWindow();
+    bool Reading;
+    int distance, timeInMilliseconds, minutes, seconds, milliseconds;
+    int distance2, timeInMilliseconds2, minutes2, seconds2, milliseconds2;
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;
 
+private slots:
+    void handleStartStopButton();
+
 private:
-    int lastValidDistance2 = 0;
-
-    // Add these variables for smoothing
-    std::vector<double> distanceBuffer;
-    MovingAverageFilterParallel* filter = nullptr;
-    int filterWindowSize = 5;  // Default window size
-
-    QLineEdit *distance2Input{};
-    QTimeEdit *time2Input{};
-
-    AppMenu* appMenu;
-    QSerialPort *serialPort{nullptr};
-    QSerialPort *serialPort2{nullptr};
-    PortSettings *portSettings{nullptr};
-
-    QTimer *validationTimer{};
-    bool deviceValidated = false;
-    const int VALIDATION_TIMEOUT = 3000;
-
-    QTranslator *translator = nullptr;
-    QAction *languageAction{};
-    void retranslateUi();
-
     struct DataPoint {
         int distance;
         int timeInMilliseconds;
     };
     QVector<DataPoint> dataPoints;
+    QVector<DataPoint> dataPoints2;
 
     QWidget *centralWidget;
     QVBoxLayout *mainLayout;
-    QComboBox *portBox{};
-    QCheckBox *alwaysOnTopCheckbox{};
+    QComboBox *portBox;
+    QCheckBox *alwaysOnTopCheckbox;
+
+    // Data buffers
+    QString dataBuffer1;  // Buffer for COM port 1
+    QString dataBuffer2;  // Buffer for COM port 2
 
     // Menu Bar
-    QMenuBar *menuBar{};
-    QMenu *mainMenu{};
-    QAction *portSettingsAction{};
-    QAction *graphAction{};
-    QAction *startMeasurementAction{};
-    QAction *saveDataAction{};
+    QMenuBar *menuBar;
+    QMenu *mainMenu;
+    PortSettings *portSettings;
+    QAction *portSettingsAction;
+    QAction *graphAction;
+    QAction *startMeasurementAction;
+    QAction *saveDataAction;
 
     // Buttons
-    QPushButton *portSettingsBtn{};
-    QPushButton *showGraphBtn{};
-    QPushButton *stopBtn{};
-    QPushButton *saveDataBtn{};
-    QPushButton *clearGraphBtn{};
+    QPushButton *portSettingsBtn;
+    QPushButton *showGraphBtn;
+    QPushButton *startStopBtn;
+    QPushButton *saveDataBtn;
+    QPushButton *saveData2Btn;
+    QPushButton *clearGraphBtn;
+    QPushButton *showRawDataBtn;  // Button to show/hide raw data
 
     // Sliders & Controls
-    QSlider *yAxisSlider{};
-    QLineEdit *maxYInput{};
-    QLineEdit *distanceInput{};
-    QTimeEdit *timeInput{};
-    QLabel *yAxisValueLabel{};
+    QSlider *yAxisSlider;
+    QLineEdit *maxYInput;
+    QLineEdit *distanceInput;
+    QTimeEdit *timeInput;
+    QLineEdit *distanceInput2;
+    QTimeEdit *timeInput2;
+    QLabel *yAxisValueLabel;
 
+    // Serial ports
+    QSerialPort *serialPort;
+    QSerialPort *serialPort2;
 
+    QTextEdit *dataDisplay;  // TextEdit to display data from COM port 1
+    QTextEdit *dataDisplay2; // TextEdit to display data from COM port 2
+    bool isReading;  // Flag to indicate if reading is in progress
 
-
-    QTextEdit *dataDisplay;
-    bool isReading;
-
+    void createMenu();
     void createControls();
-    bool startReading();
+    void startReading();
     void stopReading();
-    void parseData(const QString &data, bool isSecondDevice);
-
-    QCheckBox *rawDataToggle{};
-    bool useRawData = false;
-    int lastValidDistance = 0;
+    void parseData(const QString &data);
+    void parseData2(const QString &data);
+    void saveDataToFile(const QTextEdit* display, const QString& regex);
+    void processBuffer(QString& buffer, QTextEdit* display, void (MainWindow::*parseFunc)(const QString&));
 };
 
 #endif // MAINWINDOW_H
