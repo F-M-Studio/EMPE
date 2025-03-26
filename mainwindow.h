@@ -59,6 +59,8 @@ private:
     MovingAverageFilterParallel* filter = nullptr;
     int filterWindowSize = 5;  // Default window size
 
+    QLineEdit *distance2Input{};
+    QTimeEdit *time2Input{};
 
     AppMenu* appMenu;
     QSerialPort *serialPort{nullptr};

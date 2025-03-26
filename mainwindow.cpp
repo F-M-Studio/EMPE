@@ -79,18 +79,40 @@ void MainWindow::createControls() {
 
     auto *distanceLabel = new QLabel("Distance:");
     distanceInput = new QLineEdit("00");
-    distanceInput->setReadOnly(true); // Make the distance label non-editable
+    distanceInput->setReadOnly(true);
     auto *timeLabel = new QLabel("Time:");
     timeInput = new QTimeEdit();
-    timeInput->setDisplayFormat("mm:ss.zzz"); // Set the display format to include milliseconds
-    timeInput->setReadOnly(true); // Make the time label non-editable
+    timeInput->setDisplayFormat("mm:ss.zzz");
+    timeInput->setReadOnly(true);
 
+    // Add second device controls
+    auto *distance2Label = new QLabel("Distance 2:");
+    distance2Input = new QLineEdit("00");
+    distance2Input->setReadOnly(true);
+    auto *time2Label = new QLabel("Time 2:");
+    time2Input = new QTimeEdit();
+    time2Input->setDisplayFormat("mm:ss.zzz");
+    time2Input->setReadOnly(true);
+
+    // First device controls (row 0 and 1)
     controlsLayout->addWidget(distanceLabel, 0, 0);
     controlsLayout->addWidget(distanceInput, 0, 1);
     controlsLayout->addWidget(timeLabel, 1, 0);
     controlsLayout->addWidget(timeInput, 1, 1);
 
+    // Second device controls (row 0 and 1, column 2 and 3)
+    controlsLayout->addWidget(distance2Label, 0, 2);
+    controlsLayout->addWidget(distance2Input, 0, 3);
+    controlsLayout->addWidget(time2Label, 1, 2);
+    controlsLayout->addWidget(time2Input, 1, 3);
+
     mainLayout->addLayout(controlsLayout);
+
+    // Hide second device controls by default
+    distance2Label->setVisible(false);
+    distance2Input->setVisible(false);
+    time2Label->setVisible(false);
+    time2Input->setVisible(false);
 
     // Create and add the "Always on Top" checkbox
     alwaysOnTopCheckbox = new QCheckBox("Always on Top", this);
@@ -364,6 +386,19 @@ void MainWindow::parseData2(const QString &data) {
 
             // Only append valid data points
             dataPoints.append({distance2, timeInMilliseconds2});
+
+            // Update UI
+            distance2Input->setText(QString::number(distance2));
+            int minutes2 = timeInMilliseconds2 / 60000;
+            int seconds2 = timeInMilliseconds2 % 60000 / 1000;
+            int milliseconds2 = timeInMilliseconds2 % 1000;
+            time2Input->setTime(QTime(0, minutes2, seconds2, milliseconds2));
+
+            // Make sure controls are visible
+            distance2Input->parentWidget()->findChild<QLabel*>("Distance 2:")->setVisible(true);
+            distance2Input->setVisible(true);
+            time2Input->parentWidget()->findChild<QLabel*>("Time 2:")->setVisible(true);
+            time2Input->setVisible(true);
         }
     }
 }

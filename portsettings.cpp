@@ -63,6 +63,11 @@ void PortSettings::setupUI() {
     port2Box = new QComboBox(this);
     port2Box->setEnabled(false);
 
+    // Warning label for dual mode
+    dualModeWarningLabel = new QLabel(tr("Note: Select different ports for each device"), this);
+    dualModeWarningLabel->setStyleSheet("color: #777; font-style: italic;");
+    dualModeWarningLabel->setVisible(false);
+
     // Serial port parameters
     auto *baudRateLabel = new QLabel(tr("Baud Rate"), this);
     baudRateBox = new QComboBox(this);
@@ -88,22 +93,23 @@ void PortSettings::setupUI() {
     mainLayout->addWidget(dualModeCheckbox, 1, 0, 1, 2);
     mainLayout->addWidget(port2Label, 2, 0);
     mainLayout->addWidget(port2Box, 2, 1);
+    mainLayout->addWidget(dualModeWarningLabel, 3, 0, 1, 2);
 
-    mainLayout->addWidget(baudRateLabel, 3, 0);
-    mainLayout->addWidget(baudRateBox, 3, 1);
-    mainLayout->addWidget(dataBitsLabel, 4, 0);
-    mainLayout->addWidget(dataBitsBox, 4, 1);
-    mainLayout->addWidget(stopBitsLabel, 5, 0);
-    mainLayout->addWidget(stopBitsBox, 5, 1);
-    mainLayout->addWidget(parityLabel, 6, 0);
-    mainLayout->addWidget(parityBox, 6, 1);
-    mainLayout->addWidget(flowControlLabel, 7, 0);
-    mainLayout->addWidget(flowControlBox, 7, 1);
+    mainLayout->addWidget(baudRateLabel, 4, 0);
+    mainLayout->addWidget(baudRateBox, 4, 1);
+    mainLayout->addWidget(dataBitsLabel, 5, 0);
+    mainLayout->addWidget(dataBitsBox, 5, 1);
+    mainLayout->addWidget(stopBitsLabel, 6, 0);
+    mainLayout->addWidget(stopBitsBox, 6, 1);
+    mainLayout->addWidget(parityLabel, 7, 0);
+    mainLayout->addWidget(parityBox, 7, 1);
+    mainLayout->addWidget(flowControlLabel, 8, 0);
+    mainLayout->addWidget(flowControlBox, 8, 1);
 
     buttonsLayout->addWidget(refreshButton);
     buttonsLayout->addWidget(okButton);
     buttonsLayout->addWidget(cancelButton);
-    mainLayout->addLayout(buttonsLayout, 8, 0, 1, 2);
+    mainLayout->addLayout(buttonsLayout, 9, 0, 1, 2);
 
     // Set up comboboxes with options
     const QList<qint32> baudRates = QSerialPortInfo::standardBaudRates();
@@ -134,14 +140,51 @@ void PortSettings::setupUI() {
 
     // Connect signals and slots
     connect(refreshButton, &QPushButton::clicked, this, &PortSettings::refreshPorts);
-    connect(okButton, &QPushButton::clicked, this, &QDialog::accept);
+    connect(okButton, &QPushButton::clicked, this, &PortSettings::validateAndAccept);
     connect(cancelButton, &QPushButton::clicked, this, &QDialog::reject);
     connect(dualModeCheckbox, &QCheckBox::stateChanged, this, [this](int state) {
-        port2Box->setEnabled(state == Qt::Checked);
+        bool enabled = (state == Qt::Checked);
+        port2Box->setEnabled(enabled);
+        dualModeWarningLabel->setVisible(enabled);
     });
+
+    // Connect port selection changes to validation
+    connect(portBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &PortSettings::validatePortSelection);
+    connect(port2Box, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &PortSettings::validatePortSelection);
 
     // Initial port refresh
     refreshPorts();
+}
+
+// Add new validation methods
+void PortSettings::validatePortSelection() {
+    if (!dualModeCheckbox->isChecked()) {
+        return;
+    }
+
+    // Highlight in red if same port selected for both devices
+    if (portBox->currentText() == port2Box->currentText() && !portBox->currentText().isEmpty()) {
+        port2Box->setStyleSheet("QComboBox { background-color: #ffdddd; }");
+        dualModeWarningLabel->setText(tr("Error: Cannot use the same port for both devices!"));
+        dualModeWarningLabel->setStyleSheet("color: red; font-weight: bold;");
+    } else {
+        port2Box->setStyleSheet("");
+        dualModeWarningLabel->setText(tr("Note: Select different ports for each device"));
+        dualModeWarningLabel->setStyleSheet("color: #777; font-style: italic;");
+    }
+}
+
+void PortSettings::validateAndAccept() {
+    if (dualModeCheckbox->isChecked() && portBox->currentText() == port2Box->currentText()) {
+        QMessageBox::warning(this, tr("Invalid Configuration"),
+                          tr("You cannot use the same port for both devices in dual mode.\n\n"
+                             "Please select different ports or disable dual mode."));
+        return;
+    }
+
+    accept();
 }
 
 void PortSettings::refreshPorts() const {

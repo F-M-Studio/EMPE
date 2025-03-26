@@ -90,6 +90,8 @@ private:
 
     void applySmoothing() const;
 
+    void applySmoothing2() const;
+
     QCheckBox *timeAxisToggle;
     bool useAbsoluteTime = false;
     long long initialTime = 0;

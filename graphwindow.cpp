@@ -472,10 +472,21 @@ void GraphWindow::updateChartTheme() {
     newSeriesPen.setCapStyle(Qt::RoundCap);
     series->setPen(newSeriesPen);
 
-    QPen newSplinePen(secondaryColor);
+    QPen newSplinePen(primaryColor);
     newSplinePen.setWidth(3); // Increased from 2
     newSplinePen.setCapStyle(Qt::RoundCap);
     splineSeries->setPen(newSplinePen);
+
+    // Set colors for second series
+    QPen series2Pen(secondaryColor);
+    series2Pen.setWidth(3);
+    series2Pen.setCapStyle(Qt::RoundCap);
+    series2->setPen(series2Pen);
+
+    QPen splineSeries2Pen(secondaryColor);
+    splineSeries2Pen.setWidth(3);
+    splineSeries2Pen.setCapStyle(Qt::RoundCap);
+    splineSeries2->setPen(splineSeries2Pen);
 
     // Force a complete redraw
     chart->update();
@@ -521,6 +532,45 @@ void GraphWindow::applySmoothing() const {
     }
 }
 
+void GraphWindow::applySmoothing2() const {
+    if (!useSpline || series2->count() < 2) {
+        return;
+    }
+
+    // Get window size from smoothing level (1-25)
+    int windowSize = 1 + (smoothingLevelSlider->value() * 10 / 4);
+    if (windowSize % 2 == 0) windowSize++; // Make sure it's odd
+
+    // Create a copy of original points
+    QVector<QPointF> originalPoints;
+    for (int i = 0; i < series2->count(); ++i) {
+        originalPoints.append(series2->at(i));
+    }
+
+    // Clear the spline series
+    splineSeries2->clear();
+
+    // Apply smoothing to ALL points
+    const int halfWindow = windowSize / 2;
+    for (int i = 0; i < originalPoints.size(); ++i) {
+        double sumX = 0;
+        double sumY = 0;
+        int count = 0;
+
+        // Use available points within the window
+        for (int j = qMax(0, i - halfWindow); j <= qMin(i + halfWindow, originalPoints.size() - 1); ++j) {
+            sumX += originalPoints[j].x();
+            sumY += originalPoints[j].y();
+            count++;
+        }
+
+        // Add the smoothed point
+        if (count > 0) {
+            splineSeries2->append(sumX / count, sumY / count);
+        }
+    }
+}
+
 void GraphWindow::clearGraph() {
     series->clear();
     splineSeries->clear();
@@ -547,7 +597,7 @@ void GraphWindow::updateGraph() {
     if (mainWindow->Reading) {
         // First device data
         double xValue = useAbsoluteTime ? mainWindow->timeInMilliseconds :
-                                         mainWindow->timeInMilliseconds - initialTime;
+                                          mainWindow->timeInMilliseconds - initialTime;
 
         if (!useAbsoluteTime && series->count() == 0) {
             initialTime = mainWindow->timeInMilliseconds;
@@ -559,14 +609,32 @@ void GraphWindow::updateGraph() {
         // Second device data if available
         if (mainWindow->isReading2) {
             double xValue2 = useAbsoluteTime ? mainWindow->timeInMilliseconds2 :
-                                             mainWindow->timeInMilliseconds2 - initialTime;
-            series2->append(xValue2, mainWindow->distance2);
+                                              mainWindow->timeInMilliseconds2 - initialTime;
 
-            if (!chart->series().contains(series2)) {
-                chart->addSeries(series2);
-                series2->attachAxis(axisX);
-                series2->attachAxis(axisY);
+            // Make sure the appropriate series is on the chart based on smoothing setting
+            if (useSpline) {
+                // Using spline mode
+                if (chart->series().contains(series2)) {
+                    chart->removeSeries(series2);
+                }
+                if (!chart->series().contains(splineSeries2)) {
+                    chart->addSeries(splineSeries2);
+                    splineSeries2->attachAxis(axisX);
+                    splineSeries2->attachAxis(axisY);
+                }
+            } else {
+                // Using regular mode
+                if (chart->series().contains(splineSeries2)) {
+                    chart->removeSeries(splineSeries2);
+                }
+                if (!chart->series().contains(series2)) {
+                    chart->addSeries(series2);
+                    series2->attachAxis(axisX);
+                    series2->attachAxis(axisY);
+                }
             }
+
+            series2->append(xValue2, mainWindow->distance2);
         }
 
         // Point removal and smoothing
@@ -582,6 +650,10 @@ void GraphWindow::updateGraph() {
         // Apply smoothing if enabled
         if (useSpline) {
             applySmoothing();
+
+            if (mainWindow->isReading2) {
+                applySmoothing2();
+            }
         }
 
         // Update axis ranges considering both series

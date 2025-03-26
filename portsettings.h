@@ -31,6 +31,10 @@ public:
         void refreshPorts() const;
 
 private:
+    QLabel *dualModeWarningLabel{};
+
+    void validatePortSelection();
+    void validateAndAccept();
     QComboBox *port2Box{};
     QCheckBox *dualModeCheckbox{};
     QComboBox *portBox{};
