@@ -374,7 +374,19 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
         // Clear and redraw the chart with new time axis setting
         clearGraph();
     });
+    connect(timeAxisToggle, &QCheckBox::toggled, this, [this, mainWindow](bool checked) {
+        useAbsoluteTime = !checked;
 
+        // Reset initial time when switching to relative mode
+        if (!useAbsoluteTime && mainWindow->Reading) {
+            initialTime = dualMode ? qMin(mainWindow->timeInMilliseconds,
+                                        mainWindow->timeInMilliseconds2)
+                                  : mainWindow->timeInMilliseconds;
+        }
+
+        // Clear and redraw the chart with new time axis setting
+        clearGraph();
+    });
     updateTimer->start(recordingSlider->value());
 
     QTimer::singleShot(0, this, &GraphWindow::updateChartTheme);
@@ -560,6 +572,7 @@ void GraphWindow::applySmoothing() const {
 
     // Clear the spline series
     splineSeries->clear();
+    splineSeries2->clear();
 
     // Apply smoothing to ALL points
     const int halfWindow = windowSize / 2;
@@ -626,8 +639,11 @@ void GraphWindow::clearGraph() {
     series2->clear();
     splineSeries2->clear();
 
+    // Reset initial time when clearing if we're in relative mode
     if (!useAbsoluteTime && mainWindow->Reading) {
-        initialTime = mainWindow->timeInMilliseconds;
+        initialTime = dualMode ? qMin(mainWindow->timeInMilliseconds,
+                                    mainWindow->timeInMilliseconds2)
+                              : mainWindow->timeInMilliseconds;
     }
 }
 
@@ -643,7 +659,7 @@ void GraphWindow::resizeEvent(QResizeEvent *event) {
 void GraphWindow::updateGraph() {
     startStopBtn->setText(mainWindow->Reading ? tr("Stop") : tr("Start"));
 
-    if (!mainWindow->Reading) {
+    if (!mainWindow->Reading && !mainWindow->isReading2) {
         return;
     }
 
@@ -655,21 +671,31 @@ void GraphWindow::updateGraph() {
     int time2 = mainWindow->timeInMilliseconds2;
 
     // Initialize reference time for relative timing if needed
-    if (!useAbsoluteTime && series->count() == 0) {
-        // Use the older time as reference when in relative mode
-        initialTime = dualMode ? qMin(time1, time2) : time1;
+    if (!useAbsoluteTime && series->count() == 0 && series2->count() == 0) {
+        // Use the earliest time as reference when in relative mode
+        if (dualMode) {
+            initialTime = qMin(time1, time2);
+        } else {
+            initialTime = time1;
+        }
     }
 
     // Calculate x values based on time mode
     double xValue1 = useAbsoluteTime ? time1 : (time1 - initialTime);
+    double xValue2 = useAbsoluteTime ? time2 : (time2 - initialTime);
 
-    // Add first device data
-    series->append(xValue1, mainWindow->distance);
+    // Add first device data if available
+    if (mainWindow->Reading) {
+        series->append(xValue1, mainWindow->distance);
 
-    // Add second device data if in dual mode
-    if (dualMode) {
-        // Use same time reference for second series to ensure proper synchronization
-        double xValue2 = useAbsoluteTime ? time2 : (time2 - initialTime);
+        // Apply smoothing if enabled
+        if (useSpline) {
+            applySmoothing();
+        }
+    }
+
+    // Add second device data if available
+    if (dualMode && mainWindow->isReading2) {
         series2->append(xValue2, mainWindow->distance2);
 
         // Add second series to chart if not already added
@@ -684,28 +710,34 @@ void GraphWindow::updateGraph() {
                 splineSeries2->attachAxis(axisY);
             }
         }
+
+        // Apply smoothing if enabled
+        if (useSpline) {
+            applySmoothing2();
+        }
     }
 
     // Handle point limiting
     if (autoRemovePoints) {
         if (series->count() > pointsLimit) {
             series->removePoints(0, series->count() - pointsLimit);
+            if (useSpline) {
+                splineSeries->removePoints(0, splineSeries->count() - pointsLimit);
+            }
         }
         if (dualMode && series2->count() > pointsLimit) {
             series2->removePoints(0, series2->count() - pointsLimit);
-        }
-    }
-
-    // Apply smoothing if enabled
-    if (useSpline) {
-        applySmoothing();
-        if (dualMode) {
-            applySmoothing2();
+            if (useSpline) {
+                splineSeries2->removePoints(0, splineSeries2->count() - pointsLimit);
+            }
         }
     }
 
     // Update the axis ranges
     updateAxisRanges();
+
+    // Force chart update
+    chart->update();
 }
 
 void GraphWindow::updateAxisRanges() {
