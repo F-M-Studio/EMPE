@@ -523,3 +523,26 @@ void MainWindow::retranslateUi() {
     alwaysOnTopCheckbox->setText(tr("Always on Top"));
     rawDataToggle->setText(tr("Get Raw Data"));
 }
+
+void MainWindow::updateUIValues(int distance1, int time1, int distance2, int time2, bool showDevice2) {
+    // Update first device values
+    distanceInput->setText(QString::number(distance1));
+    QTime time(0, time1 / 60000, (time1 % 60000) / 1000, time1 % 1000);
+    timeInput->setTime(time);
+
+    // Update second device values and visibility
+    if (showDevice2) {
+        distance2Input->setText(QString::number(distance2));
+        QTime time2Obj(0, time2 / 60000, (time2 % 60000) / 1000, time2 % 1000);
+        time2Input->setTime(time2Obj);
+
+        // Make second device controls visible
+        QLabel* distanceLabel = distance2Input->parentWidget()->findChild<QLabel*>("Distance 2:");
+        if (distanceLabel) distanceLabel->setVisible(true);
+        distance2Input->setVisible(true);
+
+        QLabel* timeLabel = time2Input->parentWidget()->findChild<QLabel*>("Time 2:");
+        if (timeLabel) timeLabel->setVisible(true);
+        time2Input->setVisible(true);
+    }
+}

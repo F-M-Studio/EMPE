@@ -28,6 +28,7 @@ class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
+    void updateUIValues(int distance1, int time1, int distance2, int time2, bool showDevice2);
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
     bool Reading{false};
