@@ -1,6 +1,0 @@
-/Users/mateuszkorniak/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/Users/mateuszkorniak/Applications/CLion.app/Contents/bin/ninja/mac/aarch64/ninja -G Ninja -S /Users/mateuszkorniak/Documents/GitHub/EMPE -B /Users/mateuszkorniak/Documents/GitHub/EMPE/cmake-build-debug
--- Could NOT find WrapVulkanHeaders (missing: Vulkan_INCLUDE_DIR) 
--- Could NOT find WrapVulkanHeaders (missing: Vulkan_INCLUDE_DIR) 
--- Configuring done (2.1s)
--- Generating done (0.7s)
--- Build files have been written to: /Users/mateuszkorniak/Documents/GitHub/EMPE/cmake-build-debug
