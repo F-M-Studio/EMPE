@@ -9,26 +9,45 @@
 #include <QtCharts>
 
 QT_BEGIN_NAMESPACE
-namespace Ui { class GraphWindow; }
+
+namespace Ui {
+    class GraphWindow;
+}
+
 QT_END_NAMESPACE
 
 class GraphWindow : public QMainWindow {
     Q_OBJECT
 
 public:
-    GraphWindow(MainWindow *mainWindow, QWidget *parent = nullptr);
-    ~GraphWindow();
-    void setUpdateInterval(int interval);
-    QChart* getChart() const { return chart; }
+    void retranslateUi();
 
-    // In the private section of GraphWindow class:
+    explicit GraphWindow(MainWindow *mainWindow, QWidget *parent = nullptr);
+
+    void keyPressEvent(QKeyEvent *event) override;
+
+    ~GraphWindow() override;
+
+    [[nodiscard]] QChart *getChart() const { return chart; }
+
 protected:
-    void resizeEvent(QResizeEvent* event) override;
+    void changeEvent(QEvent *event) override;
+    void resizeEvent(QResizeEvent *event) override;
 
 private slots:
-    void updateGraph() const;
+    void updateGraph();
+
+    void clearGraph();
 
 private:
+    void updateChartTheme();
+    QLineSeries *series2;  // Second line series
+    QSplineSeries *splineSeries2;  // Second spline series
+    bool dualMode = false;  // Track if we're using two devices
+    AppMenu *appMenu{};
+    void updateAxisRanges();
+    bool Gen = false;
+
     Ui::GraphWindow *ui;
     MainWindow *mainWindow;
     QTimer *updateTimer;
@@ -39,17 +58,20 @@ private:
     const int MAX_POINTS = 100; // Maximum number of points to show
 
     QSlider *recordingSlider;
-    QLabel *recordingLabel;
-    QLabel *recordingValueLabel;
+    QLabel *recordingLabel{};
+    QLabel *recordingValueLabel{};
     QLabel *recordingTitleLabel;
     QLabel *yAxisTitleLabel;
     QLineEdit *recordingEdit;
     QLineEdit *yAxisEdit;
 
+    QPushButton *clearGraphBtn;
+    QPushButton *startStopBtn;
+
     QCheckBox *yAxisToggle;
     QSlider *yAxisSlider;
-    QLabel *yAxisLabel;
-    QLabel *yAxisValueLabel;
+    QLabel *yAxisLabel{};
+    QLabel *yAxisValueLabel{};
     bool manualYAxisControl = false;
     QCheckBox *autoRemoveToggle;
     QSlider *pointsLimitSlider;
@@ -57,6 +79,20 @@ private:
     QLabel *pointsLimitLabel;
     bool autoRemovePoints = true;
     int pointsLimit = 100;
+
+
+    QSplineSeries *splineSeries;
+    QCheckBox *smoothingToggle;
+    QSlider *smoothingLevelSlider;
+    QLineEdit *smoothingLevelEdit;
+    QLabel *smoothingLevelLabel;
+    bool useSpline = false;
+
+    void applySmoothing() const;
+
+    QCheckBox *timeAxisToggle;
+    bool useAbsoluteTime = false;
+    long long initialTime = 0;
 };
 
 #endif // GRAPHWINDOW_H

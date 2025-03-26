@@ -15,27 +15,64 @@
 #include <QTimeEdit>
 #include <QTextEdit>
 #include <QKeyEvent>
-#include <QSerialPort>  // Include QSerialPort header
+#include <QSerialPort>
 #include <QtWidgets>
+#include <QTranslator>
 
-#include "portsettings.h"
+// Replace include with forward declaration
+class PortSettings;
+class AppMenu;
+class MovingAverageFilterParallel;
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
-    ~MainWindow();
-    bool Reading;
-    int distance, timeInMilliseconds, minutes, seconds, milliseconds;
+    explicit MainWindow(QWidget *parent = nullptr);
+    ~MainWindow() override;
+    bool Reading{false};
+    int distance{0};
+    int timeInMilliseconds{0};
+    int minutes{0};
+    int seconds{0};
+    int milliseconds{0};
+
+    bool isReading2{false};
+    int distance2{0};
+    int timeInMilliseconds2{0};
+
+    void loadLanguage(const QString &language);
+    void handleStartStopButton();
+    void openPortSettings() const;
+    void openGraphWindow();
+    void saveDataToFile();
+    void parseData2(const QString &data);
+
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;
 
-private slots:
-    void handleStartStopButton();
-
 private:
+
+    // Add these variables for smoothing
+    std::vector<double> distanceBuffer;
+    MovingAverageFilterParallel* filter = nullptr;
+    int filterWindowSize = 5;  // Default window size
+
+
+    AppMenu* appMenu;
+    QSerialPort *serialPort{nullptr};
+    QSerialPort *serialPort2{nullptr};
+    PortSettings *portSettings{nullptr};
+
+    QTimer *validationTimer{};
+    bool deviceValidated = false;
+    const int VALIDATION_TIMEOUT = 3000;
+
+    QTranslator *translator = nullptr;
+    QAction *languageAction{};
+    void retranslateUi();
+
     struct DataPoint {
         int distance;
         int timeInMilliseconds;
@@ -44,43 +81,45 @@ private:
 
     QWidget *centralWidget;
     QVBoxLayout *mainLayout;
-    QComboBox *portBox;
-    QCheckBox *alwaysOnTopCheckbox;
+    QComboBox *portBox{};
+    QCheckBox *alwaysOnTopCheckbox{};
 
     // Menu Bar
-    QMenuBar *menuBar;
-    QMenu *mainMenu;
-    PortSettings *portSettings;
-    QAction *portSettingsAction;
-    QAction *graphAction;
-    QAction *startMeasurementAction;
-    QAction *saveDataAction;
+    QMenuBar *menuBar{};
+    QMenu *mainMenu{};
+    QAction *portSettingsAction{};
+    QAction *graphAction{};
+    QAction *startMeasurementAction{};
+    QAction *saveDataAction{};
 
     // Buttons
-    QPushButton *portSettingsBtn;
-    QPushButton *showGraphBtn;
-    QPushButton *stopBtn;
-    QPushButton *saveDataBtn;
-    QPushButton *clearGraphBtn;
+    QPushButton *portSettingsBtn{};
+    QPushButton *showGraphBtn{};
+    QPushButton *stopBtn{};
+    QPushButton *saveDataBtn{};
+    QPushButton *clearGraphBtn{};
 
     // Sliders & Controls
-    QSlider *yAxisSlider;
-    QLineEdit *maxYInput;
-    QLineEdit *distanceInput;
-    QTimeEdit *timeInput;
-    QLabel *yAxisValueLabel;      // Label to display Y axis scale value
+    QSlider *yAxisSlider{};
+    QLineEdit *maxYInput{};
+    QLineEdit *distanceInput{};
+    QTimeEdit *timeInput{};
+    QLabel *yAxisValueLabel{};
 
-    // Serial port
-    QSerialPort *serialPort;
 
-    QTextEdit *dataDisplay;  // TextEdit to display data from COM port
-    bool isReading;  // Flag to indicate if reading is in progress
 
-    void createMenu();
+
+    QTextEdit *dataDisplay;
+    bool isReading;
+
     void createControls();
-    void startReading();
+    bool startReading();
     void stopReading();
     void parseData(const QString &data);
+
+    QCheckBox *rawDataToggle{};
+    bool useRawData = false;
+    int lastValidDistance = 0;
 };
 
 #endif // MAINWINDOW_H

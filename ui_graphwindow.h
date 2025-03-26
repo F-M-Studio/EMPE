@@ -15,7 +15,6 @@
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMenuBar>
-#include <QtWidgets/QStatusBar>
 #include <QtWidgets/QWidget>
 
 QT_BEGIN_NAMESPACE
@@ -27,7 +26,6 @@ public:
     QFrame *frame;
     QHBoxLayout *horizontalLayout;
     QMenuBar *menubar;
-    QStatusBar *statusbar;
 
     void setupUi(QMainWindow *GraphWindow)
     {
@@ -48,11 +46,8 @@ public:
         GraphWindow->setCentralWidget(centralwidget);
         menubar = new QMenuBar(GraphWindow);
         menubar->setObjectName("menubar");
-        menubar->setGeometry(QRect(0, 0, 800, 23));
+        menubar->setGeometry(QRect(0, 0, 800, 24));
         GraphWindow->setMenuBar(menubar);
-        statusbar = new QStatusBar(GraphWindow);
-        statusbar->setObjectName("statusbar");
-        GraphWindow->setStatusBar(statusbar);
 
         retranslateUi(GraphWindow);
 
