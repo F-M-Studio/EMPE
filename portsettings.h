@@ -4,60 +4,51 @@
 #include <QDialog>
 #include <QComboBox>
 #include <QPushButton>
-#include <QGridLayout>
 #include <QLabel>
-#include <QTabWidget>
+#include <QGridLayout>
+#include <QHBoxLayout>
+#include <QCheckBox>
 
-class PortSettings : public QDialog {
+// Forward declaration instead of include
+class MainWindow;
+
+class PortSettings final : public QDialog {
     Q_OBJECT
 
 public:
+    void retranslateUi();
     explicit PortSettings(QWidget *parent = nullptr);
-
-    QString getPortName1() const;
-    int getBaudRate1() const;
-    int getDataBits1() const;
-    int getStopBits1() const;
-    int getParity1() const;
-    int getFlowControl1() const;
-
-    QString getPortName2() const;
-    int getBaudRate2() const;
-    int getDataBits2() const;
-    int getStopBits2() const;
-    int getParity2() const;
-    int getFlowControl2() const;
+    [[nodiscard]] QString getPort2Name() const;
+    [[nodiscard]] bool isDualModeEnabled() const;
+    [[nodiscard]] QString getPortName() const;
+    [[nodiscard]] int getBaudRate() const;
+    [[nodiscard]] int getDataBits() const;
+    [[nodiscard]] int getStopBits() const;
+    [[nodiscard]] int getParity() const;
+    [[nodiscard]] int getFlowControl() const;
 
     private slots:
-        void refreshPorts();
+        void refreshPorts() const;
 
 private:
-    // Port 1 controls
-    QComboBox *portBox1;
-    QComboBox *baudRateBox1;
-    QComboBox *dataBitsBox1;
-    QComboBox *stopBitsBox1;
-    QComboBox *parityBox1;
-    QComboBox *flowControlBox1;
+    QLabel *dualModeWarningLabel{};
 
-    // Port 2 controls
-    QComboBox *portBox2;
-    QComboBox *baudRateBox2;
-    QComboBox *dataBitsBox2;
-    QComboBox *stopBitsBox2;
-    QComboBox *parityBox2;
-    QComboBox *flowControlBox2;
+    void validatePortSelection();
+    void validateAndAccept();
+    QComboBox *port2Box{};
+    QCheckBox *dualModeCheckbox{};
+    QComboBox *portBox{};
+    QComboBox *baudRateBox{};
+    QComboBox *dataBitsBox{};
+    QComboBox *stopBitsBox{};
+    QComboBox *parityBox{};
+    QComboBox *flowControlBox{};
 
-    QPushButton *okButton;
-    QPushButton *cancelButton;
-    QPushButton *refreshButton;
-    QTabWidget *tabWidget;
+    QPushButton *okButton{};
+    QPushButton *cancelButton{};
+    QPushButton *refreshButton{};
 
     void setupUI();
-    QWidget* createPortTab(const QString& tabName, QComboBox* &portBox,
-                          QComboBox* &baudRateBox, QComboBox* &dataBitsBox,
-                          QComboBox* &stopBitsBox, QComboBox* &parityBox,
-                          QComboBox* &flowControlBox);
 };
 
 #endif // PORTSETTINGS_H
