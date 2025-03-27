@@ -241,6 +241,16 @@ void PortSettings::updatePortInfo() {
 
     QString info;
     for (const QSerialPortInfo &port : ports) {
+        // Check if this is likely a Bluetooth device
+        bool isBluetooth = port.description().contains("Bluetooth", Qt::CaseInsensitive) ||
+                           port.manufacturer().contains("Bluetooth", Qt::CaseInsensitive) ||
+                           port.portName().contains("BT", Qt::CaseInsensitive);
+
+        // Add Bluetooth indicator if applicable
+        if (isBluetooth) {
+            info += tr("<b style='color:blue;'>Bluetooth Device</b><br>");
+        }
+
         info += tr("<b>Port:</b> %1<br>").arg(port.portName());
         info += tr("<b>Description:</b> %1<br>").arg(port.description().isEmpty() ?
                                                    tr("N/A") : port.description());
