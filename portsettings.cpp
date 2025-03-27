@@ -1,14 +1,17 @@
 #include "portsettings.h"
 #include <QtSerialPort/QSerialPortInfo>
-#include "mainwindow.h"
-
+#include <QEvent>
 
 PortSettings::PortSettings(QWidget *parent) : QDialog(parent) {
     setupUI();
-    refreshPorts();
-    setWindowTitle("Port Settings");
     retranslateUi();
+}
 
+void PortSettings::changeEvent(QEvent *event) {
+    if (event->type() == QEvent::LanguageChange) {
+        retranslateUi();
+    }
+    QDialog::changeEvent(event);
 }
 
 void PortSettings::retranslateUi() {
@@ -18,212 +21,198 @@ void PortSettings::retranslateUi() {
     okButton->setText(tr("OK"));
     cancelButton->setText(tr("Cancel"));
 
-    const QMap<QString, QString> labelMap = {
-        {"<b>Settings</b>", tr("<b>Settings</b>")},
-        {"Port", tr("Port")},
-        {"Baud", tr("Baud rate")},
-        {"Data bits", tr("Data bits")},
-        {"Stop bits", tr("Stop bits")},
-        {"Parity", tr("Parity")},
-        {"Flow", tr("Flow control")}
-    };
-
-    QList<QLabel *> labels = findChildren<QLabel *>();
-    for (QLabel *label: labels) {
-        const QString text = label->text();
-        for (auto it = labelMap.begin(); it != labelMap.end(); ++it) {
-            if (text.contains(it.key())) {
-                label->setText(it.value());
-                break;
-            }
-        }
-    }
+    // Update tab names
+    tabWidget->setTabText(0, tr("Port 1"));
+    tabWidget->setTabText(1, tr("Port 2"));
 
     // Update combo boxes that have translatable items
-    const int parityIndex = parityBox->currentIndex();
-    parityBox->clear();
-    parityBox->addItems({tr("None"), tr("Even"), tr("Odd"), tr("Mark"), tr("Space")});
-    parityBox->setCurrentIndex(parityIndex);
+    const int parityIndex1 = parityBox1->currentIndex();
+    const int parityIndex2 = parityBox2->currentIndex();
+    parityBox1->clear();
+    parityBox2->clear();
+    parityBox1->addItems({tr("None"), tr("Even"), tr("Odd"), tr("Mark"), tr("Space")});
+    parityBox2->addItems({tr("None"), tr("Even"), tr("Odd"), tr("Mark"), tr("Space")});
+    parityBox1->setCurrentIndex(parityIndex1);
+    parityBox2->setCurrentIndex(parityIndex2);
 
-    const int flowIndex = flowControlBox->currentIndex();
-    flowControlBox->clear();
-    flowControlBox->addItems({tr("None"), tr("Software"), tr("Hardware")});
-    flowControlBox->setCurrentIndex(flowIndex);
+    const int flowIndex1 = flowControlBox1->currentIndex();
+    const int flowIndex2 = flowControlBox2->currentIndex();
+    flowControlBox1->clear();
+    flowControlBox2->clear();
+    flowControlBox1->addItems({tr("None"), tr("Software"), tr("Hardware")});
+    flowControlBox2->addItems({tr("None"), tr("Software"), tr("Hardware")});
+    flowControlBox1->setCurrentIndex(flowIndex1);
+    flowControlBox2->setCurrentIndex(flowIndex2);
 }
+
 void PortSettings::setupUI() {
-    auto *mainLayout = new QGridLayout(this);
+    setMinimumWidth(450);
 
-    // Port selection
-    auto *portLabel = new QLabel(tr("Select Port"), this);
-    portBox = new QComboBox(this);
+    auto *mainLayout = new QVBoxLayout(this);
 
-    // Dual mode elements
-    dualModeCheckbox = new QCheckBox(tr("Enable Dual Mode"), this);
-    auto *port2Label = new QLabel(tr("Select Port 2"), this);
-    port2Box = new QComboBox(this);
-    port2Box->setEnabled(false);
+    // Create tab widget
+    tabWidget = new QTabWidget(this);
 
-    // Warning label for dual mode
-    dualModeWarningLabel = new QLabel(tr("Note: Select different ports for each device"), this);
-    dualModeWarningLabel->setStyleSheet("color: #777; font-style: italic;");
-    dualModeWarningLabel->setVisible(false);
+    // Create port tabs
+    QWidget *port1Tab = createPortTab(tr("Port 1"), portBox1, baudRateBox1, dataBitsBox1,
+                                    stopBitsBox1, parityBox1, flowControlBox1);
+    QWidget *port2Tab = createPortTab(tr("Port 2"), portBox2, baudRateBox2, dataBitsBox2,
+                                    stopBitsBox2, parityBox2, flowControlBox2);
 
-    // Serial port parameters
-    auto *baudRateLabel = new QLabel(tr("Baud Rate"), this);
-    baudRateBox = new QComboBox(this);
-    auto *dataBitsLabel = new QLabel(tr("Data Bits"), this);
-    dataBitsBox = new QComboBox(this);
-    auto *stopBitsLabel = new QLabel(tr("Stop Bits"), this);
-    stopBitsBox = new QComboBox(this);
-    auto *parityLabel = new QLabel(tr("Parity"), this);
-    parityBox = new QComboBox(this);
-    auto *flowControlLabel = new QLabel(tr("Flow Control"), this);
-    flowControlBox = new QComboBox(this);
+    tabWidget->addTab(port1Tab, tr("Port 1"));
+    tabWidget->addTab(port2Tab, tr("Port 2"));
+
+    mainLayout->addWidget(tabWidget);
+
+    // Refresh Button
+    refreshButton = new QPushButton(this);
+    mainLayout->addWidget(refreshButton);
+    connect(refreshButton, &QPushButton::clicked, this, &PortSettings::refreshPorts);
 
     // Buttons
-    auto *buttonsLayout = new QHBoxLayout;
-    okButton = new QPushButton(tr("OK"), this);
-    cancelButton = new QPushButton(tr("Cancel"), this);
-    refreshButton = new QPushButton(tr("Refresh"), this);
+    okButton = new QPushButton(this);
+    cancelButton = new QPushButton(this);
 
-    // Add widgets to layout
-    mainLayout->addWidget(portLabel, 0, 0);
-    mainLayout->addWidget(portBox, 0, 1);
+    auto *buttonLayout = new QHBoxLayout();
+    buttonLayout->addWidget(okButton);
+    buttonLayout->addWidget(cancelButton);
+    mainLayout->addLayout(buttonLayout);
 
-    mainLayout->addWidget(dualModeCheckbox, 1, 0, 1, 2);
-    mainLayout->addWidget(port2Label, 2, 0);
-    mainLayout->addWidget(port2Box, 2, 1);
-    mainLayout->addWidget(dualModeWarningLabel, 3, 0, 1, 2);
-
-    mainLayout->addWidget(baudRateLabel, 4, 0);
-    mainLayout->addWidget(baudRateBox, 4, 1);
-    mainLayout->addWidget(dataBitsLabel, 5, 0);
-    mainLayout->addWidget(dataBitsBox, 5, 1);
-    mainLayout->addWidget(stopBitsLabel, 6, 0);
-    mainLayout->addWidget(stopBitsBox, 6, 1);
-    mainLayout->addWidget(parityLabel, 7, 0);
-    mainLayout->addWidget(parityBox, 7, 1);
-    mainLayout->addWidget(flowControlLabel, 8, 0);
-    mainLayout->addWidget(flowControlBox, 8, 1);
-
-    buttonsLayout->addWidget(refreshButton);
-    buttonsLayout->addWidget(okButton);
-    buttonsLayout->addWidget(cancelButton);
-    mainLayout->addLayout(buttonsLayout, 9, 0, 1, 2);
-
-    // Set up comboboxes with options
-    const QList<qint32> baudRates = QSerialPortInfo::standardBaudRates();
-    for (qint32 baudRate : baudRates) {
-        baudRateBox->addItem(QString::number(baudRate), baudRate);
-    }
-    baudRateBox->setCurrentText("9600");
-
-    QList<int> dataBits = {5, 6, 7, 8};
-    for (int bits : dataBits) {
-        dataBitsBox->addItem(QString::number(bits), bits);
-    }
-    dataBitsBox->setCurrentText("8");
-
-    stopBitsBox->addItem("1", QSerialPort::OneStop);
-    stopBitsBox->addItem("1.5", QSerialPort::OneAndHalfStop);
-    stopBitsBox->addItem("2", QSerialPort::TwoStop);
-
-    parityBox->addItem(tr("None"), QSerialPort::NoParity);
-    parityBox->addItem(tr("Even"), QSerialPort::EvenParity);
-    parityBox->addItem(tr("Odd"), QSerialPort::OddParity);
-    parityBox->addItem(tr("Mark"), QSerialPort::MarkParity);
-    parityBox->addItem(tr("Space"), QSerialPort::SpaceParity);
-
-    flowControlBox->addItem(tr("None"), QSerialPort::NoFlowControl);
-    flowControlBox->addItem(tr("RTS/CTS"), QSerialPort::HardwareControl);
-    flowControlBox->addItem(tr("XON/XOFF"), QSerialPort::SoftwareControl);
-
-    // Connect signals and slots
-    connect(refreshButton, &QPushButton::clicked, this, &PortSettings::refreshPorts);
-    connect(okButton, &QPushButton::clicked, this, &PortSettings::validateAndAccept);
+    // Connect buttons
+    connect(okButton, &QPushButton::clicked, this, &QDialog::accept);
     connect(cancelButton, &QPushButton::clicked, this, &QDialog::reject);
-    connect(dualModeCheckbox, &QCheckBox::stateChanged, this, [this](int state) {
-        bool enabled = (state == Qt::Checked);
-        port2Box->setEnabled(enabled);
-        dualModeWarningLabel->setVisible(enabled);
-    });
 
-    // Connect port selection changes to validation
-    connect(portBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
-            this, &PortSettings::validatePortSelection);
-    connect(port2Box, QOverload<int>::of(&QComboBox::currentIndexChanged),
-            this, &PortSettings::validatePortSelection);
-
-    // Initial port refresh
+    setLayout(mainLayout);
     refreshPorts();
 }
 
-// Add new validation methods
-void PortSettings::validatePortSelection() {
-    if (!dualModeCheckbox->isChecked()) {
-        return;
+QWidget* PortSettings::createPortTab(const QString& tabName, QComboBox* &portBox,
+                                   QComboBox* &baudRateBox, QComboBox* &dataBitsBox,
+                                   QComboBox* &stopBitsBox, QComboBox* &parityBox,
+                                   QComboBox* &flowControlBox) {
+    QWidget *tab = new QWidget();
+    auto *layout = new QGridLayout(tab);
+
+    // Settings label
+    layout->addWidget(new QLabel(QString("<b>%1 %2</b>").arg(tabName, tr("Settings"))), 0, 0, 1, 2);
+
+    // Port Selection
+    layout->addWidget(new QLabel(tr("Port")), 1, 0);
+    portBox = new QComboBox();
+    layout->addWidget(portBox, 1, 1);
+
+    // Baud Rate
+    layout->addWidget(new QLabel(tr("Baud rate")), 2, 0);
+    baudRateBox = new QComboBox();
+    baudRateBox->addItems({tr("9600"), tr("19200"), tr("38400"), tr("57600"), tr("115200")});
+    baudRateBox->setCurrentText(tr("115200"));
+    layout->addWidget(baudRateBox, 2, 1);
+
+    // Data Bits
+    layout->addWidget(new QLabel(tr("Data bits")), 3, 0);
+    dataBitsBox = new QComboBox();
+    dataBitsBox->addItems({tr("6"), tr("7"), tr("8")});
+    dataBitsBox->setCurrentText(tr("8"));
+    layout->addWidget(dataBitsBox, 3, 1);
+
+    // Stop Bits
+    layout->addWidget(new QLabel(tr("Stop bits")), 4, 0);
+    stopBitsBox = new QComboBox();
+    stopBitsBox->addItems({tr("1"), tr("1.5"), tr("2")});
+    stopBitsBox->setCurrentText(tr("1"));
+    layout->addWidget(stopBitsBox, 4, 1);
+
+    // Parity
+    layout->addWidget(new QLabel(tr("Parity")), 5, 0);
+    parityBox = new QComboBox();
+    parityBox->addItems({tr("None"), tr("Even"), tr("Odd"), tr("Mark"), tr("Space")});
+    parityBox->setCurrentText(tr("None"));
+    layout->addWidget(parityBox, 5, 1);
+
+    // Flow Control
+    layout->addWidget(new QLabel(tr("Flow control")), 6, 0);
+    flowControlBox = new QComboBox();
+    flowControlBox->addItems({tr("None"), tr("Software"), tr("Hardware")});
+    flowControlBox->setCurrentText(tr("Hardware"));
+    layout->addWidget(flowControlBox, 6, 1);
+
+    return tab;
+}
+
+void PortSettings::refreshPorts() {
+    QStringList portList;
+    foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts()) {
+        portList << info.portName();
     }
 
-    // Highlight in red if same port selected for both devices
-    if (portBox->currentText() == port2Box->currentText() && !portBox->currentText().isEmpty()) {
-        port2Box->setStyleSheet("QComboBox { background-color: #ffdddd; }");
-        dualModeWarningLabel->setText(tr("Error: Cannot use the same port for both devices!"));
-        dualModeWarningLabel->setStyleSheet("color: red; font-weight: bold;");
-    } else {
-        port2Box->setStyleSheet("");
-        dualModeWarningLabel->setText(tr("Note: Select different ports for each device"));
-        dualModeWarningLabel->setStyleSheet("color: #777; font-style: italic;");
+    // Save current selections
+    QString currentPort1 = portBox1->currentText();
+    QString currentPort2 = portBox2->currentText();
+
+    // Update port lists
+    portBox1->clear();
+    portBox2->clear();
+
+    portBox1->addItems(portList);
+    portBox2->addItems(portList);
+
+    // Restore selections if possible
+    int idx1 = portBox1->findText(currentPort1);
+    int idx2 = portBox2->findText(currentPort2);
+
+    if (idx1 >= 0) portBox1->setCurrentIndex(idx1);
+    if (idx2 >= 0) portBox2->setCurrentIndex(idx2);
+
+    // Select different ports if both are set to the same one
+    if (portBox1->count() > 1 && portBox1->currentText() == portBox2->currentText()) {
+        portBox2->setCurrentIndex((portBox1->currentIndex() + 1) % portBox2->count());
     }
 }
 
-void PortSettings::validateAndAccept() {
-    if (dualModeCheckbox->isChecked() && portBox->currentText() == port2Box->currentText()) {
-        QMessageBox::warning(this, tr("Invalid Configuration"),
-                          tr("You cannot use the same port for both devices in dual mode.\n\n"
-                             "Please select different ports or disable dual mode."));
-        return;
-    }
-
-    accept();
+QString PortSettings::getPortName1() const {
+    return portBox1->currentText();
 }
 
-void PortSettings::refreshPorts() const {
-    portBox->clear();
-    port2Box->clear();
-
-    const auto ports = QSerialPortInfo::availablePorts();
-    for (const QSerialPortInfo &port: ports) {
-        portBox->addItem(port.portName());
-        port2Box->addItem(port.portName());
-    }
+int PortSettings::getBaudRate1() const {
+    return baudRateBox1->currentText().toInt();
 }
 
-QString PortSettings::getPortName() const {
-    return portBox->currentText();
-}
-QString PortSettings::getPort2Name() const {
-    return port2Box->currentText();
+int PortSettings::getDataBits1() const {
+    return dataBitsBox1->currentText().toInt();
 }
 
-bool PortSettings::isDualModeEnabled() const {
-    return dualModeCheckbox->isChecked();
-}
-int PortSettings::getBaudRate() const {
-    return baudRateBox->currentText().toInt();
+int PortSettings::getStopBits1() const {
+    return stopBitsBox1->currentText().toInt();
 }
 
-int PortSettings::getDataBits() const {
-    return dataBitsBox->currentText().toInt();
+int PortSettings::getParity1() const {
+    return parityBox1->currentIndex();
 }
 
-int PortSettings::getStopBits() const {
-    return stopBitsBox->currentText().toInt();
+int PortSettings::getFlowControl1() const {
+    return flowControlBox1->currentIndex();
 }
 
-int PortSettings::getParity() const {
-    return parityBox->currentIndex();
+QString PortSettings::getPortName2() const {
+    return portBox2->currentText();
 }
 
-int PortSettings::getFlowControl() const {
-    return flowControlBox->currentIndex();
+int PortSettings::getBaudRate2() const {
+    return baudRateBox2->currentText().toInt();
+}
+
+int PortSettings::getDataBits2() const {
+    return dataBitsBox2->currentText().toInt();
+}
+
+int PortSettings::getStopBits2() const {
+    return stopBitsBox2->currentText().toInt();
+}
+
+int PortSettings::getParity2() const {
+    return parityBox2->currentIndex();
+}
+
+int PortSettings::getFlowControl2() const {
+    return flowControlBox2->currentIndex();
 }

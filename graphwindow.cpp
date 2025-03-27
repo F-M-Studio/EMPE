@@ -23,11 +23,11 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     ui->centralwidget->layout()->addWidget(ui->frame);
 
     auto *appMenu = new AppMenu(this, mainWindow);
-    connect(appMenu, &AppMenu::portSettingsRequested, mainWindow, &MainWindow::openPortSettings);
-    connect(appMenu, &AppMenu::graphWindowRequested, mainWindow, &MainWindow::openGraphWindow);
+
     connect(appMenu, &AppMenu::startStopRequested, mainWindow, &MainWindow::handleStartStopButton);
-    connect(appMenu, &AppMenu::saveDataRequested, mainWindow, &MainWindow::saveDataToFile);
-    connect(appMenu, &AppMenu::languageChanged, mainWindow, &MainWindow::loadLanguage);
+    connect(appMenu, &AppMenu::saveDataRequested, mainWindow, [mainWindow]() {
+        mainWindow->saveDataToFile(mainWindow->dataDisplay, "YY(\\d+)T(\\d+)E");
+    });
 
     delete ui->frame->layout();
 
@@ -203,15 +203,6 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     mainLayout->addWidget(pointsLimitWidget);
     ui->frame->setLayout(mainLayout);
 
-    series2 = new QLineSeries();
-    splineSeries2 = new QSplineSeries();
-
-    // Style second series differently
-    QPen pen2(QColor(255, 128, 0)); // Orange color for second line
-    pen2.setWidth(3);
-    series2->setPen(pen2);
-    splineSeries2->setPen(pen2);
-
     // Enable all rendering hints for high-quality text
     chartView->setRenderHint(QPainter::Antialiasing);
     chartView->setRenderHint(QPainter::TextAntialiasing);
@@ -294,45 +285,27 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     mainLayout->addWidget(smoothingWidget);
 
     // Modify the smoothingToggle connection
-    // In the smoothingToggle connection:
     connect(smoothingToggle, &QCheckBox::toggled, this, [this](const bool checked) {
         useSpline = checked;
-        smoothingLevelLabel->setEnabled(checked);
         smoothingLevelSlider->setEnabled(checked);
+        smoothingLevelLabel->setEnabled(checked);
         smoothingLevelEdit->setEnabled(checked);
 
-        // Handle first device series
         if (checked) {
+            // Apply smoothing to existing points
+            applySmoothing();
+
+            // Show the smoothed series
             chart->removeSeries(series);
             chart->addSeries(splineSeries);
             splineSeries->attachAxis(axisX);
             splineSeries->attachAxis(axisY);
-            applySmoothing();
         } else {
+            // Switch back to original series
             chart->removeSeries(splineSeries);
             chart->addSeries(series);
             series->attachAxis(axisX);
             series->attachAxis(axisY);
-        }
-
-        // Handle second device series if in dual mode
-        if (dualMode) {
-            if (checked) {
-                if (chart->series().contains(series2)) {
-                    chart->removeSeries(series2);
-                }
-                chart->addSeries(splineSeries2);
-                splineSeries2->attachAxis(axisX);
-                splineSeries2->attachAxis(axisY);
-                applySmoothing2();
-            } else {
-                if (chart->series().contains(splineSeries2)) {
-                    chart->removeSeries(splineSeries2);
-                }
-                chart->addSeries(series2);
-                series2->attachAxis(axisX);
-                series2->attachAxis(axisY);
-            }
         }
     });
 
@@ -372,7 +345,8 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
         }
 
         // Clear and redraw the chart with new time axis setting
-        clearGraph();
+        series->clear();
+        splineSeries->clear();
     });
 
     updateTimer->start(recordingSlider->value());
@@ -380,6 +354,7 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     QTimer::singleShot(0, this, &GraphWindow::updateChartTheme);
     connect(qApp, &QApplication::paletteChanged, this, &GraphWindow::updateChartTheme);
     updateTimer->start(recordingSlider->value());
+
 }
 
 /* Barely working auto random gen data*/
@@ -388,66 +363,32 @@ void GraphWindow::keyPressEvent(QKeyEvent *event) {
         Gen = !Gen;
 
         if (Gen) {
-            // Create a timer to generate fake data for both devices
-            QTimer *genTimer = new QTimer(this);
-            connect(genTimer, &QTimer::timeout, this, [this]() {
+            mainWindow->Reading = true;
+            // Start generating random data
+            auto *genTimer = new QTimer(this);
+            connect(genTimer, &QTimer::timeout, this, [this, genTimer]() {
+                if (!Gen) {
+                    genTimer->stop();
+                    genTimer->deleteLater();
+                    return;
+                }
+
                 // Generate random distance and incrementing time
                 static int timeValue = 0;
-                timeValue += 100; // Increment by 100ms
-
-                // First device data
-                int randomDistance = QRandomGenerator::global()->bounded(40, 60);
-                mainWindow->distance = randomDistance;
+                timeValue += 10;
+                mainWindow->distance = rand() % 50;
                 mainWindow->timeInMilliseconds = timeValue;
-                mainWindow->Reading = true;
 
-                // Second device data (different range to easily distinguish)
-                int randomDistance2 = QRandomGenerator::global()->bounded(70, 90);
-                mainWindow->distance2 = randomDistance2;
-                mainWindow->timeInMilliseconds2 = timeValue;
-                mainWindow->isReading2 = true;
-
-                // Enable dual mode to display both graphs
-                dualMode = true;
-
-                // Update UI elements using the method we created
-                mainWindow->updateUIValues(
-                    randomDistance, timeValue,
-                    randomDistance2, timeValue,
-                    true);
-
-                // Update graph
+                // Force an immediate graph update
                 updateGraph();
+                qDebug() << "GraphWindow::keyPressEvent";
+                qDebug() << "timeValue: " << mainWindow->timeInMilliseconds;
+                qDebug() << "distance: " << mainWindow->distance;
             });
-
-            genTimer->start(100); // Generate data every 100ms
-
-            // Set debug mode label
-            setWindowTitle(tr("Graph Window - DEBUG MODE"));
-        } else {
-            // Stop all timers except updateTimer
-            for (QTimer *timer: findChildren<QTimer *>()) {
-                if (timer != updateTimer) {
-                    timer->stop();
-                    timer->deleteLater();
-                }
-            }
-
-            // Reset flags
-            mainWindow->Reading = false;
-            mainWindow->isReading2 = false;
-            dualMode = false;
-
-            // Clear graph data
-            series->clear();
-            splineSeries->clear();
-            series2->clear();
-            splineSeries2->clear();
-
-            // Reset window title
-            setWindowTitle(tr("Graph Window"));
+            genTimer->start(100);
         }
     } else {
+        mainWindow->Reading = false;
         QMainWindow::keyPressEvent(event);
     }
 }
@@ -508,12 +449,12 @@ void GraphWindow::updateChartTheme() {
 
     if (isDarkMode) {
         // Bright colors for dark mode
-        primaryColor = QColor(0, 230, 118); // Bright green
-        secondaryColor = QColor(255, 128, 0); // Bright orange
+        primaryColor = QColor(0, 230, 118);    // Bright green
+        secondaryColor = QColor(255, 128, 0);  // Bright orange
     } else {
         // Strong colors for light mode
-        primaryColor = QColor(0, 100, 255); // Deep blue
-        secondaryColor = QColor(220, 0, 80); // Deep red
+        primaryColor = QColor(0, 100, 255);    // Deep blue
+        secondaryColor = QColor(220, 0, 80);   // Deep red
     }
 
     // Create new pens with increased width
@@ -522,21 +463,10 @@ void GraphWindow::updateChartTheme() {
     newSeriesPen.setCapStyle(Qt::RoundCap);
     series->setPen(newSeriesPen);
 
-    QPen newSplinePen(primaryColor);
+    QPen newSplinePen(secondaryColor);
     newSplinePen.setWidth(3); // Increased from 2
     newSplinePen.setCapStyle(Qt::RoundCap);
     splineSeries->setPen(newSplinePen);
-
-    // Set colors for second series
-    QPen series2Pen(secondaryColor);
-    series2Pen.setWidth(3);
-    series2Pen.setCapStyle(Qt::RoundCap);
-    series2->setPen(series2Pen);
-
-    QPen splineSeries2Pen(secondaryColor);
-    splineSeries2Pen.setWidth(3);
-    splineSeries2Pen.setCapStyle(Qt::RoundCap);
-    splineSeries2->setPen(splineSeries2Pen);
 
     // Force a complete redraw
     chart->update();
@@ -582,49 +512,9 @@ void GraphWindow::applySmoothing() const {
     }
 }
 
-void GraphWindow::applySmoothing2() const {
-    if (!useSpline || series2->count() < 2) {
-        return;
-    }
-
-    // Get window size from smoothing level (1-10)
-    const int windowSize = smoothingLevelSlider->value();
-
-    // Clear the spline series
-    splineSeries2->clear();
-
-    // Original points from line series
-    QVector<QPointF> originalPoints;
-    for (int i = 0; i < series2->count(); ++i) {
-        originalPoints.append(series2->at(i));
-    }
-
-    // Apply moving average filter
-    for (int i = 0; i < originalPoints.size(); ++i) {
-        int startIdx = qMax(0, i - windowSize);
-        int endIdx = qMin(originalPoints.size() - 1, i + windowSize);
-
-        double sumX = 0;
-        double sumY = 0;
-        int count = 0;
-
-        for (int j = startIdx; j <= endIdx; ++j) {
-            sumX += originalPoints[j].x();
-            sumY += originalPoints[j].y();
-            count++;
-        }
-
-        if (count > 0) {
-            splineSeries2->append(sumX / count, sumY / count);
-        }
-    }
-}
-
 void GraphWindow::clearGraph() {
     series->clear();
     splineSeries->clear();
-    series2->clear();
-    splineSeries2->clear();
 
     if (!useAbsoluteTime && mainWindow->Reading) {
         initialTime = mainWindow->timeInMilliseconds;
@@ -643,129 +533,53 @@ void GraphWindow::resizeEvent(QResizeEvent *event) {
 void GraphWindow::updateGraph() {
     startStopBtn->setText(mainWindow->Reading ? tr("Stop") : tr("Start"));
 
-    if (!mainWindow->Reading) {
-        return;
-    }
+    if (mainWindow->Reading) {
+        // Calculate X coordinate based on mode
+        double xValue = useAbsoluteTime ? mainWindow->timeInMilliseconds : mainWindow->timeInMilliseconds - initialTime;
 
-    // Check if we're in dual mode
-    dualMode = mainWindow->isReading2;
+        // If this is first point in relative mode, set initial time
+        if (!useAbsoluteTime && series->count() == 0) {
+            initialTime = mainWindow->timeInMilliseconds;
+            xValue = 0;
+        }
 
-    // Get time values from both devices
-    int time1 = mainWindow->timeInMilliseconds;
-    int time2 = mainWindow->timeInMilliseconds2;
+        // Always add to the original series
+        series->append(xValue, mainWindow->distance);
 
-    // Initialize reference time for relative timing if needed
-    if (!useAbsoluteTime && series->count() == 0) {
-        // Use the older time as reference when in relative mode
-        initialTime = dualMode ? qMin(time1, time2) : time1;
-    }
+        // Rest of the function remains unchanged
+        if (autoRemovePoints) {
+            while (series->count() > pointsLimit) {
+                series->remove(0);
+            }
+        }
 
-    // Calculate x values based on time mode
-    double xValue1 = useAbsoluteTime ? time1 : (time1 - initialTime);
+        // Apply smoothing if enabled
+        if (useSpline) {
+            this->applySmoothing();
+        }
 
-    // Add first device data
-    series->append(xValue1, mainWindow->distance);
+        // Calculate min/max values for axes
+        const QXYSeries *activeSeries = useSpline
+                                            ? static_cast<QXYSeries *>(splineSeries)
+                                            : static_cast<QXYSeries *>(series);
 
-    // Add second device data if in dual mode
-    if (dualMode) {
-        // Use same time reference for second series to ensure proper synchronization
-        double xValue2 = useAbsoluteTime ? time2 : (time2 - initialTime);
-        series2->append(xValue2, mainWindow->distance2);
+        if (activeSeries->count() > 0) {
+            const double xMin = activeSeries->at(0).x();
+            const double xMax = xValue;
+            double yMin = mainWindow->distance;
+            double yMax = mainWindow->distance;
 
-        // Add second series to chart if not already added
-        if (series2->attachedAxes().isEmpty()) {
-            chart->addSeries(series2);
-            series2->attachAxis(axisX);
-            series2->attachAxis(axisY);
+            for (int i = 0; i < activeSeries->count(); ++i) {
+                yMin = qMin(yMin, activeSeries->at(i).y());
+                yMax = qMax(yMax, activeSeries->at(i).y());
+            }
 
-            if (useSpline) {
-                chart->addSeries(splineSeries2);
-                splineSeries2->attachAxis(axisX);
-                splineSeries2->attachAxis(axisY);
+            axisX->setRange(xMin, xMax);
+            if (!manualYAxisControl) {
+                axisY->setRange(qMax(0.0, yMin - 500), yMax + 500);
             }
         }
     }
-
-    // Handle point limiting
-    if (autoRemovePoints) {
-        if (series->count() > pointsLimit) {
-            series->removePoints(0, series->count() - pointsLimit);
-        }
-        if (dualMode && series2->count() > pointsLimit) {
-            series2->removePoints(0, series2->count() - pointsLimit);
-        }
-    }
-
-    // Apply smoothing if enabled
-    if (useSpline) {
-        applySmoothing();
-        if (dualMode) {
-            applySmoothing2();
-        }
-    }
-
-    // Update the axis ranges
-    updateAxisRanges();
-}
-
-void GraphWindow::updateAxisRanges() {
-    if (series->count() == 0 && (!dualMode || series2->count() == 0)) {
-        return;
-    }
-
-    double minX = std::numeric_limits<double>::max();
-    double maxX = std::numeric_limits<double>::lowest();
-    double minY = std::numeric_limits<double>::max();
-    double maxY = std::numeric_limits<double>::lowest();
-
-    // Check first series
-    if (series->count() > 0) {
-        QPointF first = series->at(0);
-        QPointF last = series->at(series->count() - 1);
-
-        minX = qMin(minX, first.x());
-        maxX = qMax(maxX, last.x());
-
-        for (int i = 0; i < series->count(); ++i) {
-            minY = qMin(minY, series->at(i).y());
-            maxY = qMax(maxY, series->at(i).y());
-        }
-    }
-
-    // Check second series if dual mode
-    if (dualMode && series2->count() > 0) {
-        QPointF first = series2->at(0);
-        QPointF last = series2->at(series2->count() - 1);
-
-        minX = qMin(minX, first.x());
-        maxX = qMax(maxX, last.x());
-
-        for (int i = 0; i < series2->count(); ++i) {
-            minY = qMin(minY, series2->at(i).y());
-            maxY = qMax(maxY, series2->at(i).y());
-        }
-    }
-
-    // Add padding to ranges
-    double xRange = maxX - minX;
-    double yRange = maxY - minY;
-
-    minX -= xRange * 0.05;
-    maxX += xRange * 0.05;
-    minY -= yRange * 0.05;
-    maxY += yRange * 0.05;
-
-    // Ensure minimum range
-    if (maxX - minX < 10) maxX = minX + 10;
-    if (maxY - minY < 10) maxY = minY + 10;
-
-    // Update Y-axis if not manually controlled
-    if (!manualYAxisControl) {
-        axisY->setRange(minY, maxY);
-    }
-
-    // Always update X-axis
-    axisX->setRange(minX, maxX);
 }
 
 void GraphWindow::retranslateUi() {
