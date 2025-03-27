@@ -16,17 +16,23 @@ class PortSettings final : public QDialog {
 
 public:
     void retranslateUi();
+
     explicit PortSettings(QWidget *parent = nullptr);
 
     [[nodiscard]] QString getPortName() const;
+
     [[nodiscard]] int getBaudRate() const;
+
     [[nodiscard]] int getDataBits() const;
+
     [[nodiscard]] int getStopBits() const;
+
     [[nodiscard]] int getParity() const;
+
     [[nodiscard]] int getFlowControl() const;
 
-    private slots:
-        void refreshPorts() const;
+private slots:
+    void refreshPorts() const;
 
 private:
     QComboBox *portBox{};

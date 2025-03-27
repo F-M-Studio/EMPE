@@ -128,7 +128,8 @@ void MainWindow::saveDataToFile() {
 
     // Check if the file name is empty
     if (fileName.isEmpty()) {
-        QMessageBox::warning(this, tr("No File Name"), tr("No file name was provided. Save operation was not performed."));
+        QMessageBox::warning(this, tr("No File Name"),
+                             tr("No file name was provided. Save operation was not performed."));
         return;
     }
 
@@ -142,7 +143,8 @@ void MainWindow::saveDataToFile() {
     if (file.exists()) {
         QMessageBox::StandardButton reply = QMessageBox::question(this,
                                                                   tr("File exists"),
-                                                                  tr("The file %1 already exists.\nDo you want to replace it?")
+                                                                  tr(
+                                                                      "The file %1 already exists.\nDo you want to replace it?")
                                                                   .arg(QDir::toNativeSeparators(fileName)),
                                                                   QMessageBox::Yes | QMessageBox::No);
 

@@ -29,14 +29,20 @@ class MainWindow : public QMainWindow {
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
+
     ~MainWindow() override;
+
     bool Reading{};
     int distance{}, timeInMilliseconds{}, minutes{}, seconds{}, milliseconds{};
 
     void loadLanguage(const QString &language);
+
     void handleStartStopButton();
+
     void openPortSettings() const;
+
     void openGraphWindow();
+
     void saveDataToFile();
 
 protected:
@@ -45,11 +51,11 @@ protected:
 private:
     // Add these variables for smoothing
     std::vector<double> distanceBuffer;
-    MovingAverageFilterParallel* filter = nullptr;
-    int filterWindowSize = 5;  // Default window size
+    MovingAverageFilterParallel *filter = nullptr;
+    int filterWindowSize = 5; // Default window size
 
 
-    AppMenu* appMenu;
+    AppMenu *appMenu;
 
     QTimer *validationTimer{};
     bool deviceValidated = false;
@@ -57,12 +63,14 @@ private:
 
     QTranslator *translator = nullptr;
     QAction *languageAction{};
+
     void retranslateUi();
 
     struct DataPoint {
         int distance;
         int timeInMilliseconds;
     };
+
     QVector<DataPoint> dataPoints;
 
     QWidget *centralWidget;
@@ -100,8 +108,11 @@ private:
     bool isReading;
 
     void createControls();
+
     bool startReading();
+
     void stopReading();
+
     void parseData(const QString &data);
 
     QCheckBox *rawDataToggle{};

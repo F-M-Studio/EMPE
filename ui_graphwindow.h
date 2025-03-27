@@ -19,16 +19,14 @@
 
 QT_BEGIN_NAMESPACE
 
-class Ui_GraphWindow
-{
+class Ui_GraphWindow {
 public:
     QWidget *centralwidget;
     QFrame *frame;
     QHBoxLayout *horizontalLayout;
     QMenuBar *menubar;
 
-    void setupUi(QMainWindow *GraphWindow)
-    {
+    void setupUi(QMainWindow *GraphWindow) {
         if (GraphWindow->objectName().isEmpty())
             GraphWindow->setObjectName("GraphWindow");
         GraphWindow->resize(800, 600);
@@ -54,15 +52,14 @@ public:
         QMetaObject::connectSlotsByName(GraphWindow);
     } // setupUi
 
-    void retranslateUi(QMainWindow *GraphWindow)
-    {
+    void retranslateUi(QMainWindow *GraphWindow) {
         GraphWindow->setWindowTitle(QCoreApplication::translate("GraphWindow", "MainWindow", nullptr));
     } // retranslateUi
-
 };
 
 namespace Ui {
-    class GraphWindow: public Ui_GraphWindow {};
+    class GraphWindow : public Ui_GraphWindow {
+    };
 } // namespace Ui
 
 QT_END_NAMESPACE

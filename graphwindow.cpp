@@ -354,7 +354,6 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     QTimer::singleShot(0, this, &GraphWindow::updateChartTheme);
     connect(qApp, &QApplication::paletteChanged, this, &GraphWindow::updateChartTheme);
     updateTimer->start(recordingSlider->value());
-
 }
 
 /* Barely working auto random gen data*/
@@ -449,12 +448,12 @@ void GraphWindow::updateChartTheme() {
 
     if (isDarkMode) {
         // Bright colors for dark mode
-        primaryColor = QColor(0, 230, 118);    // Bright green
-        secondaryColor = QColor(255, 128, 0);  // Bright orange
+        primaryColor = QColor(0, 230, 118); // Bright green
+        secondaryColor = QColor(255, 128, 0); // Bright orange
     } else {
         // Strong colors for light mode
-        primaryColor = QColor(0, 100, 255);    // Deep blue
-        secondaryColor = QColor(220, 0, 80);   // Deep red
+        primaryColor = QColor(0, 100, 255); // Deep blue
+        secondaryColor = QColor(220, 0, 80); // Deep red
     }
 
     // Create new pens with increased width
