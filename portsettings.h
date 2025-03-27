@@ -7,6 +7,7 @@
 #include <QGridLayout>
 #include <QLabel>
 #include <QTabWidget>
+#include <QtWidgets>
 
 class PortSettings : public QDialog {
     Q_OBJECT
@@ -40,7 +41,7 @@ private:
     QComboBox *stopBitsBox1;
     QComboBox *parityBox1;
     QComboBox *flowControlBox1;
-
+    QTextEdit *portInfoText;
     // Port 2 controls
     QComboBox *portBox2;
     QComboBox *baudRateBox2;
