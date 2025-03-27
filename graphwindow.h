@@ -41,11 +41,9 @@ private slots:
 
 private:
     void updateChartTheme();
-    QLineSeries *series2;  // Second line series
-    QSplineSeries *splineSeries2;  // Second spline series
-    bool dualMode = false;  // Track if we're using two devices
+
     AppMenu *appMenu{};
-    void updateAxisRanges();
+
     bool Gen = false;
 
     Ui::GraphWindow *ui;
@@ -89,8 +87,6 @@ private:
     bool useSpline = false;
 
     void applySmoothing() const;
-
-    void applySmoothing2() const;
 
     QCheckBox *timeAxisToggle;
     bool useAbsoluteTime = false;
