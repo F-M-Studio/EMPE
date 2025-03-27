@@ -24,7 +24,7 @@ public:
     void updateStartStopAction(bool isReading) const;
 
     signals:
-        void portSettingsRequested();
+    void portSettingsRequested();
     void graphWindowRequested();
     void startStopRequested();
     void saveDataRequested();

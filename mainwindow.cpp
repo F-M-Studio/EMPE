@@ -26,10 +26,11 @@ MainWindow::MainWindow(QWidget *parent)
       portSettings(new PortSettings(this)) {
     centralWidget = new QWidget(this);
     setCentralWidget(centralWidget);
+    setWindowTitle("EMPE");
 
     mainLayout = new QVBoxLayout(centralWidget);
 
-   // createMenu();
+    appMenu = new AppMenu(this, this);
     createControls();
 
     dataDisplay = new QTextEdit(this);
@@ -41,6 +42,15 @@ MainWindow::MainWindow(QWidget *parent)
     dataDisplay2->setReadOnly(true);
     dataDisplay2->hide();
     mainLayout->addWidget(dataDisplay2);
+
+    connect(appMenu, &AppMenu::graphWindowRequested, this, [this]() {
+        GraphWindow *graphWindow = new GraphWindow(this);
+        graphWindow->show();
+    });
+    connect(appMenu, &AppMenu::portSettingsRequested, this, [this]() {
+        PortSettings *portSettings = new PortSettings(this);
+        portSettings->show();
+    });
 }
 
 MainWindow::~MainWindow() {
@@ -48,6 +58,7 @@ MainWindow::~MainWindow() {
         stopReading();
     }
 }
+
 void MainWindow::handleStartStopButton() {
     if (isReading) {
         stopReading();
@@ -58,43 +69,8 @@ void MainWindow::handleStartStopButton() {
     }
     isReading = !isReading;
 }
-void MainWindow::createMenu() {
-    // Create the menu bar
-    menuBar = new QMenuBar(this);
-    setMenuBar(menuBar);
 
-    // Create the main menu
-    mainMenu = new QMenu(tr("☰ Menu"), this);
-    menuBar->addMenu(mainMenu);
 
-    // Create menu actions
-    portSettingsAction = new QAction(tr("Port settings"), this);
-    graphAction = new QAction(tr("Graph"), this);
-    startMeasurementAction = new QAction(tr("Start measurement"), this);
-    saveDataAction = new QAction(tr("Save data to file"), this);
-
-    // Add actions to menu
-    mainMenu->addAction(portSettingsAction);
-    mainMenu->addAction(graphAction);
-    mainMenu->addAction(startMeasurementAction);
-    mainMenu->addAction(saveDataAction);
-
-    // Connect actions to slots
-    connect(portSettingsAction, &QAction::triggered, this, [this]() {
-        portSettings->exec();
-    });
-
-    connect(graphAction, &QAction::triggered, this, [this]() {
-        GraphWindow *graphWindow = new GraphWindow(this);
-        graphWindow->show();
-    });
-
-    connect(startMeasurementAction, &QAction::triggered, this, &MainWindow::handleStartStopButton);
-
-    connect(saveDataAction, &QAction::triggered, this, [this]() {
-        saveDataToFile(dataDisplay, "YY(\\d+)T(\\d+)E");
-    });
-}
 void MainWindow::createControls() {
     QHBoxLayout *buttonLayout = new QHBoxLayout();
 
@@ -190,12 +166,10 @@ void MainWindow::createControls() {
 }
 
 
-
-
-void MainWindow::saveDataToFile(const QTextEdit* display, const QString& regexPattern) {
+void MainWindow::saveDataToFile(const QTextEdit *display, const QString &regexPattern) {
     QString fileName = QFileDialog::getSaveFileName(this,
-        tr("Save Data"), "",
-        tr("CSV Files (*.csv)"));
+                                                    tr("Save Data"), "",
+                                                    tr("CSV Files (*.csv)"));
 
     // Add .csv extension if not present
     if (!fileName.endsWith(".csv", Qt::CaseInsensitive)) {
@@ -210,10 +184,11 @@ void MainWindow::saveDataToFile(const QTextEdit* display, const QString& regexPa
     QFile file(fileName);
     if (file.exists()) {
         QMessageBox::StandardButton reply = QMessageBox::question(this,
-            tr("File exists"),
-            tr("The file %1 already exists.\nDo you want to replace it?")
-            .arg(QDir::toNativeSeparators(fileName)),
-            QMessageBox::Yes | QMessageBox::No);
+                                                                  tr("File exists"),
+                                                                  tr(
+                                                                      "The file %1 already exists.\nDo you want to replace it?")
+                                                                  .arg(QDir::toNativeSeparators(fileName)),
+                                                                  QMessageBox::Yes | QMessageBox::No);
 
         if (reply == QMessageBox::No) {
             return;
@@ -222,9 +197,9 @@ void MainWindow::saveDataToFile(const QTextEdit* display, const QString& regexPa
 
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QMessageBox::warning(this, tr("Error"),
-            tr("Cannot write file %1:\n%2.")
-            .arg(QDir::toNativeSeparators(fileName),
-                file.errorString()));
+                             tr("Cannot write file %1:\n%2.")
+                             .arg(QDir::toNativeSeparators(fileName),
+                                  file.errorString()));
         return;
     }
 
@@ -238,7 +213,7 @@ void MainWindow::saveDataToFile(const QTextEdit* display, const QString& regexPa
     QStringList lines = rawData.split('\n');
     QRegularExpression regex(regexPattern);
 
-    for (const QString& line : lines) {
+    for (const QString &line: lines) {
         QRegularExpressionMatch match = regex.match(line);
         if (match.hasMatch()) {
             QString distance = match.captured(1);
@@ -251,24 +226,23 @@ void MainWindow::saveDataToFile(const QTextEdit* display, const QString& regexPa
 
             // Format time as mm:ss
             QString timeFormatted = QString("%1:%2")
-                .arg(minutes, 2, 10, QChar('0'))
-                .arg(seconds, 2, 10, QChar('0'));
+                    .arg(minutes, 2, 10, QChar('0'))
+                    .arg(seconds, 2, 10, QChar('0'));
 
             out << QString("%1,%2,%3,%4\n")
-                .arg(distance)
-                .arg(timeFormatted)
-                .arg(milliseconds)
-                .arg(timeMs);
+                    .arg(distance)
+                    .arg(timeFormatted)
+                    .arg(milliseconds)
+                    .arg(timeMs);
         }
     }
 
     file.close();
 
     QMessageBox::information(this, tr("Success"),
-        tr("Data has been saved to %1")
-        .arg(QDir::toNativeSeparators(fileName)));
+                             tr("Data has been saved to %1")
+                             .arg(QDir::toNativeSeparators(fileName)));
 }
-
 
 
 void MainWindow::startReading() {
@@ -285,12 +259,12 @@ void MainWindow::startReading() {
     int flowControl1 = portSettings->getFlowControl1();
 
     qDebug() << "Attempting to open port 1:" << portName1
-             << "with settings:"
-             << "BaudRate:" << baudRate1
-             << "DataBits:" << dataBits1
-             << "StopBits:" << stopBits1
-             << "Parity:" << parity1
-             << "FlowControl:" << flowControl1;
+            << "with settings:"
+            << "BaudRate:" << baudRate1
+            << "DataBits:" << dataBits1
+            << "StopBits:" << stopBits1
+            << "Parity:" << parity1
+            << "FlowControl:" << flowControl1;
 
     serialPort = new QSerialPort(this);
     serialPort->setPortName(portName1);
@@ -303,7 +277,7 @@ void MainWindow::startReading() {
     if (!serialPort->open(QIODevice::ReadOnly)) {
         qDebug() << "Failed to open port" << portName1 << "Error:" << serialPort->errorString();
         QMessageBox::warning(this, tr("Error"),
-                           tr("Failed to open port %1: %2").arg(portName1, serialPort->errorString()));
+                             tr("Failed to open port %1: %2").arg(portName1, serialPort->errorString()));
         delete serialPort;
         serialPort = nullptr;
         return;
@@ -318,12 +292,12 @@ void MainWindow::startReading() {
     int flowControl2 = portSettings->getFlowControl2();
 
     qDebug() << "Attempting to open port 2:" << portName2
-             << "with settings:"
-             << "BaudRate:" << baudRate2
-             << "DataBits:" << dataBits2
-             << "StopBits:" << stopBits2
-             << "Parity:" << parity2
-             << "FlowControl:" << flowControl2;
+            << "with settings:"
+            << "BaudRate:" << baudRate2
+            << "DataBits:" << dataBits2
+            << "StopBits:" << stopBits2
+            << "Parity:" << parity2
+            << "FlowControl:" << flowControl2;
 
     serialPort2 = new QSerialPort(this);
     serialPort2->setPortName(portName2);
@@ -336,7 +310,7 @@ void MainWindow::startReading() {
     if (!serialPort2->open(QIODevice::ReadOnly)) {
         qDebug() << "Failed to open port" << portName2 << "Error:" << serialPort2->errorString();
         QMessageBox::warning(this, tr("Error"),
-                           tr("Failed to open port %1: %2").arg(portName2, serialPort2->errorString()));
+                             tr("Failed to open port %1: %2").arg(portName2, serialPort2->errorString()));
 
         // Close port 1 if it was opened
         if (serialPort && serialPort->isOpen()) {
@@ -367,7 +341,8 @@ void MainWindow::startReading() {
         processBuffer(dataBuffer2, dataDisplay2, &MainWindow::parseData2);
     });
 }
-void MainWindow::processBuffer(QString& buffer, QTextEdit* display, void (MainWindow::*parseFunc)(const QString&)) {
+
+void MainWindow::processBuffer(QString &buffer, QTextEdit *display, void (MainWindow::*parseFunc)(const QString &)) {
     static QRegularExpression completePattern("YY\\d+T\\d+E");
 
     QString processedData;
@@ -393,7 +368,7 @@ void MainWindow::processBuffer(QString& buffer, QTextEdit* display, void (MainWi
         display->append(processedData);
 
         // Process data for UI updates (distance, time fields)
-        (this->*parseFunc)(processedData);  // Call the parsing function
+        (this->*parseFunc)(processedData); // Call the parsing function
 
         // Remove processed data, keeping only unprocessed portion
         buffer = buffer.mid(lastMatchEnd);
@@ -485,4 +460,3 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
         QMainWindow::keyPressEvent(event);
     }
 }
-
