@@ -70,6 +70,15 @@ void PortSettings::setupUI() {
     mainLayout->addWidget(refreshButton);
     connect(refreshButton, &QPushButton::clicked, this, &PortSettings::refreshPorts);
 
+    // Add port information text box
+    QLabel* infoLabel = new QLabel(tr("<b>Connected Serial Ports Information:</b>"));
+    mainLayout->addWidget(infoLabel);
+
+    portInfoText = new QTextEdit(this);
+    portInfoText->setReadOnly(true);
+    portInfoText->setMinimumHeight(150);
+    mainLayout->addWidget(portInfoText);
+
     // Buttons
     okButton = new QPushButton(this);
     cancelButton = new QPushButton(this);
@@ -168,6 +177,9 @@ void PortSettings::refreshPorts() {
     if (portBox1->count() > 1 && portBox1->currentText() == portBox2->currentText()) {
         portBox2->setCurrentIndex((portBox1->currentIndex() + 1) % portBox2->count());
     }
+
+    // Update port information text box
+    updatePortInfo();
 }
 
 QString PortSettings::getPortName1() const {
@@ -216,4 +228,33 @@ int PortSettings::getParity2() const {
 
 int PortSettings::getFlowControl2() const {
     return flowControlBox2->currentIndex();
+}
+
+void PortSettings::updatePortInfo() {
+    portInfoText->clear();
+
+    QList<QSerialPortInfo> ports = QSerialPortInfo::availablePorts();
+    if (ports.isEmpty()) {
+        portInfoText->setText(tr("No serial ports detected"));
+        return;
+    }
+
+    QString info;
+    for (const QSerialPortInfo &port : ports) {
+        info += tr("<b>Port:</b> %1<br>").arg(port.portName());
+        info += tr("<b>Description:</b> %1<br>").arg(port.description().isEmpty() ?
+                                                   tr("N/A") : port.description());
+        info += tr("<b>Manufacturer:</b> %1<br>").arg(port.manufacturer().isEmpty() ?
+                                                    tr("N/A") : port.manufacturer());
+        info += tr("<b>Serial Number:</b> %1<br>").arg(port.serialNumber().isEmpty() ?
+                                                     tr("N/A") : port.serialNumber());
+        info += tr("<b>Location:</b> %1<br>").arg(port.systemLocation());
+        info += tr("<b>Vendor ID:</b> %1<br>").arg(port.hasVendorIdentifier() ?
+                                                 QString("0x%1").arg(port.vendorIdentifier(), 4, 16, QChar('0')) : tr("N/A"));
+        info += tr("<b>Product ID:</b> %1<br>").arg(port.hasProductIdentifier() ?
+                                                  QString("0x%1").arg(port.productIdentifier(), 4, 16, QChar('0')) : tr("N/A"));
+        info += "<br>";
+    }
+
+    portInfoText->setHtml(info);
 }

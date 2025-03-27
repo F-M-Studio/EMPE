@@ -34,6 +34,7 @@ public:
     void retranslateUi();
 
 private:
+    void updatePortInfo();
     // Port 1 controls
     QComboBox *portBox1;
     QComboBox *baudRateBox1;
