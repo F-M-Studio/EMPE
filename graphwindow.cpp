@@ -54,6 +54,7 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     // Connect clear button
     connect(clearGraphBtn, &QPushButton::clicked, this, &GraphWindow::clearGraph);
     series = new QLineSeries();
+    series2 = new QLineSeries();
     chart = new QChart();
     const auto chartView = new QChartView(chart);
     chart->layout()->setContentsMargins(0, 0, 0, 0);
@@ -72,6 +73,7 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     axisY->setLabelFormat("%d");
 
     chart->addSeries(series);
+    chart->addSeries(series2);
     chart->addAxis(axisX, Qt::AlignBottom);
     chart->addAxis(axisY, Qt::AlignLeft);
     series->attachAxis(axisX);
@@ -156,6 +158,22 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
 
     // Initialize the splineSeries but don't add it to the chart yet
     splineSeries = new QSplineSeries();
+    splineSeries2 = new QSplineSeries();
+
+    auto *toggleWidget = new QWidget();
+    auto *toggleLayout = new QHBoxLayout(toggleWidget);
+    toggleLayout->setContentsMargins(11, 2, 11, 2);
+    toggleLayout->setSpacing(4);
+
+    series1Toggle = new QCheckBox(tr("Series 1"));
+    series2Toggle = new QCheckBox(tr("Series 2"));
+    series1Toggle->setChecked(true);
+    series2Toggle->setChecked(true);
+
+    toggleLayout->addWidget(series1Toggle);
+    toggleLayout->addWidget(series2Toggle);
+    toggleWidget->setLayout(toggleLayout);
+
 
     // Create widgets for sliders
     auto *recordingSliderWidget = new QWidget();
@@ -282,6 +300,18 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
         pointsLimit = value;
     });
 
+    mainLayout->addWidget(toggleWidget);
+
+    connect(series1Toggle, &QCheckBox::toggled, this, [this](bool checked) {
+        series->setVisible(checked);
+        splineSeries->setVisible(checked && useSpline);
+    });
+
+    connect(series2Toggle, &QCheckBox::toggled, this, [this](bool checked) {
+        series2->setVisible(checked);
+        splineSeries2->setVisible(checked && useSpline);
+    });
+
     mainLayout->addWidget(smoothingWidget);
 
     // Modify the smoothingToggle connection
@@ -354,7 +384,6 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     QTimer::singleShot(0, this, &GraphWindow::updateChartTheme);
     connect(qApp, &QApplication::paletteChanged, this, &GraphWindow::updateChartTheme);
     updateTimer->start(recordingSlider->value());
-
 }
 
 /* Barely working auto random gen data*/
@@ -449,12 +478,12 @@ void GraphWindow::updateChartTheme() {
 
     if (isDarkMode) {
         // Bright colors for dark mode
-        primaryColor = QColor(0, 230, 118);    // Bright green
-        secondaryColor = QColor(255, 128, 0);  // Bright orange
+        primaryColor = QColor(0, 230, 118); // Bright green
+        secondaryColor = QColor(255, 128, 0); // Bright orange
     } else {
         // Strong colors for light mode
-        primaryColor = QColor(0, 100, 255);    // Deep blue
-        secondaryColor = QColor(220, 0, 80);   // Deep red
+        primaryColor = QColor(0, 100, 255); // Deep blue
+        secondaryColor = QColor(220, 0, 80); // Deep red
     }
 
     // Create new pens with increased width
@@ -467,6 +496,11 @@ void GraphWindow::updateChartTheme() {
     newSplinePen.setWidth(3); // Increased from 2
     newSplinePen.setCapStyle(Qt::RoundCap);
     splineSeries->setPen(newSplinePen);
+
+    QPen newSeries2Pen(secondaryColor);
+    newSeries2Pen.setWidth(2);
+    if (series2) series2->setPen(newSeries2Pen);
+    if (splineSeries2) splineSeries2->setPen(newSeries2Pen);
 
     // Force a complete redraw
     chart->update();
@@ -531,54 +565,88 @@ void GraphWindow::resizeEvent(QResizeEvent *event) {
 }
 
 void GraphWindow::updateGraph() {
-    startStopBtn->setText(mainWindow->Reading ? tr("Stop") : tr("Start"));
+    if (!mainWindow || !mainWindow->Reading) return;
 
-    if (mainWindow->Reading) {
-        // Calculate X coordinate based on mode
-        double xValue = useAbsoluteTime ? mainWindow->timeInMilliseconds : mainWindow->timeInMilliseconds - initialTime;
+    // Handle first series data
+    if (mainWindow->dataPoints.size() > 0) {
+        auto point = mainWindow->dataPoints.last();
 
-        // If this is first point in relative mode, set initial time
-        if (!useAbsoluteTime && series->count() == 0) {
-            initialTime = mainWindow->timeInMilliseconds;
-            xValue = 0;
+        // Decide whether to use absolute or relative time
+        qreal xValue;
+        if (useAbsoluteTime) {
+            if (initialTime == 0) initialTime = point.timeInMilliseconds;
+            xValue = (point.timeInMilliseconds - initialTime) / 1000.0;
+        } else {
+            xValue = series->count();
         }
 
-        // Always add to the original series
-        series->append(xValue, mainWindow->distance);
+        series->append(xValue, point.distance);
 
-        // Rest of the function remains unchanged
-        if (autoRemovePoints) {
-            while (series->count() > pointsLimit) {
-                series->remove(0);
-            }
+        // Handle point limits if enabled
+        if (autoRemovePoints && series->count() > pointsLimit) {
+            series->remove(0);
         }
 
         // Apply smoothing if enabled
         if (useSpline) {
-            this->applySmoothing();
-        }
-
-        // Calculate min/max values for axes
-        const QXYSeries *activeSeries = useSpline
-                                            ? static_cast<QXYSeries *>(splineSeries)
-                                            : static_cast<QXYSeries *>(series);
-
-        if (activeSeries->count() > 0) {
-            const double xMin = activeSeries->at(0).x();
-            const double xMax = xValue;
-            double yMin = mainWindow->distance;
-            double yMax = mainWindow->distance;
-
-            for (int i = 0; i < activeSeries->count(); ++i) {
-                yMin = qMin(yMin, activeSeries->at(i).y());
-                yMax = qMax(yMax, activeSeries->at(i).y());
-            }
-
-            axisX->setRange(xMin, xMax);
-            if (!manualYAxisControl) {
-                axisY->setRange(qMax(0.0, yMin - 500), yMax + 500);
+            splineSeries->clear();
+            for (int i = 0; i < series->count(); ++i) {
+                splineSeries->append(series->at(i));
             }
         }
+    }
+
+    // Handle second series data
+    if (mainWindow->dataPoints2.size() > 0) {
+        auto point = mainWindow->dataPoints2.last();
+
+        // Decide whether to use absolute or relative time
+        qreal xValue;
+        if (useAbsoluteTime) {
+            if (initialTime == 0) initialTime = point.timeInMilliseconds;
+            xValue = (point.timeInMilliseconds - initialTime) / 1000.0;
+        } else {
+            xValue = series2->count();
+        }
+
+        series2->append(xValue, point.distance);
+
+        // Handle point limits if enabled
+        if (autoRemovePoints && series2->count() > pointsLimit) {
+            series2->remove(0);
+        }
+
+        // Apply smoothing if enabled
+        if (useSpline) {
+            splineSeries2->clear();
+            for (int i = 0; i < series2->count(); ++i) {
+                splineSeries2->append(series2->at(i));
+            }
+        }
+    }
+
+    // Adjust axis range to fit all data
+    if (series->count() > 0 || series2->count() > 0) {
+        if (!manualYAxisControl) {
+            double maxY = 0;
+            for (const auto &point: *series) {
+                maxY = qMax(maxY, point.y());
+            }
+            for (const auto &point: *series2) {
+                maxY = qMax(maxY, point.y());
+            }
+            axisY->setRange(0, maxY * 1.1);
+        }
+
+        // Update X axis
+        double maxX = 0;
+        for (const auto &point: *series) {
+            maxX = qMax(maxX, point.x());
+        }
+        for (const auto &point: *series2) {
+            maxX = qMax(maxX, point.x());
+        }
+        axisX->setRange(0, maxX * 1.1);
     }
 }
 

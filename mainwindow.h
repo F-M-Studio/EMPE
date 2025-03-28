@@ -40,16 +40,17 @@ public:
     QTextEdit *dataDisplay;
     QTextEdit *dataDisplay2;
 
-protected:
-    void keyPressEvent(QKeyEvent *event) override;
-
-private:
     struct DataPoint {
         int distance;
         int timeInMilliseconds;
     };
     QVector<DataPoint> dataPoints;
     QVector<DataPoint> dataPoints2;
+
+protected:
+    void keyPressEvent(QKeyEvent *event) override;
+
+private:
 
     QWidget *centralWidget;
     QVBoxLayout *mainLayout;

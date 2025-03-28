@@ -56,9 +56,9 @@ void PortSettings::setupUI() {
 
     // Create port tabs
     QWidget *port1Tab = createPortTab(tr("Port 1"), portBox1, baudRateBox1, dataBitsBox1,
-                                    stopBitsBox1, parityBox1, flowControlBox1);
+                                      stopBitsBox1, parityBox1, flowControlBox1);
     QWidget *port2Tab = createPortTab(tr("Port 2"), portBox2, baudRateBox2, dataBitsBox2,
-                                    stopBitsBox2, parityBox2, flowControlBox2);
+                                      stopBitsBox2, parityBox2, flowControlBox2);
 
     tabWidget->addTab(port1Tab, tr("Port 1"));
     tabWidget->addTab(port2Tab, tr("Port 2"));
@@ -71,7 +71,7 @@ void PortSettings::setupUI() {
     connect(refreshButton, &QPushButton::clicked, this, &PortSettings::refreshPorts);
 
     // Add port information text box
-    QLabel* infoLabel = new QLabel(tr("<b>Connected Serial Ports Information:</b>"));
+    QLabel *infoLabel = new QLabel(tr("<b>Connected Serial Ports Information:</b>"));
     mainLayout->addWidget(infoLabel);
 
     portInfoText = new QTextEdit(this);
@@ -96,10 +96,10 @@ void PortSettings::setupUI() {
     refreshPorts();
 }
 
-QWidget* PortSettings::createPortTab(const QString& tabName, QComboBox* &portBox,
-                                   QComboBox* &baudRateBox, QComboBox* &dataBitsBox,
-                                   QComboBox* &stopBitsBox, QComboBox* &parityBox,
-                                   QComboBox* &flowControlBox) {
+QWidget *PortSettings::createPortTab(const QString &tabName, QComboBox * &portBox,
+                                     QComboBox * &baudRateBox, QComboBox * &dataBitsBox,
+                                     QComboBox * &stopBitsBox, QComboBox * &parityBox,
+                                     QComboBox * &flowControlBox) {
     QWidget *tab = new QWidget();
     auto *layout = new QGridLayout(tab);
 
@@ -151,7 +151,7 @@ QWidget* PortSettings::createPortTab(const QString& tabName, QComboBox* &portBox
 
 void PortSettings::refreshPorts() {
     QStringList portList;
-    foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts()) {
+    foreach(const QSerialPortInfo &info, QSerialPortInfo::availablePorts()) {
         portList << info.portName();
     }
 
@@ -240,11 +240,14 @@ void PortSettings::updatePortInfo() {
     }
 
     QString info;
-    for (const QSerialPortInfo &port : ports) {
+    for (const QSerialPortInfo &port: ports) {
         // Check if this is likely a Bluetooth device
         bool isBluetooth = port.description().contains("Bluetooth", Qt::CaseInsensitive) ||
                            port.manufacturer().contains("Bluetooth", Qt::CaseInsensitive) ||
-                           port.portName().contains("BT", Qt::CaseInsensitive);
+                           port.portName().contains("BT", Qt::CaseInsensitive) ||
+                           port.description().contains("empesensor", Qt::CaseInsensitive) ||
+                           port.manufacturer().contains("empesensor", Qt::CaseInsensitive) ||
+                           port.description().contains("empesensor", Qt::CaseInsensitive);
 
         // Add Bluetooth indicator if applicable
         if (isBluetooth) {
@@ -252,17 +255,17 @@ void PortSettings::updatePortInfo() {
         }
 
         info += tr("<b>Port:</b> %1<br>").arg(port.portName());
-        info += tr("<b>Description:</b> %1<br>").arg(port.description().isEmpty() ?
-                                                   tr("N/A") : port.description());
-        info += tr("<b>Manufacturer:</b> %1<br>").arg(port.manufacturer().isEmpty() ?
-                                                    tr("N/A") : port.manufacturer());
-        info += tr("<b>Serial Number:</b> %1<br>").arg(port.serialNumber().isEmpty() ?
-                                                     tr("N/A") : port.serialNumber());
+        info += tr("<b>Description:</b> %1<br>").arg(port.description().isEmpty() ? tr("N/A") : port.description());
+        info += tr("<b>Manufacturer:</b> %1<br>").arg(port.manufacturer().isEmpty() ? tr("N/A") : port.manufacturer());
+        info += tr("<b>Serial Number:</b> %1<br>").arg(port.serialNumber().isEmpty() ? tr("N/A") : port.serialNumber());
         info += tr("<b>Location:</b> %1<br>").arg(port.systemLocation());
-        info += tr("<b>Vendor ID:</b> %1<br>").arg(port.hasVendorIdentifier() ?
-                                                 QString("0x%1").arg(port.vendorIdentifier(), 4, 16, QChar('0')) : tr("N/A"));
-        info += tr("<b>Product ID:</b> %1<br>").arg(port.hasProductIdentifier() ?
-                                                  QString("0x%1").arg(port.productIdentifier(), 4, 16, QChar('0')) : tr("N/A"));
+        info += tr("<b>Vendor ID:</b> %1<br>").arg(port.hasVendorIdentifier()
+                                                       ? QString("0x%1").arg(port.vendorIdentifier(), 4, 16, QChar('0'))
+                                                       : tr("N/A"));
+        info += tr("<b>Product ID:</b> %1<br>").arg(port.hasProductIdentifier()
+                                                        ? QString("0x%1").arg(
+                                                            port.productIdentifier(), 4, 16, QChar('0'))
+                                                        : tr("N/A"));
         info += "<br>";
     }
 
