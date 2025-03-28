@@ -78,6 +78,8 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     chart->addAxis(axisY, Qt::AlignLeft);
     series->attachAxis(axisX);
     series->attachAxis(axisY);
+    series2->attachAxis(axisX);
+    series2->attachAxis(axisY);
     chart->legend()->hide();
 
     chart->setBackgroundVisible(true);

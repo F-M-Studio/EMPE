@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>830</width>
+    <height>829</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,12 +22,6 @@
       <width>780</width>
       <height>550</height>
      </rect>
-    </property>
-    <property name="maximumSize">
-     <size>
-      <width>780</width>
-      <height>550</height>
-     </size>
     </property>
     <property name="layoutDirection">
      <enum>Qt::LayoutDirection::LeftToRight</enum>
@@ -47,7 +41,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>830</width>
      <height>24</height>
     </rect>
    </property>

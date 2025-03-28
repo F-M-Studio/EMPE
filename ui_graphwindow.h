@@ -31,13 +31,12 @@ public:
     {
         if (GraphWindow->objectName().isEmpty())
             GraphWindow->setObjectName("GraphWindow");
-        GraphWindow->resize(800, 600);
+        GraphWindow->resize(830, 829);
         centralwidget = new QWidget(GraphWindow);
         centralwidget->setObjectName("centralwidget");
         frame = new QFrame(centralwidget);
         frame->setObjectName("frame");
         frame->setGeometry(QRect(10, 10, 780, 550));
-        frame->setMaximumSize(QSize(780, 550));
         frame->setLayoutDirection(Qt::LayoutDirection::LeftToRight);
         frame->setAutoFillBackground(false);
         horizontalLayout = new QHBoxLayout(frame);
@@ -46,7 +45,7 @@ public:
         GraphWindow->setCentralWidget(centralwidget);
         menubar = new QMenuBar(GraphWindow);
         menubar->setObjectName("menubar");
-        menubar->setGeometry(QRect(0, 0, 800, 24));
+        menubar->setGeometry(QRect(0, 0, 830, 24));
         GraphWindow->setMenuBar(menubar);
 
         retranslateUi(GraphWindow);
