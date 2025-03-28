@@ -247,7 +247,7 @@ void PortSettings::updatePortInfo() {
                            port.portName().contains("BT", Qt::CaseInsensitive) ||
                            port.description().contains("empesensor", Qt::CaseInsensitive) ||
                            port.manufacturer().contains("empesensor", Qt::CaseInsensitive) ||
-                           port.description().contains("empesensor", Qt::CaseInsensitive);
+                           port.portName().contains("empesensor", Qt::CaseInsensitive);
 
         // Add Bluetooth indicator if applicable
         if (isBluetooth) {
