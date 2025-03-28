@@ -629,22 +629,22 @@ void GraphWindow::updateGraph() {
     if (series->count() > 0 || series2->count() > 0) {
         if (!manualYAxisControl) {
             double maxY = 0;
-            for (const auto &point: *series) {
-                maxY = qMax(maxY, point.y());
+            for (int i = 0; i < series->count(); ++i) {
+                maxY = qMax(maxY, series->at(i).y());
             }
-            for (const auto &point: *series2) {
-                maxY = qMax(maxY, point.y());
+            for (int i = 0; i < series2->count(); ++i) {
+                maxY = qMax(maxY, series2->at(i).y());
             }
             axisY->setRange(0, maxY * 1.1);
         }
 
         // Update X axis
         double maxX = 0;
-        for (const auto &point: *series) {
-            maxX = qMax(maxX, point.x());
+        for (int i = 0; i < series->count(); ++i) {
+            maxX = qMax(maxX, series->at(i).x());
         }
-        for (const auto &point: *series2) {
-            maxX = qMax(maxX, point.x());
+        for (int i = 0; i < series2->count(); ++i) {
+            maxX = qMax(maxX, series2->at(i).x());
         }
         axisX->setRange(0, maxX * 1.1);
     }
