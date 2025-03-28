@@ -385,6 +385,9 @@ void MainWindow::parseData(const QString &data) {
 
         // Direct numeric conversion
         distance = match.captured(1).toInt();
+        if (distance > 1000) {
+            distance = distance / 10;
+        }
         timeInMilliseconds = match.captured(2).toInt();
 
         // Calculate time components
@@ -411,6 +414,9 @@ void MainWindow::parseData2(const QString &data) {
 
         // Direct numeric conversion
         distance2 = match.captured(1).toInt();
+        if (distance2 > 1000) {
+            distance2 = distance2/10;
+        }
         timeInMilliseconds2 = match.captured(2).toInt();
 
         // Calculate time components
