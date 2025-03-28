@@ -500,7 +500,7 @@ void GraphWindow::updateChartTheme() {
     splineSeries->setPen(newSplinePen);
 
     QPen newSeries2Pen(secondaryColor);
-    newSeries2Pen.setWidth(2);
+    newSeries2Pen.setWidth(3);
     if (series2) series2->setPen(newSeries2Pen);
     if (splineSeries2) splineSeries2->setPen(newSeries2Pen);
 
@@ -551,6 +551,8 @@ void GraphWindow::applySmoothing() const {
 void GraphWindow::clearGraph() {
     series->clear();
     splineSeries->clear();
+    series2->clear();
+    splineSeries2->clear();
 
     if (!useAbsoluteTime && mainWindow->Reading) {
         initialTime = mainWindow->timeInMilliseconds;
@@ -574,7 +576,7 @@ void GraphWindow::updateGraph() {
         auto point = mainWindow->dataPoints.last();
 
         // Decide whether to use absolute or relative time
-        qreal xValue;
+        double xValue;
         if (useAbsoluteTime) {
             if (initialTime == 0) initialTime = point.timeInMilliseconds;
             xValue = (point.timeInMilliseconds - initialTime) / 1000.0;
