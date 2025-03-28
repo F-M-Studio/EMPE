@@ -36,7 +36,7 @@ protected:
 
 private slots:
     void updateGraph();
-
+    void updateAxisRanges();
     void clearGraph();
 
 private:

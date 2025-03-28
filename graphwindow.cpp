@@ -59,6 +59,7 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     const auto chartView = new QChartView(chart);
     chart->layout()->setContentsMargins(0, 0, 0, 0);
     chartView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    chart->setAnimationOptions(QChart::NoAnimation);
 
     axisX = new QValueAxis();
     axisY = new QValueAxis();
@@ -510,44 +511,34 @@ void GraphWindow::updateChartTheme() {
 }
 
 void GraphWindow::applySmoothing() const {
-    if (!useSpline || series->count() < 2) {
-        return;
-    }
+    if (!useSpline || series->count() < 2) return;
 
-    // Get window size from smoothing level (1-25)
-    int windowSize = 1 + (smoothingLevelSlider->value() * 10 / 4);
-    if (windowSize % 2 == 0) windowSize++; // Make sure it's odd
-
-    // Create a copy of original points
-    QVector<QPointF> originalPoints;
-    for (int i = 0; i < series->count(); ++i) {
-        originalPoints.append(series->at(i));
-    }
-
-    // Clear the spline series
-    splineSeries->clear();
-
-    // Apply smoothing to ALL points
+    const int windowSize = qMin(1 + (smoothingLevelSlider->value() * 10 / 4), 25) | 1; // Ensure odd number
     const int halfWindow = windowSize / 2;
-    for (int i = 0; i < originalPoints.size(); ++i) {
-        double sumX = 0;
-        double sumY = 0;
+    const auto& points = series->points();
+    const int pointCount = points.size();
+
+    QVector<QPointF> smoothedPoints;
+    smoothedPoints.reserve(pointCount);
+
+    for (int i = 0; i < pointCount; ++i) {
+        double sumX = 0, sumY = 0;
         int count = 0;
 
-        // Use available points within the window
-        for (int j = qMax(0, i - halfWindow); j <= qMin(i + halfWindow, originalPoints.size() - 1); ++j) {
-            sumX += originalPoints[j].x();
-            sumY += originalPoints[j].y();
+        const int start = qMax(0, i - halfWindow);
+        const int end = qMin(i + halfWindow, pointCount - 1);
+
+        for (int j = start; j <= end; ++j) {
+            sumX += points[j].x();
+            sumY += points[j].y();
             count++;
         }
 
-        // Add the smoothed point
-        if (count > 0) {
-            splineSeries->append(sumX / count, sumY / count);
-        }
+        smoothedPoints.append(QPointF(sumX / count, sumY / count));
     }
-}
 
+    splineSeries->replace(smoothedPoints);
+}
 void GraphWindow::clearGraph() {
     series->clear();
     splineSeries->clear();
@@ -571,105 +562,91 @@ void GraphWindow::resizeEvent(QResizeEvent *event) {
 void GraphWindow::updateGraph() {
     if (!mainWindow || !mainWindow->Reading) return;
 
-    // Handle first series data
-    if (mainWindow->dataPoints.size() > 0) {
-        auto point = mainWindow->dataPoints.last();
+    // Only proceed if we have new data
+    static size_t lastDataSize = 0;
+    static size_t lastDataSize2 = 0;
+    if (mainWindow->dataPoints.size() == lastDataSize &&
+        mainWindow->dataPoints2.size() == lastDataSize2) {
+        return;
+    }
+    lastDataSize = mainWindow->dataPoints.size();
+    lastDataSize2 = mainWindow->dataPoints2.size();
 
-        // Decide whether to use absolute or relative time
-        double xValue;
-        if (useAbsoluteTime) {
-            if (initialTime == 0) initialTime = point.timeInMilliseconds;
-            xValue = (point.timeInMilliseconds - initialTime) / 1000.0;
-        } else {
-            xValue = series->count();
-        }
+    // Block signals during updates
+    bool oldState = chart->blockSignals(true);
+
+    // Handle first series data
+    if (!mainWindow->dataPoints.empty()) {
+        const auto& point = mainWindow->dataPoints.back();
+        qreal xValue = useAbsoluteTime ?
+            (point.timeInMilliseconds - (initialTime ? initialTime : (initialTime = point.timeInMilliseconds))) / 1000.0 :
+            series->count();
 
         series->append(xValue, point.distance);
 
-        // Handle point limits if enabled
         if (autoRemovePoints && series->count() > pointsLimit) {
             if (useAbsoluteTime) {
-                // For absolute time, just remove the oldest point
-                series->remove(0);
+                series->removePoints(0, series->count() - pointsLimit); // More efficient
             } else {
-                // For relative time, we need to shift all remaining points left
+                // For relative time, shift points left
                 QVector<QPointF> points;
-                for (int i = 1; i < series->count(); ++i) {
-                    points.append(QPointF(i-1, series->at(i).y()));
+                points.reserve(pointsLimit);
+                for (int i = series->count() - pointsLimit; i < series->count(); ++i) {
+                    points.append(QPointF(points.size(), series->at(i).y()));
                 }
                 series->replace(points);
             }
         }
-
-        // Apply smoothing if enabled
-        if (useSpline) {
-            applySmoothing();
-        }
     }
 
-    // Handle second series data (same logic as above)
-    if (mainWindow->dataPoints2.size() > 0) {
-        auto point = mainWindow->dataPoints2.last();
-
-        qreal xValue;
-        if (useAbsoluteTime) {
-            if (initialTime == 0) initialTime = point.timeInMilliseconds;
-            xValue = (point.timeInMilliseconds - initialTime) / 1000.0;
-        } else {
-            xValue = series2->count();
-        }
+    // Handle second series data
+    if (!mainWindow->dataPoints2.empty()) {
+        const auto& point = mainWindow->dataPoints2.back();
+        qreal xValue = useAbsoluteTime ?
+            (point.timeInMilliseconds - (initialTime ? initialTime : (initialTime = point.timeInMilliseconds))) / 1000.0 :
+            series2->count();
 
         series2->append(xValue, point.distance);
 
         if (autoRemovePoints && series2->count() > pointsLimit) {
             if (useAbsoluteTime) {
-                series2->remove(0);
+                series2->removePoints(0, series2->count() - pointsLimit);
             } else {
                 QVector<QPointF> points;
-                for (int i = 1; i < series2->count(); ++i) {
-                    points.append(QPointF(i-1, series2->at(i).y()));
+                points.reserve(pointsLimit);
+                for (int i = series2->count() - pointsLimit; i < series2->count(); ++i) {
+                    points.append(QPointF(points.size(), series2->at(i).y()));
                 }
                 series2->replace(points);
             }
         }
+    }
 
-        if (useSpline) {
-            QVector<QPointF> points;
-            for (int i = 0; i < series2->count(); ++i) {
-                points.append(series2->at(i));
-            }
-            splineSeries2->replace(points);
-        }
+    // Apply smoothing if enabled (after all point updates)
+    if (useSpline) {
+        applySmoothing();
     }
 
     // Adjust axis ranges
-    if (series->count() > 0 || series2->count() > 0) {
-        if (!manualYAxisControl) {
-            double maxY = 0;
-            for (int i = 0; i < series->count(); ++i) {
-                maxY = qMax(maxY, series->at(i).y());
-            }
-            for (int i = 0; i < series2->count(); ++i) {
-                maxY = qMax(maxY, series2->at(i).y());
-            }
-            axisY->setRange(0, maxY * 1.1);
-        }
+    updateAxisRanges();
 
-        double maxX = 0;
-        if (useAbsoluteTime) {
-            // For absolute time, use actual X values
-            for (int i = 0; i < series->count(); ++i) {
-                maxX = qMax(maxX, series->at(i).x());
-            }
-            for (int i = 0; i < series2->count(); ++i) {
-                maxX = qMax(maxX, series2->at(i).x());
-            }
-        } else {
-            // For relative time, just show the last N points
-            maxX = pointsLimit;
-        }
-        axisX->setRange(0, maxX * 1.1);
+    // Restore signal blocking
+    chart->blockSignals(oldState);
+}
+
+void GraphWindow::updateAxisRanges() {
+    if (!manualYAxisControl) {
+        double maxY = 0;
+        if (series->count() > 0) maxY = series->at(series->count()-1).y();
+        if (series2->count() > 0) maxY = qMax(maxY, series2->at(series2->count()-1).y());
+        axisY->setRange(0, maxY * 1.1);
     }
+
+    double maxX = useAbsoluteTime ?
+        qMax(series->count() > 0 ? series->at(series->count()-1).x() : 0,
+             series2->count() > 0 ? series2->at(series2->count()-1).x() : 0) :
+        pointsLimit;
+    axisX->setRange(0, maxX * 1.1);
 }
 
 void GraphWindow::retranslateUi() {

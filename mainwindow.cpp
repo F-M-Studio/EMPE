@@ -384,11 +384,21 @@ void MainWindow::parseData(const QString &data) {
         QRegularExpressionMatch match = matchIterator.next();
 
         // Direct numeric conversion
-        distance = match.captured(1).toInt();
-        if (distance > 1000) {
-            distance = distance / 10;
+        int newDistance = match.captured(1).toInt();
+        if (newDistance > 1000) {
+            newDistance = newDistance / 10;
         }
-        timeInMilliseconds = match.captured(2).toInt();
+        int newTime = match.captured(2).toInt();
+
+        // Ignore data if distance suddenly drops to 0
+        if (newDistance == 0 && distance > 0) {
+            qDebug() << "Ignoring invalid data point (distance dropped to 0)";
+            continue;
+        }
+
+        // Update current values
+        distance = newDistance;
+        timeInMilliseconds = newTime;
 
         // Calculate time components
         minutes = timeInMilliseconds / 60000;
@@ -413,11 +423,21 @@ void MainWindow::parseData2(const QString &data) {
         QRegularExpressionMatch match = matchIterator.next();
 
         // Direct numeric conversion
-        distance2 = match.captured(1).toInt();
-        if (distance2 > 1000) {
-            distance2 = distance2/10;
+        int newDistance = match.captured(1).toInt();
+        if (newDistance > 1000) {
+            newDistance = newDistance / 10;
         }
-        timeInMilliseconds2 = match.captured(2).toInt();
+        int newTime = match.captured(2).toInt();
+
+        // Ignore data if distance suddenly drops to 0
+        if (newDistance == 0 && distance2 > 0) {
+            qDebug() << "Ignoring invalid data point (distance2 dropped to 0)";
+            continue;
+        }
+
+        // Update current values
+        distance2 = newDistance;
+        timeInMilliseconds2 = newTime;
 
         // Calculate time components
         minutes2 = timeInMilliseconds2 / 60000;
