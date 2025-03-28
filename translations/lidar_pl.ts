@@ -51,6 +51,26 @@
             <source>Use Relative Time</source>
             <translation>Użyj Czasu Względnego</translation>
         </message>
+        <message>
+             <source>Series 1</source>
+               <translation>Port szeregowy 1</translation>
+        </message>
+        <message>
+              <source>Series 2</source>
+              <translation>Port szeregowy 2</translation>
+        </message>
+        <message>
+               <source>Start</source>
+               <translation>Start</translation>
+        </message>
+        <message>
+             <source>Stop</source>
+              <translation>Stop</translation>
+        </message>
+        <message>
+              <source>Bluetooth Device</source>
+              <translation>Urządzenie Bluetooth</translation>
+        </message>
     </context>
     <context>
         <name>MainWindow</name>

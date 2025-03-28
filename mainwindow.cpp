@@ -26,7 +26,7 @@ MainWindow::MainWindow(QWidget *parent)
       portSettings(new PortSettings(this)) {
     centralWidget = new QWidget(this);
     setCentralWidget(centralWidget);
-    setWindowTitle("EMPE");
+    setWindowTitle(tr("EMPE"));
 
     mainLayout = new QVBoxLayout(centralWidget);
 
@@ -62,10 +62,10 @@ MainWindow::~MainWindow() {
 void MainWindow::handleStartStopButton() {
     if (isReading) {
         stopReading();
-        startStopBtn->setText("START");
+        startStopBtn->setText(tr("START"));
     } else {
         startReading();
-        startStopBtn->setText("STOP");
+        startStopBtn->setText(tr("STOP"));
     }
     isReading = !isReading;
 }
@@ -74,13 +74,13 @@ void MainWindow::handleStartStopButton() {
 void MainWindow::createControls() {
     QHBoxLayout *buttonLayout = new QHBoxLayout();
 
-    portSettingsBtn = new QPushButton("PORT settings");
-    showGraphBtn = new QPushButton("Show GRAPH");
-    startStopBtn = new QPushButton("START");
-    saveDataBtn = new QPushButton("SAVE data 1");
-    saveData2Btn = new QPushButton("SAVE data 2");
-    clearGraphBtn = new QPushButton("Clear GRAPH");
-    showRawDataBtn = new QPushButton("Show raw data");
+    portSettingsBtn = new QPushButton(tr("PORT settings"));
+    showGraphBtn = new QPushButton(tr("Show GRAPH"));
+    startStopBtn = new QPushButton(tr("START"));
+    saveDataBtn = new QPushButton(tr("SAVE data 1"));
+    saveData2Btn = new QPushButton(tr("SAVE data 2"));
+    clearGraphBtn = new QPushButton(tr("Clear GRAPH"));
+    showRawDataBtn = new QPushButton(tr("Show raw data"));
 
     buttonLayout->addWidget(portSettingsBtn);
     buttonLayout->addWidget(showGraphBtn);
@@ -116,23 +116,23 @@ void MainWindow::createControls() {
         bool visible = !dataDisplay->isVisible();
         dataDisplay->setVisible(visible);
         dataDisplay2->setVisible(visible);
-        showRawDataBtn->setText(visible ? "Hide raw data" : "Show raw data");
+        showRawDataBtn->setText(visible ? tr("Hide raw data") : tr("Show raw data"));
     });
 
     QGridLayout *controlsLayout = new QGridLayout();
 
-    QLabel *distanceLabel = new QLabel("Distance 1:");
+    QLabel *distanceLabel = new QLabel(tr("Distance 1:"));
     distanceInput = new QLineEdit("00");
     distanceInput->setReadOnly(true);
-    QLabel *timeLabel = new QLabel("Time 1:");
+    QLabel *timeLabel = new QLabel(tr("Time 1:"));
     timeInput = new QTimeEdit();
     timeInput->setDisplayFormat("mm:ss.zzz");
     timeInput->setReadOnly(true);
 
-    QLabel *distanceLabel2 = new QLabel("Distance 2:");
+    QLabel *distanceLabel2 = new QLabel(tr("Distance 2:"));
     distanceInput2 = new QLineEdit("00");
     distanceInput2->setReadOnly(true);
-    QLabel *timeLabel2 = new QLabel("Time 2:");
+    QLabel *timeLabel2 = new QLabel(tr("Time 2:"));
     timeInput2 = new QTimeEdit();
     timeInput2->setDisplayFormat("mm:ss.zzz");
     timeInput2->setReadOnly(true);
@@ -150,7 +150,7 @@ void MainWindow::createControls() {
     mainLayout->addLayout(controlsLayout);
 
     // Create and add the "Always on Top" checkbox
-    alwaysOnTopCheckbox = new QCheckBox("Always on Top", this);
+    alwaysOnTopCheckbox = new QCheckBox(tr("Always on Top"), this);
     mainLayout->addWidget(alwaysOnTopCheckbox);
 
     connect(alwaysOnTopCheckbox, &QCheckBox::checkStateChanged, this, [this](int state) {
@@ -185,8 +185,7 @@ void MainWindow::saveDataToFile(const QTextEdit *display, const QString &regexPa
     if (file.exists()) {
         QMessageBox::StandardButton reply = QMessageBox::question(this,
                                                                   tr("File exists"),
-                                                                  tr(
-                                                                      "The file %1 already exists.\nDo you want to replace it?")
+                                                                  tr("The file %1 already exists.\nDo you want to replace it?")
                                                                   .arg(QDir::toNativeSeparators(fileName)),
                                                                   QMessageBox::Yes | QMessageBox::No);
 
@@ -206,7 +205,7 @@ void MainWindow::saveDataToFile(const QTextEdit *display, const QString &regexPa
     QTextStream out(&file);
 
     // Write CSV header
-    out << "Distance,Time (mm:ss),Milliseconds,Raw Time (ms)\n";
+    out << tr("Distance,Time (mm:ss),Milliseconds,Raw Time (ms)\n");
 
     // Parse and write data from display
     QString rawData = display->toPlainText();
@@ -392,7 +391,7 @@ void MainWindow::parseData(const QString &data) {
 
         // Ignore data if distance suddenly drops to 0
         if (newDistance == 0 && distance > 0) {
-            qDebug() << "Ignoring invalid data point (distance dropped to 0)";
+            qDebug() << tr("Ignoring invalid data point (distance dropped to 0)");
             continue;
         }
 
@@ -431,7 +430,7 @@ void MainWindow::parseData2(const QString &data) {
 
         // Ignore data if distance suddenly drops to 0
         if (newDistance == 0 && distance2 > 0) {
-            qDebug() << "Ignoring invalid data point (distance2 dropped to 0)";
+            qDebug() << tr("Ignoring invalid data point (distance2 dropped to 0)");
             continue;
         }
 
@@ -460,7 +459,7 @@ void MainWindow::stopReading() {
     if (serialPort && serialPort->isOpen()) {
         disconnect(serialPort, &QSerialPort::readyRead, nullptr, nullptr);
         serialPort->close();
-        qDebug() << "Stopped reading from port 1";
+        qDebug() << tr("Stopped reading from port 1");
         delete serialPort;
         serialPort = nullptr;
     }
@@ -469,7 +468,7 @@ void MainWindow::stopReading() {
     if (serialPort2 && serialPort2->isOpen()) {
         disconnect(serialPort2, &QSerialPort::readyRead, nullptr, nullptr);
         serialPort2->close();
-        qDebug() << "Stopped reading from port 2";
+        qDebug() << tr("Stopped reading from port 2");
         delete serialPort2;
         serialPort2 = nullptr;
     }
@@ -481,7 +480,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
         bool visible = !dataDisplay->isVisible();
         dataDisplay->setVisible(visible);
         dataDisplay2->setVisible(visible);
-        showRawDataBtn->setText(visible ? "Hide raw data" : "Show raw data");
+        showRawDataBtn->setText(visible ? tr("Hide raw data") : tr("Show raw data"));
     } else {
         QMainWindow::keyPressEvent(event);
     }
