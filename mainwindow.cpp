@@ -448,7 +448,7 @@ void MainWindow::parseData2(const QString &data) {
 
         // Update UI
         distanceInput2->setText(QString::number(distance2));
-        timeInput2->setTime(QTime(0, minutes2, seconds2, milliseconds2));
+        //timeInput2->setTime(QTime(0, minutes2, seconds2, milliseconds2));
     }
 }
 
