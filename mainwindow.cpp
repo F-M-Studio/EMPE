@@ -165,23 +165,22 @@ void MainWindow::createControls() {
     });
 }
 
-
 void MainWindow::saveDataToFile(const QTextEdit *display, const QString &regexPattern) {
     QString defaultFileName = QString("EMPE_%1.csv").arg(QDate::currentDate().toString("ddMMyyyy"));
     QString fileName = QFileDialog::getSaveFileName(this,
                                                     tr("Save Data"), defaultFileName,
                                                     tr("CSV Files (*.csv)"));
 
-    // Add .csv extension if not present
+    if (fileName.isEmpty()) {
+        return;  // Użytkownik anulował operację
+    }
+
+    // Dodaj rozszerzenie .csv jeśli nie występuje
     if (!fileName.endsWith(".csv", Qt::CaseInsensitive)) {
         fileName += ".csv";
     }
 
-    if (fileName.isEmpty()) {
-        return;
-    }
-
-    // Check if file exists
+    // Sprawdź czy plik istnieje
     QFile file(fileName);
     if (file.exists()) {
         QMessageBox::StandardButton reply = QMessageBox::question(this,
@@ -191,7 +190,7 @@ void MainWindow::saveDataToFile(const QTextEdit *display, const QString &regexPa
                                                                   QMessageBox::Yes | QMessageBox::No);
 
         if (reply == QMessageBox::No) {
-            return;
+            return;  // Użytkownik nie chce nadpisać pliku
         }
     }
 
@@ -204,14 +203,12 @@ void MainWindow::saveDataToFile(const QTextEdit *display, const QString &regexPa
     }
 
     QTextStream out(&file);
-
-    // Write CSV header
     out << tr("Distance,Time (mm:ss),Milliseconds,Raw Time (ms)\n");
 
-    // Parse and write data from display
     QString rawData = display->toPlainText();
     QStringList lines = rawData.split('\n');
     QRegularExpression regex(regexPattern);
+    bool dataWritten = false;
 
     for (const QString &line: lines) {
         QRegularExpressionMatch match = regex.match(line);
@@ -219,12 +216,10 @@ void MainWindow::saveDataToFile(const QTextEdit *display, const QString &regexPa
             QString distance = match.captured(1);
             int timeMs = match.captured(2).toInt();
 
-            // Convert milliseconds to components
             int minutes = timeMs / 60000;
             int seconds = (timeMs % 60000) / 1000;
             int milliseconds = timeMs % 1000;
 
-            // Format time as mm:ss
             QString timeFormatted = QString("%1:%2")
                     .arg(minutes, 2, 10, QChar('0'))
                     .arg(seconds, 2, 10, QChar('0'));
@@ -234,14 +229,18 @@ void MainWindow::saveDataToFile(const QTextEdit *display, const QString &regexPa
                     .arg(timeFormatted)
                     .arg(milliseconds)
                     .arg(timeMs);
+
+            dataWritten = true;
         }
     }
 
     file.close();
 
-    QMessageBox::information(this, tr("Success"),
-                             tr("Data has been saved to %1")
-                             .arg(QDir::toNativeSeparators(fileName)));
+    if (dataWritten) {
+        QMessageBox::information(this, tr("Success"),
+                                tr("Data has been saved to %1")
+                                .arg(QDir::toNativeSeparators(fileName)));
+    }
 }
 
 
