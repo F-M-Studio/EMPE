@@ -33,7 +33,8 @@ public:
     ~MainWindow();
     bool Reading;
     int distance, timeInMilliseconds, minutes, seconds, milliseconds;
-    int distance2, timeInMilliseconds2, minutes2, seconds2, milliseconds2;
+    int distance2;
+    //int timeInMilliseconds2, minutes2, seconds2, milliseconds2;
     void handleStartStopButton();
     void saveDataToFile(const QTextEdit* display, const QString& regex);
 
@@ -111,7 +112,7 @@ private:
     QLineEdit *distanceInput{};
     QLineEdit *distanceInput2{};
     QTimeEdit *timeInput{};
-    QTimeEdit *timeInput2{};
+ //   QTimeEdit *timeInput2{};
     QLabel *yAxisValueLabel{};
 
     // Serial port

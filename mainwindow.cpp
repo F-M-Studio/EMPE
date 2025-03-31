@@ -436,12 +436,12 @@ void MainWindow::parseData2(const QString &data) {
 
         // Update current values
         distance2 = newDistance;
-        timeInMilliseconds2 = newTime;
-
-        // Calculate time components
-        minutes2 = timeInMilliseconds2 / 60000;
-        seconds2 = (timeInMilliseconds2 % 60000) / 1000;
-        milliseconds2 = timeInMilliseconds2 % 1000;
+        // timeInMilliseconds2 = newTime;
+        //
+        // // Calculate time components
+        // minutes2 = timeInMilliseconds2 / 60000;
+        // seconds2 = (timeInMilliseconds2 % 60000) / 1000;
+        // milliseconds2 = timeInMilliseconds2 % 1000;
 
         // Store the data point
         dataPoints2.append({distance2, timeInMilliseconds2});
