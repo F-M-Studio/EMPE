@@ -18,18 +18,22 @@ AppMenu::AppMenu(QMainWindow *window, MainWindow *mainWindow) : QObject(window),
     graphAction = new QAction(tr("Graph"), window);
     startMeasurementAction = new QAction(tr("Start measurement"), window);
     saveDataAction = new QAction(tr("Save data to file"), window);
+    aboutUsAction = new QAction(tr("About us"), window);
 
     // Add actions to menu
     mainMenu->addAction(portSettingsAction);
     mainMenu->addAction(graphAction);
     mainMenu->addAction(startMeasurementAction);
     mainMenu->addAction(saveDataAction);
+    mainMenu->addSeparator();
+    mainMenu->addAction(aboutUsAction);
 
     // Connect actions to signals
     connect(portSettingsAction, &QAction::triggered, this, &AppMenu::portSettingsRequested);
     connect(graphAction, &QAction::triggered, this, &AppMenu::graphWindowRequested);
     connect(startMeasurementAction, &QAction::triggered, this, &AppMenu::startStopRequested);
     connect(saveDataAction, &QAction::triggered, this, &AppMenu::saveDataRequested);
+    connect(aboutUsAction, &QAction::triggered, this, &AppMenu::aboutUsRequested);
 
     // Language submenu
     languageAction = new QAction(tr("Language"), window);
@@ -64,7 +68,9 @@ void AppMenu::retranslateUi() const {
     graphAction->setText(tr("Graph"));
     startMeasurementAction->setText(tr("Start measurement"));
     saveDataAction->setText(tr("Save data to file"));
+
     languageAction->setText(tr("Language"));
+    aboutUsAction->setText(tr("About us"));
 
     englishAction->setText(tr("English"));
     polishAction->setText(tr("Polish"));

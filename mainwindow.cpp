@@ -4,6 +4,7 @@
 #include "portsettings.h"
 #include "appmenu.h"
 #include "graphwindow.h"
+#include "aboutusdialog.h"
 
 #include <QDebug>
 #include <QTimer>
@@ -51,6 +52,21 @@ MainWindow::MainWindow(QWidget *parent)
         PortSettings *portSettings = new PortSettings(this);
         portSettings->show();
     });
+    connect(appMenu, &AppMenu::aboutUsRequested, this, &MainWindow::showAboutUsDialog);
+
+    QFrame *separator = new QFrame(this);
+    separator->setFrameShape(QFrame::HLine);
+    separator->setFrameShadow(QFrame::Sunken);
+    mainLayout->addWidget(separator);
+
+    // Dodaj notatkę o twórcach
+    creatorsNoteLabel = new QLabel(tr("Stworzone przez: Mateusza Korniaka, Mateusza Machowskiego i Filipa Leśnika"), this);
+    creatorsNoteLabel->setAlignment(Qt::AlignCenter);
+    QFont noteFont = creatorsNoteLabel->font();
+    noteFont.setPointSize(noteFont.pointSize() - 1);
+    noteFont.setItalic(true);
+    creatorsNoteLabel->setFont(noteFont);
+    mainLayout->addWidget(creatorsNoteLabel);
 }
 
 MainWindow::~MainWindow() {
@@ -484,4 +500,10 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
     } else {
         QMainWindow::keyPressEvent(event);
     }
+}
+
+void MainWindow::showAboutUsDialog() {
+    auto *dialog = new AboutUsDialog(this);
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+    dialog->show();
 }

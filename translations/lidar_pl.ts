@@ -121,6 +121,41 @@
             <source>Language</source>
             <translation>Język</translation>
         </message>
+        <message>
+            <source>About us</source>
+            <translation>O nas</translation>
+        </message>
+    </context>
+    <context>
+        <name>AboutUsDialog</name>
+        <message>
+            <source>About us</source>
+            <translation>O nas</translation>
+        </message>
+        <message>
+            <source>Application Authors</source>
+            <translation>Autorzy aplikacji</translation>
+        </message>
+        <message>
+            <source>This application was created by:</source>
+            <translation>Ta aplikacja została stworzona przez:</translation>
+        </message>
+        <message>
+            <source>Lead Developer</source>
+            <translation>Główny programista</translation>
+        </message>
+        <message>
+            <source>UI/UX Designer</source>
+            <translation>Projektant UI/UX</translation>
+        </message>
+        <message>
+            <source>Testing Engineer</source>
+            <translation>Inżynier testów</translation>
+        </message>
+        <message>
+            <source>Close</source>
+            <translation>Zamknij</translation>
+        </message>
     </context>
     <context>
         <name>QFileDialog</name>

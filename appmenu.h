@@ -29,6 +29,7 @@ public:
     void startStopRequested();
     void saveDataRequested();
     void languageChanged(const QString& language);
+    void aboutUsRequested();
 
 private:
     QAction* englishAction;
@@ -43,4 +44,5 @@ private:
     QAction* startMeasurementAction;
     QAction* saveDataAction;
     QAction* languageAction;
+    QAction* aboutUsAction;
 };

@@ -30,12 +30,16 @@ class MainWindow : public QMainWindow {
 
 public:
     MainWindow(QWidget *parent = nullptr);
+
     ~MainWindow();
+
     bool Reading;
     int distance, timeInMilliseconds, minutes, seconds, milliseconds;
     int distance2, timeInMilliseconds2, minutes2, seconds2, milliseconds2;
+
     void handleStartStopButton();
-    void saveDataToFile(const QTextEdit* display, const QString& regex);
+
+    void saveDataToFile(const QTextEdit *display, const QString &regex);
 
     QTextEdit *dataDisplay;
     QTextEdit *dataDisplay2;
@@ -44,14 +48,18 @@ public:
         int distance;
         int timeInMilliseconds;
     };
+
     QVector<DataPoint> dataPoints;
     QVector<DataPoint> dataPoints2;
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;
 
-private:
+private slots:
+    // Istniejące sloty
+    void showAboutUsDialog();
 
+private:
     QWidget *centralWidget;
     QVBoxLayout *mainLayout;
     QComboBox *portBox{};
@@ -61,18 +69,25 @@ private:
     QString dataBuffer2;
     // Add these variables for smoothing
     std::vector<double> distanceBuffer;
-    MovingAverageFilterParallel* filter = nullptr;
-    int filterWindowSize = 5;  // Default window size
+    MovingAverageFilterParallel *filter = nullptr;
+    int filterWindowSize = 5; // Default window size
 
 
     void createMenu();
+
     void createControls();
+
     void startReading();
+
     void stopReading();
+
     void parseData(const QString &data);
+
     void parseData2(const QString &data);
-    void processBuffer(QString& buffer, QTextEdit* display, void (MainWindow::*parseFunc)(const QString&));
-    AppMenu* appMenu;
+
+    void processBuffer(QString &buffer, QTextEdit *display, void (MainWindow::*parseFunc)(const QString &));
+
+    AppMenu *appMenu;
 
     QTimer *validationTimer{};
     bool deviceValidated = false;
@@ -80,11 +95,8 @@ private:
 
     QTranslator *translator = nullptr;
     QAction *languageAction{};
+
     void retranslateUi();
-
-
-
-
 
 
     // Menu Bar
@@ -123,6 +135,7 @@ private:
     QCheckBox *rawDataToggle{};
     bool useRawData = false;
     int lastValidDistance = 0;
+    QLabel *creatorsNoteLabel{};
 };
 
 #endif // MAINWINDOW_H

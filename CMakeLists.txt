@@ -33,6 +33,8 @@ if(WIN32)
             resources.qrc
             appmenu.h
             appmenu.cpp
+            aboutusdialog.h
+            aboutusdialog.cpp
     )
         if(CI_MODE)
                 message(STATUS "Configuring for GitHub Actions CI")
@@ -81,6 +83,8 @@ if (UNIX OR APPLE)
             resources.qrc
             appmenu.h
             appmenu.cpp
+            aboutusdialog.h
+            aboutusdialog.cpp
     )
 endif ()
 
