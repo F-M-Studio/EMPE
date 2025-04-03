@@ -97,6 +97,7 @@ private:
     QCheckBox *timeAxisToggle;
     bool useAbsoluteTime = false;
     long long initialTime = 0;
+    long long initialTime2 = 0;
 };
 
 #endif // GRAPHWINDOW_H

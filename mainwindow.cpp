@@ -148,10 +148,10 @@ void MainWindow::createControls() {
     QLabel *distanceLabel2 = new QLabel(tr("Distance 2:"));
     distanceInput2 = new QLineEdit("00");
     distanceInput2->setReadOnly(true);
-    // QLabel *timeLabel2 = new QLabel(tr("Time 2:"));
-    // timeInput2 = new QTimeEdit();
-    // timeInput2->setDisplayFormat("mm:ss.zzz");
-    // timeInput2->setReadOnly(true);
+     QLabel *timeLabel2 = new QLabel(tr("Time 2:"));
+     timeInput2 = new QTimeEdit();
+     timeInput2->setDisplayFormat("mm:ss.zzz");
+     timeInput2->setReadOnly(true);
 
     controlsLayout->addWidget(distanceLabel, 0, 0);
     controlsLayout->addWidget(distanceInput, 0, 1);
@@ -160,9 +160,10 @@ void MainWindow::createControls() {
 
     controlsLayout->addWidget(distanceLabel2, 0, 2);
     controlsLayout->addWidget(distanceInput2, 0, 3);
-    // controlsLayout->addWidget(timeLabel2, 1, 2);
-    // controlsLayout->addWidget(timeInput2, 1, 3);
-
+    controlsLayout->addWidget(timeLabel2, 1, 2);
+    controlsLayout->addWidget(timeInput2, 1, 3);
+    timeLabel2->hide();
+    timeInput2->hide();
     mainLayout->addLayout(controlsLayout);
 
     // Create and add the "Always on Top" checkbox

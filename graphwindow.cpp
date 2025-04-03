@@ -370,16 +370,19 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     mainLayout->addWidget(timeAxisWidget);
 
     connect(timeAxisToggle, &QCheckBox::toggled, this, [this, mainWindow](bool checked) {
-        useAbsoluteTime = !checked; // Toggle is for "Relative Time" so invert the logic
+        useAbsoluteTime = !checked; // Toggle is for "Relative Time"
+        initialTime = 0; // Reset whenever time mode changes
 
-        useAbsoluteTime = !timeAxisToggle->isChecked();
-        if (!useAbsoluteTime && mainWindow->Reading) {
-            initialTime = mainWindow->timeInMilliseconds;
+        if (!useAbsoluteTime && !mainWindow->dataPoints.empty()) {
+            // Set initial time to first available data point
+            initialTime = mainWindow->dataPoints.first().timeInMilliseconds;
         }
 
-        // Clear and redraw the chart with new time axis setting
+        // Clear existing points to avoid mixed time modes
         series->clear();
         splineSeries->clear();
+        series2->clear();
+        splineSeries2->clear();
     });
 
     updateTimer->start(recordingSlider->value());
@@ -545,8 +548,11 @@ void GraphWindow::clearGraph() {
     series2->clear();
     splineSeries2->clear();
 
-    if (!useAbsoluteTime && mainWindow->Reading) {
-        initialTime = mainWindow->timeInMilliseconds;
+    // Reset initial time only in relative mode
+    if (!useAbsoluteTime && !mainWindow->dataPoints.empty()) {
+        initialTime = mainWindow->dataPoints.first().timeInMilliseconds;
+    } else {
+        initialTime = 0;
     }
 }
 
@@ -578,56 +584,51 @@ void GraphWindow::updateGraph() {
     // Handle first series data
     if (!mainWindow->dataPoints.empty()) {
         const auto& point = mainWindow->dataPoints.back();
-        qreal xValue = useAbsoluteTime ?
-            (point.timeInMilliseconds - (initialTime ? initialTime : (initialTime = point.timeInMilliseconds))) / 1000.0 :
-            series->count();
+
+        // Set initial time for relative mode
+        if (!useAbsoluteTime && initialTime == 0) {
+            initialTime = mainWindow->dataPoints.first().timeInMilliseconds;
+        }
+
+        // Calculate X value based on time mode
+        qreal xValue = useAbsoluteTime
+            ? point.timeInMilliseconds / 1000.0  // Absolute time in seconds
+            : (point.timeInMilliseconds - initialTime) / 1000.0;  // Relative time from start
 
         series->append(xValue, point.distance);
 
+        // Auto-remove points handling
         if (autoRemovePoints && series->count() > pointsLimit) {
-            if (useAbsoluteTime) {
-                series->removePoints(0, series->count() - pointsLimit); // More efficient
-            } else {
-                // For relative time, shift points left
-                QVector<QPointF> points;
-                points.reserve(pointsLimit);
-                for (int i = series->count() - pointsLimit; i < series->count(); ++i) {
-                    points.append(QPointF(points.size(), series->at(i).y()));
-                }
-                series->replace(points);
-            }
+            series->removePoints(0, series->count() - pointsLimit);
         }
     }
 
     // Handle second series data
     if (!mainWindow->dataPoints2.empty()) {
         const auto& point = mainWindow->dataPoints2.back();
-        qreal xValue = useAbsoluteTime ?
-            (point.timeInMilliseconds - (initialTime ? initialTime : (initialTime = point.timeInMilliseconds))) / 1000.0 :
-            series2->count();
+
+        // Use same initialTime as first series for consistency
+        if (!useAbsoluteTime && initialTime == 0) {
+            initialTime = mainWindow->dataPoints2.first().timeInMilliseconds;
+        }
+
+        qreal xValue = useAbsoluteTime
+            ? point.timeInMilliseconds / 1000.0
+            : (point.timeInMilliseconds - initialTime) / 1000.0;
 
         series2->append(xValue, point.distance);
 
         if (autoRemovePoints && series2->count() > pointsLimit) {
-            if (useAbsoluteTime) {
-                series2->removePoints(0, series2->count() - pointsLimit);
-            } else {
-                QVector<QPointF> points;
-                points.reserve(pointsLimit);
-                for (int i = series2->count() - pointsLimit; i < series2->count(); ++i) {
-                    points.append(QPointF(points.size(), series2->at(i).y()));
-                }
-                series2->replace(points);
-            }
+            series2->removePoints(0, series2->count() - pointsLimit);
         }
     }
 
-    // Apply smoothing if enabled (after all point updates)
+    // Apply smoothing if enabled
     if (useSpline) {
         applySmoothing();
     }
 
-    // Adjust axis ranges
+    // Adjust axis ranges dynamically
     updateAxisRanges();
 
     // Restore signal blocking
