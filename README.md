@@ -28,9 +28,3 @@ Program do odczytu i wizualizacji danych z dwóch urządzeń LIDAR w czasie rzec
 - Kompilator C++ obsługujący C++20
 - CMake 3.30 lub nowszy
 
-## Kompilacja
-
-1. Sklonuj repozytorium
-2. Utwórz katalog build:
-```bash
-mkdir build && cd build
