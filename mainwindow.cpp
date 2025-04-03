@@ -23,8 +23,7 @@
 
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), isReading(false),
-      portSettings(new PortSettings(this)) {
+    : QMainWindow(parent), isReading(false), portSettings(new PortSettings(this)) {
     centralWidget = new QWidget(this);
     setCentralWidget(centralWidget);
     setWindowTitle(tr("EMPE"));

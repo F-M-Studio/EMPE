@@ -17,10 +17,10 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    QFontDatabase::addApplicationFont(":/fonts/AdwaitaSans-Regular.ttf");
+    QFontDatabase::addApplicationFont(":/fonts/NotoSans-Light.tff");
 
     QFont font;
-    font.setFamilies({QString::fromUtf8("Adwaita Sans")});
+    font.setFamilies({QString::fromUtf8("Noto Sans")});
     QApplication::setFont(font);
 
     QApplication::setWindowIcon(QIcon(":/icons/EMPE.png"));
