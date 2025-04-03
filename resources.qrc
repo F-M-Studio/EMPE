@@ -5,6 +5,6 @@
         <file>icons/EMPE.icns</file>
         <file>translations/lidar_pl.qm</file>
         <file>translations/lidar_en.qm</file>
-        <file>fonts/AdwaitaSans-Regular.ttf</file>
+        <file>fonts/NotoSans-Light.ttf</file>
     </qresource>
 </RCC>
