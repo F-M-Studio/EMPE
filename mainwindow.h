@@ -70,8 +70,6 @@ private:
     // Add these variables for smoothing
     std::vector<double> distanceBuffer;
     MovingAverageFilterParallel *filter = nullptr;
-    int filterWindowSize = 5; // Default window size
-
 
     void createMenu();
 

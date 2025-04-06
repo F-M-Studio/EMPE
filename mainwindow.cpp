@@ -22,27 +22,42 @@
 #include <QApplication>
 
 
-MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), isReading(false),
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), isReading(false),
       portSettings(new PortSettings(this)) {
     centralWidget = new QWidget(this);
     setCentralWidget(centralWidget);
     setWindowTitle(tr("EMPE"));
 
+    // Główny układ
     mainLayout = new QVBoxLayout(centralWidget);
+    mainLayout->setContentsMargins(10, 10, 10, 10);
+    mainLayout->setSpacing(5);
 
+    // Menu i kontrolki
     appMenu = new AppMenu(this, this);
     createControls();
+
+    // Kontener na dane
+    QWidget* dataContainer = new QWidget(this);
+    QVBoxLayout* dataLayout = new QVBoxLayout(dataContainer);
+    dataLayout->setContentsMargins(0, 0, 0, 0);
+    dataLayout->setSpacing(0);
 
     dataDisplay = new QTextEdit(this);
     dataDisplay->setReadOnly(true);
     dataDisplay->hide();
-    mainLayout->addWidget(dataDisplay);
+    dataDisplay->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    dataLayout->addWidget(dataDisplay);
 
     dataDisplay2 = new QTextEdit(this);
     dataDisplay2->setReadOnly(true);
     dataDisplay2->hide();
-    mainLayout->addWidget(dataDisplay2);
+    dataDisplay2->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    dataLayout->addWidget(dataDisplay2);
+
+    // Polityka rozmiaru dla kontenera danych
+    dataContainer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    mainLayout->addWidget(dataContainer, 1);
 
     connect(appMenu, &AppMenu::graphWindowRequested, this, [this]() {
         GraphWindow *graphWindow = new GraphWindow(this);
@@ -59,13 +74,15 @@ MainWindow::MainWindow(QWidget *parent)
     separator->setFrameShadow(QFrame::Sunken);
     mainLayout->addWidget(separator);
 
-    // Dodaj notatkę o twórcach
-    creatorsNoteLabel = new QLabel(tr("Stworzone przez: Mateusza Korniaka, Mateusza Machowskiego i Filipa Leśnika"), this);
+    creatorsNoteLabel = new QLabel(tr("Stworzone przez: Mateusza Korniaka, Mateusza Machowskiego i Filipa Leśnika"),
+                                  this);
     creatorsNoteLabel->setAlignment(Qt::AlignCenter);
     QFont noteFont = creatorsNoteLabel->font();
     noteFont.setPointSize(noteFont.pointSize() - 1);
     noteFont.setItalic(true);
     creatorsNoteLabel->setFont(noteFont);
+    creatorsNoteLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+    creatorsNoteLabel->setFixedHeight(creatorsNoteLabel->sizeHint().height());
     mainLayout->addWidget(creatorsNoteLabel);
 }
 
@@ -140,7 +157,7 @@ void MainWindow::createControls() {
     QLabel *distanceLabel = new QLabel(tr("Distance 1:"));
     distanceInput = new QLineEdit("00");
     distanceInput->setReadOnly(true);
-    QLabel *timeLabel = new QLabel(tr("Time :"));
+    QLabel *timeLabel = new QLabel(tr("Time:"));
     timeInput = new QTimeEdit();
     timeInput->setDisplayFormat("mm:ss.zzz");
     timeInput->setReadOnly(true);
@@ -188,7 +205,7 @@ void MainWindow::saveDataToFile(const QTextEdit *display, const QString &regexPa
                                                     tr("CSV Files (*.csv)"));
 
     if (fileName.isEmpty()) {
-        return;  // Użytkownik anulował operację
+        return; // Użytkownik anulował operację
     }
 
     // Dodaj rozszerzenie .csv jeśli nie występuje
@@ -201,12 +218,13 @@ void MainWindow::saveDataToFile(const QTextEdit *display, const QString &regexPa
     if (file.exists()) {
         QMessageBox::StandardButton reply = QMessageBox::question(this,
                                                                   tr("File exists"),
-                                                                  tr("The file %1 already exists.\nDo you want to replace it?")
+                                                                  tr(
+                                                                      "The file %1 already exists.\nDo you want to replace it?")
                                                                   .arg(QDir::toNativeSeparators(fileName)),
                                                                   QMessageBox::Yes | QMessageBox::No);
 
         if (reply == QMessageBox::No) {
-            return;  // Użytkownik nie chce nadpisać pliku
+            return; // Użytkownik nie chce nadpisać pliku
         }
     }
 
@@ -254,8 +272,8 @@ void MainWindow::saveDataToFile(const QTextEdit *display, const QString &regexPa
 
     if (dataWritten) {
         QMessageBox::information(this, tr("Success"),
-                                tr("Data has been saved to %1")
-                                .arg(QDir::toNativeSeparators(fileName)));
+                                 tr("Data has been saved to %1")
+                                 .arg(QDir::toNativeSeparators(fileName)));
     }
 }
 
