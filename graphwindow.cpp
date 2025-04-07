@@ -541,7 +541,7 @@ void GraphWindow::applySmoothing() const {
     }
 
     // Pobierz rozmiar okna z poziomu wygładzania (1-25)
-    int windowSize = 1 + (smoothingLevelSlider->value() * 10 / 4);
+    int windowSize = 1 + (smoothingLevelSlider->value() * 2.5);
     if (windowSize % 2 == 0) windowSize++; // Upewnij się, że jest nieparzyste
 
     // Wygładź pierwszą serię
