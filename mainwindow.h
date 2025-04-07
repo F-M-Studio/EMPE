@@ -121,7 +121,7 @@ private:
     QLineEdit *distanceInput{};
     QLineEdit *distanceInput2{};
     QTimeEdit *timeInput{};
- //   QTimeEdit *timeInput2{};
+    QTimeEdit *timeInput2{};
     QLabel *yAxisValueLabel{};
 
     // Serial port
