@@ -259,6 +259,7 @@ void PortSettings::updatePortInfo() {
         info += tr("<b>Manufacturer:</b> %1<br>").arg(port.manufacturer().isEmpty() ? tr("N/A") : port.manufacturer());
         info += tr("<b>Serial Number:</b> %1<br>").arg(port.serialNumber().isEmpty() ? tr("N/A") : port.serialNumber());
         info += tr("<b>Location:</b> %1<br>").arg(port.systemLocation());
+        /*
         info += tr("<b>Vendor ID:</b> %1<br>").arg(port.hasVendorIdentifier()
                                                        ? QString("0x%1").arg(port.vendorIdentifier(), 4, 16, QChar('0'))
                                                        : tr("N/A"));
@@ -266,6 +267,7 @@ void PortSettings::updatePortInfo() {
                                                         ? QString("0x%1").arg(
                                                             port.productIdentifier(), 4, 16, QChar('0'))
                                                         : tr("N/A"));
+                                                        */
         info += "<br>";
     }
 
