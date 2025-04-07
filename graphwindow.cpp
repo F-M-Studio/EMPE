@@ -302,6 +302,10 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
             splineSeries->attachAxis(axisY);
             splineSeries2->attachAxis(axisX);
             splineSeries2->attachAxis(axisY);
+
+            // TUTAJ DODAJ TEN KOD: Ustaw widoczność na podstawie przełączników
+            splineSeries->setVisible(showSeries1);
+            splineSeries2->setVisible(showSeries2);
         } else {
             // Przełącz z powrotem na oryginalne serie
             chart->removeSeries(splineSeries);
@@ -312,6 +316,10 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
             series->attachAxis(axisY);
             series2->attachAxis(axisX);
             series2->attachAxis(axisY);
+
+            // TUTAJ DODAJ TEN KOD: Ustaw widoczność na podstawie przełączników
+            series->setVisible(showSeries1);
+            series2->setVisible(showSeries2);
         }
     });
 
@@ -352,6 +360,40 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
 
         // Clear and redraw the chart with new time axis setting
         clearGraph();
+    });
+
+    // Dodaj przyciski do przełączania widoczności serii
+    showSeries1Toggle = new QCheckBox(tr("Show Series 1"));
+    showSeries1Toggle->setChecked(true);
+    showSeries2Toggle = new QCheckBox(tr("Show Series 2"));
+    showSeries2Toggle->setChecked(true);
+
+    // Dodaj kontrolki do tego samego widgetu co timeAxisToggle
+    timeAxisLayout->addStretch(); // Dodaj elastyczną przestrzeń
+    timeAxisLayout->addWidget(showSeries1Toggle);
+    timeAxisLayout->addWidget(showSeries2Toggle);
+
+    // Podłącz sygnały
+    connect(showSeries1Toggle, &QCheckBox::toggled, this, [this](bool checked) {
+        showSeries1 = checked;
+
+        // Aktualizuj widoczność odpowiednich serii
+        if (useSpline) {
+            splineSeries->setVisible(checked);
+        } else {
+            series->setVisible(checked);
+        }
+    });
+
+    connect(showSeries2Toggle, &QCheckBox::toggled, this, [this](bool checked) {
+        showSeries2 = checked;
+
+        // Aktualizuj widoczność odpowiednich serii
+        if (useSpline) {
+            splineSeries2->setVisible(checked);
+        } else {
+            series2->setVisible(checked);
+        }
     });
 
     updateTimer->start(recordingSlider->value());

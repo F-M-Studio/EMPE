@@ -94,6 +94,11 @@ private:
     QCheckBox *timeAxisToggle;
     bool useAbsoluteTime = false;
     long long initialTime = 0;
+
+    QCheckBox *showSeries1Toggle;
+    QCheckBox *showSeries2Toggle;
+    bool showSeries1 = true;
+    bool showSeries2 = true;
 };
 
 #endif // GRAPHWINDOW_H
