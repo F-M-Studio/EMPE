@@ -32,22 +32,15 @@ public:
 
 protected:
     void changeEvent(QEvent *event) override;
+
     void resizeEvent(QResizeEvent *event) override;
 
 private slots:
     void updateGraph();
-    void updateAxisRanges();
+
     void clearGraph();
 
 private:
-
-    QLineSeries *series;
-    QLineSeries *series2;  // New series for second COM port
-    QSplineSeries *splineSeries;
-    QSplineSeries *splineSeries2;  // New spline series for second COM port
-    QCheckBox *series1Toggle;  // Toggle for first series visibility
-    QCheckBox *series2Toggle; // Toggle for second series visibility
-
     void updateChartTheme();
 
     AppMenu *appMenu{};
@@ -57,6 +50,8 @@ private:
     Ui::GraphWindow *ui;
     MainWindow *mainWindow;
     QTimer *updateTimer;
+    QLineSeries *series;
+    QLineSeries *series2;
     QChart *chart;
     QValueAxis *axisX;
     QValueAxis *axisY;
@@ -86,6 +81,8 @@ private:
     int pointsLimit = 100;
 
 
+    QSplineSeries *splineSeries;
+    QSplineSeries *splineSeries2;
     QCheckBox *smoothingToggle;
     QSlider *smoothingLevelSlider;
     QLineEdit *smoothingLevelEdit;

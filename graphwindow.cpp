@@ -22,13 +22,6 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     ui->centralwidget->layout()->setContentsMargins(0, 0, 0, 10);
     ui->centralwidget->layout()->addWidget(ui->frame);
 
-    auto *appMenu = new AppMenu(this, mainWindow);
-
-    connect(appMenu, &AppMenu::startStopRequested, mainWindow, &MainWindow::handleStartStopButton);
-    connect(appMenu, &AppMenu::saveDataRequested, mainWindow, [mainWindow]() {
-        mainWindow->saveDataToFile(mainWindow->dataDisplay, "YY(\\d+)T(\\d+)E");
-    });
-
     delete ui->frame->layout();
 
     // Create the layout first
@@ -59,7 +52,6 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     const auto chartView = new QChartView(chart);
     chart->layout()->setContentsMargins(0, 0, 0, 0);
     chartView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    chart->setAnimationOptions(QChart::NoAnimation);
 
     axisX = new QValueAxis();
     axisY = new QValueAxis();
@@ -162,21 +154,6 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     // Initialize the splineSeries but don't add it to the chart yet
     splineSeries = new QSplineSeries();
     splineSeries2 = new QSplineSeries();
-
-    auto *toggleWidget = new QWidget();
-    auto *toggleLayout = new QHBoxLayout(toggleWidget);
-    toggleLayout->setContentsMargins(11, 2, 11, 2);
-    toggleLayout->setSpacing(4);
-
-    series1Toggle = new QCheckBox(tr("Series 1"));
-    series2Toggle = new QCheckBox(tr("Series 2"));
-    series1Toggle->setChecked(true);
-    series2Toggle->setChecked(true);
-
-    toggleLayout->addWidget(series1Toggle);
-    toggleLayout->addWidget(series2Toggle);
-    toggleWidget->setLayout(toggleLayout);
-
 
     // Create widgets for sliders
     auto *recordingSliderWidget = new QWidget();
@@ -303,18 +280,6 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
         pointsLimit = value;
     });
 
-    mainLayout->addWidget(toggleWidget);
-
-    connect(series1Toggle, &QCheckBox::toggled, this, [this](bool checked) {
-        series->setVisible(checked);
-        splineSeries->setVisible(checked && useSpline);
-    });
-
-    connect(series2Toggle, &QCheckBox::toggled, this, [this](bool checked) {
-        series2->setVisible(checked);
-        splineSeries2->setVisible(checked && useSpline);
-    });
-
     mainLayout->addWidget(smoothingWidget);
 
     // Modify the smoothingToggle connection
@@ -325,20 +290,28 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
         smoothingLevelEdit->setEnabled(checked);
 
         if (checked) {
-            // Apply smoothing to existing points
+            // Zastosuj wygładzanie do istniejących punktów
             applySmoothing();
 
-            // Show the smoothed series
+            // Pokaż wygładzone serie
             chart->removeSeries(series);
+            chart->removeSeries(series2);
             chart->addSeries(splineSeries);
+            chart->addSeries(splineSeries2);
             splineSeries->attachAxis(axisX);
             splineSeries->attachAxis(axisY);
+            splineSeries2->attachAxis(axisX);
+            splineSeries2->attachAxis(axisY);
         } else {
-            // Switch back to original series
+            // Przełącz z powrotem na oryginalne serie
             chart->removeSeries(splineSeries);
+            chart->removeSeries(splineSeries2);
             chart->addSeries(series);
+            chart->addSeries(series2);
             series->attachAxis(axisX);
             series->attachAxis(axisY);
+            series2->attachAxis(axisX);
+            series2->attachAxis(axisY);
         }
     });
 
@@ -475,35 +448,50 @@ void GraphWindow::updateChartTheme() {
     axisX->setMinorGridLineColor(minorGridColor);
     axisY->setMinorGridLineColor(minorGridColor);
 
-    // Use high-contrast colors for the series
+    // Kolory dla istniejących serii
     QColor primaryColor;
     QColor secondaryColor;
+    // Dodaj kolory dla nowych serii
+    QColor primaryColor2;
+    QColor secondaryColor2;
 
     if (isDarkMode) {
-        // Bright colors for dark mode
-        primaryColor = QColor(0, 230, 118); // Bright green
-        secondaryColor = QColor(255, 128, 0); // Bright orange
+        // Oryginalne kolory
+        primaryColor = QColor(0, 230, 118); // Jasna zieleń
+        secondaryColor = QColor(255, 128, 0); // Jasny pomarańczowy
+        // Nowe kolory
+        primaryColor2 = QColor(0, 180, 255); // Jasny niebieski
+        secondaryColor2 = QColor(255, 0, 128); // Jasny różowy
     } else {
-        // Strong colors for light mode
-        primaryColor = QColor(0, 100, 255); // Deep blue
-        secondaryColor = QColor(220, 0, 80); // Deep red
+        // Oryginalne kolory
+        primaryColor = QColor(0, 100, 255); // Głęboki niebieski
+        secondaryColor = QColor(220, 0, 80); // Głęboki czerwony
+        // Nowe kolory
+        primaryColor2 = QColor(0, 150, 0); // Głęboka zieleń
+        secondaryColor2 = QColor(180, 0, 180); // Głęboki fioletowy
     }
 
-    // Create new pens with increased width
+    // Pierwszy zestaw serii
     QPen newSeriesPen(primaryColor);
-    newSeriesPen.setWidth(3); // Increased from 2
+    newSeriesPen.setWidth(3);
     newSeriesPen.setCapStyle(Qt::RoundCap);
     series->setPen(newSeriesPen);
 
     QPen newSplinePen(secondaryColor);
-    newSplinePen.setWidth(3); // Increased from 2
+    newSplinePen.setWidth(3);
     newSplinePen.setCapStyle(Qt::RoundCap);
     splineSeries->setPen(newSplinePen);
 
-    QPen newSeries2Pen(secondaryColor);
-    newSeries2Pen.setWidth(3);
-    if (series2) series2->setPen(newSeries2Pen);
-    if (splineSeries2) splineSeries2->setPen(newSeries2Pen);
+    // Drugi zestaw serii
+    QPen newSeriesPen2(primaryColor2);
+    newSeriesPen2.setWidth(3);
+    newSeriesPen2.setCapStyle(Qt::RoundCap);
+    series2->setPen(newSeriesPen2);
+
+    QPen newSplinePen2(secondaryColor2);
+    newSplinePen2.setWidth(3);
+    newSplinePen2.setCapStyle(Qt::RoundCap);
+    splineSeries2->setPen(newSplinePen2);
 
     // Force a complete redraw
     chart->update();
@@ -511,34 +499,79 @@ void GraphWindow::updateChartTheme() {
 }
 
 void GraphWindow::applySmoothing() const {
-    if (!useSpline || series->count() < 2) return;
-
-    const int windowSize = qMin(1 + (smoothingLevelSlider->value() * 10 / 4), 25) | 1; // Ensure odd number
-    const int halfWindow = windowSize / 2;
-    const auto& points = series->points();
-    const int pointCount = points.size();
-
-    QVector<QPointF> smoothedPoints;
-    smoothedPoints.reserve(pointCount);
-
-    for (int i = 0; i < pointCount; ++i) {
-        double sumX = 0, sumY = 0;
-        int count = 0;
-
-        const int start = qMax(0, i - halfWindow);
-        const int end = qMin(i + halfWindow, pointCount - 1);
-
-        for (int j = start; j <= end; ++j) {
-            sumX += points[j].x();
-            sumY += points[j].y();
-            count++;
-        }
-
-        smoothedPoints.append(QPointF(sumX / count, sumY / count));
+    if (!useSpline) {
+        return;
     }
 
-    splineSeries->replace(smoothedPoints);
+    // Pobierz rozmiar okna z poziomu wygładzania (1-25)
+    int windowSize = 1 + (smoothingLevelSlider->value() * 10 / 4);
+    if (windowSize % 2 == 0) windowSize++; // Upewnij się, że jest nieparzyste
+
+    // Wygładź pierwszą serię
+    if (series->count() >= 2) {
+        // Stwórz kopię oryginalnych punktów
+        QVector<QPointF> originalPoints;
+        for (int i = 0; i < series->count(); ++i) {
+            originalPoints.append(series->at(i));
+        }
+
+        // Wyczyść serię spline
+        splineSeries->clear();
+
+        // Zastosuj wygładzanie do WSZYSTKICH punktów
+        const int halfWindow = windowSize / 2;
+        for (int i = 0; i < originalPoints.size(); ++i) {
+            double sumX = 0;
+            double sumY = 0;
+            int count = 0;
+
+            // Użyj dostępnych punktów w oknie
+            for (int j = qMax(0, i - halfWindow); j <= qMin(i + halfWindow, originalPoints.size() - 1); ++j) {
+                sumX += originalPoints[j].x();
+                sumY += originalPoints[j].y();
+                count++;
+            }
+
+            // Dodaj wygładzony punkt
+            if (count > 0) {
+                splineSeries->append(sumX / count, sumY / count);
+            }
+        }
+    }
+
+    // Wygładź drugą serię
+    if (series2->count() >= 2) {
+        // Stwórz kopię oryginalnych punktów
+        QVector<QPointF> originalPoints;
+        for (int i = 0; i < series2->count(); ++i) {
+            originalPoints.append(series2->at(i));
+        }
+
+        // Wyczyść serię spline
+        splineSeries2->clear();
+
+        // Zastosuj wygładzanie do WSZYSTKICH punktów
+        const int halfWindow = windowSize / 2;
+        for (int i = 0; i < originalPoints.size(); ++i) {
+            double sumX = 0;
+            double sumY = 0;
+            int count = 0;
+
+            // Użyj dostępnych punktów w oknie
+            for (int j = qMax(0, i - halfWindow); j <= qMin(i + halfWindow, originalPoints.size() - 1); ++j) {
+                sumX += originalPoints[j].x();
+                sumY += originalPoints[j].y();
+                count++;
+            }
+
+            // Dodaj wygładzony punkt
+            if (count > 0) {
+                splineSeries2->append(sumX / count, sumY / count);
+            }
+        }
+    }
 }
+
 void GraphWindow::clearGraph() {
     series->clear();
     splineSeries->clear();
@@ -560,93 +593,69 @@ void GraphWindow::resizeEvent(QResizeEvent *event) {
 }
 
 void GraphWindow::updateGraph() {
-    if (!mainWindow || !mainWindow->Reading) return;
+    startStopBtn->setText(mainWindow->Reading ? tr("Stop") : tr("Start"));
 
-    // Only proceed if we have new data
-    static size_t lastDataSize = 0;
-    static size_t lastDataSize2 = 0;
-    if (mainWindow->dataPoints.size() == lastDataSize &&
-        mainWindow->dataPoints2.size() == lastDataSize2) {
-        return;
-    }
-    lastDataSize = mainWindow->dataPoints.size();
-    lastDataSize2 = mainWindow->dataPoints2.size();
+    if (mainWindow->Reading) {
+        // Oblicz współrzędną X na podstawie trybu
+        double xValue = useAbsoluteTime ? mainWindow->timeInMilliseconds : mainWindow->timeInMilliseconds - initialTime;
 
-    // Block signals during updates
-    bool oldState = chart->blockSignals(true);
+        // Jeśli to pierwszy punkt w trybie względnym, ustaw czas początkowy
+        if (!useAbsoluteTime && series->count() == 0) {
+            initialTime = mainWindow->timeInMilliseconds;
+            xValue = 0;
+        }
 
-    // Handle first series data
-    if (!mainWindow->dataPoints.empty()) {
-        const auto& point = mainWindow->dataPoints.back();
-        qreal xValue = useAbsoluteTime ?
-            (point.timeInMilliseconds - (initialTime ? initialTime : (initialTime = point.timeInMilliseconds))) / 1000.0 :
-            series->count();
+        // Dodaj punkty do obu serii
+        series->append(xValue, mainWindow->distance);
+        series2->append(xValue, mainWindow->distance2);
 
-        series->append(xValue, point.distance);
+        // Zarządzanie liczbą punktów
+        if (autoRemovePoints) {
+            while (series->count() > pointsLimit) {
+                series->remove(0);
+            }
+            while (series2->count() > pointsLimit) {
+                series2->remove(0);
+            }
+        }
 
-        if (autoRemovePoints && series->count() > pointsLimit) {
-            if (useAbsoluteTime) {
-                series->removePoints(0, series->count() - pointsLimit); // More efficient
-            } else {
-                // For relative time, shift points left
-                QVector<QPointF> points;
-                points.reserve(pointsLimit);
-                for (int i = series->count() - pointsLimit; i < series->count(); ++i) {
-                    points.append(QPointF(points.size(), series->at(i).y()));
-                }
-                series->replace(points);
+        // Zastosuj wygładzanie jeśli włączone
+        if (useSpline) {
+            this->applySmoothing();
+        }
+
+        // Oblicz min/max wartości dla osi
+        const QXYSeries *activeSeries = useSpline
+                                            ? static_cast<QXYSeries *>(splineSeries)
+                                            : static_cast<QXYSeries *>(series);
+        const QXYSeries *activeSeries2 = useSpline
+                                             ? static_cast<QXYSeries *>(splineSeries2)
+                                             : static_cast<QXYSeries *>(series2);
+
+        if (activeSeries->count() > 0 || activeSeries2->count() > 0) {
+            const double xMin = activeSeries->count() > 0 ? activeSeries->at(0).x() : xValue;
+            const double xMax = xValue;
+
+            double yMin = qMin(mainWindow->distance, mainWindow->distance2);
+            double yMax = qMax(mainWindow->distance, mainWindow->distance2);
+
+            // Sprawdź wszystkie punkty z obu serii
+            for (int i = 0; i < activeSeries->count(); ++i) {
+                yMin = qMin(yMin, activeSeries->at(i).y());
+                yMax = qMax(yMax, activeSeries->at(i).y());
+            }
+
+            for (int i = 0; i < activeSeries2->count(); ++i) {
+                yMin = qMin(yMin, activeSeries2->at(i).y());
+                yMax = qMax(yMax, activeSeries2->at(i).y());
+            }
+
+            axisX->setRange(xMin, xMax);
+            if (!manualYAxisControl) {
+                axisY->setRange(qMax(0.0, yMin - 500), yMax + 500);
             }
         }
     }
-
-    // Handle second series data
-    if (!mainWindow->dataPoints2.empty()) {
-        const auto& point = mainWindow->dataPoints2.back();
-        qreal xValue = useAbsoluteTime ?
-            (point.timeInMilliseconds - (initialTime ? initialTime : (initialTime = point.timeInMilliseconds))) / 1000.0 :
-            series2->count();
-
-        series2->append(xValue, point.distance);
-
-        if (autoRemovePoints && series2->count() > pointsLimit) {
-            if (useAbsoluteTime) {
-                series2->removePoints(0, series2->count() - pointsLimit);
-            } else {
-                QVector<QPointF> points;
-                points.reserve(pointsLimit);
-                for (int i = series2->count() - pointsLimit; i < series2->count(); ++i) {
-                    points.append(QPointF(points.size(), series2->at(i).y()));
-                }
-                series2->replace(points);
-            }
-        }
-    }
-
-    // Apply smoothing if enabled (after all point updates)
-    if (useSpline) {
-        applySmoothing();
-    }
-
-    // Adjust axis ranges
-    updateAxisRanges();
-
-    // Restore signal blocking
-    chart->blockSignals(oldState);
-}
-
-void GraphWindow::updateAxisRanges() {
-    if (!manualYAxisControl) {
-        double maxY = 0;
-        if (series->count() > 0) maxY = series->at(series->count()-1).y();
-        if (series2->count() > 0) maxY = qMax(maxY, series2->at(series2->count()-1).y());
-        axisY->setRange(0, maxY * 1.1);
-    }
-
-    double maxX = useAbsoluteTime ?
-        qMax(series->count() > 0 ? series->at(series->count()-1).x() : 0,
-             series2->count() > 0 ? series2->at(series2->count()-1).x() : 0) :
-        pointsLimit;
-    axisX->setRange(0, maxX * 1.1);
 }
 
 void GraphWindow::retranslateUi() {
