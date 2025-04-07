@@ -290,7 +290,6 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
         smoothingLevelEdit->setEnabled(checked);
 
         if (checked) {
-            // Zastosuj wygładzanie do istniejących punktów
             applySmoothing();
 
             // Pokaż wygładzone serie
@@ -303,11 +302,9 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
             splineSeries2->attachAxis(axisX);
             splineSeries2->attachAxis(axisY);
 
-            // TUTAJ DODAJ TEN KOD: Ustaw widoczność na podstawie przełączników
             splineSeries->setVisible(showSeries1);
             splineSeries2->setVisible(showSeries2);
         } else {
-            // Przełącz z powrotem na oryginalne serie
             chart->removeSeries(splineSeries);
             chart->removeSeries(splineSeries2);
             chart->addSeries(series);
@@ -317,7 +314,6 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
             series2->attachAxis(axisX);
             series2->attachAxis(axisY);
 
-            // TUTAJ DODAJ TEN KOD: Ustaw widoczność na podstawie przełączników
             series->setVisible(showSeries1);
             series2->setVisible(showSeries2);
         }
