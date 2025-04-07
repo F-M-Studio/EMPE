@@ -92,6 +92,7 @@ MainWindow::~MainWindow() {
     }
 }
 
+
 void MainWindow::handleStartStopButton() {
     if (isReading) {
         stopReading();
@@ -144,14 +145,20 @@ void MainWindow::createControls() {
         saveDataToFile(dataDisplay2, "YY(\\d+)T(\\d+)E");
     });
 
-    // Connect Show Raw Data button
     connect(showRawDataBtn, &QPushButton::clicked, this, [this]() {
         bool visible = !dataDisplay->isVisible();
         dataDisplay->setVisible(visible);
         dataDisplay2->setVisible(visible);
         showRawDataBtn->setText(visible ? tr("Hide raw data") : tr("Show raw data"));
-    });
 
+        if (!visible) {
+            setMinimumSize(0, 0);
+            resize(600, 200);
+            setMinimumSize(minimumSizeHint());
+        }else {
+            adjustSize();
+        }
+    });
     QGridLayout *controlsLayout = new QGridLayout();
 
     QLabel *distanceLabel = new QLabel(tr("Distance 1:"));
@@ -165,10 +172,10 @@ void MainWindow::createControls() {
     QLabel *distanceLabel2 = new QLabel(tr("Distance 2:"));
     distanceInput2 = new QLineEdit("00");
     distanceInput2->setReadOnly(true);
-    // QLabel *timeLabel2 = new QLabel(tr("Time 2:"));
-    // timeInput2 = new QTimeEdit();
-    // timeInput2->setDisplayFormat("mm:ss.zzz");
-    // timeInput2->setReadOnly(true);
+    QLabel *timeLabel2 = new QLabel(tr("Time 2:"));
+    timeInput2 = new QTimeEdit();
+    timeInput2->setDisplayFormat("mm:ss.zzz");
+    timeInput2->setReadOnly(true);
 
     controlsLayout->addWidget(distanceLabel, 0, 0);
     controlsLayout->addWidget(distanceInput, 0, 1);
@@ -470,12 +477,12 @@ void MainWindow::parseData2(const QString &data) {
 
         // Update current values
         distance2 = newDistance;
-        // timeInMilliseconds2 = newTime;
-        //
-        // // Calculate time components
-        // minutes2 = timeInMilliseconds2 / 60000;
-        // seconds2 = (timeInMilliseconds2 % 60000) / 1000;
-        // milliseconds2 = timeInMilliseconds2 % 1000;
+        timeInMilliseconds2 = newTime;
+
+        // Calculate time components
+        minutes2 = timeInMilliseconds2 / 60000;
+        seconds2 = (timeInMilliseconds2 % 60000) / 1000;
+        milliseconds2 = timeInMilliseconds2 % 1000;
 
         // Store the data point
         dataPoints2.append({distance2, timeInMilliseconds2});
