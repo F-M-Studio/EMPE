@@ -17,8 +17,5 @@ public:
 private:
     QLabel *titleLabel;
     QLabel *authorsLabel;
-    QLabel *author1Label;
-    QLabel *author2Label;
-    QLabel *author3Label;
     QPushButton *closeButton;
 };
