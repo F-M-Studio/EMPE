@@ -109,7 +109,7 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     yAxisEdit->setEnabled(false);
 
     // Create auto-remove points control components
-    autoRemoveToggle = new QCheckBox(tr("Auto-remove points"));
+    autoRemoveToggle = new QCheckBox(tr("Auto-scroll X axis"));
     autoRemoveToggle->setChecked(true);
     pointsLimitLabel = new QLabel(tr("Points limit:"));
     pointsLimitLabel->setContentsMargins(10, 0, 0, 0);
@@ -335,7 +335,7 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
 
     timeAxisToggle = new QCheckBox(tr("Use Relative Time"));
     timeAxisToggle->setChecked(true);
-
+    timeAxisToggle->hide();
 
     auto *timeAxisWidget = new QWidget();
     auto *timeAxisLayout = new QHBoxLayout(timeAxisWidget);
@@ -704,7 +704,7 @@ void GraphWindow::retranslateUi() {
     recordingTitleLabel->setText(tr("Recording period [ms]:"));
     yAxisToggle->setText(tr("Set Y"));
     yAxisTitleLabel->setText(tr("Y axis range:"));
-    autoRemoveToggle->setText(tr("Auto-remove points"));
+    autoRemoveToggle->setText(tr("Auto-scroll X axis"));
     pointsLimitLabel->setText(tr("Points limit:"));
     smoothingToggle->setText(tr("Smooth Graph"));
     smoothingLevelLabel->setText(tr("Smoothing:"));

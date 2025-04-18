@@ -74,7 +74,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), isReading(false),
     separator->setFrameShadow(QFrame::Sunken);
     mainLayout->addWidget(separator);
 
-    creatorsNoteLabel = new QLabel(tr("Projekt powstał w ramach projektu Embodying Math&Physics Education 2023-1-PL01-KA210-SCH-000165829"),
+    creatorsNoteLabel = new QLabel(tr("Program powstał w ramach projektu Embodying Math&Physics Education 2023-1-PL01-KA210-SCH-000165829"),
                                   this);
     creatorsNoteLabel->setAlignment(Qt::AlignCenter);
     QFont noteFont = creatorsNoteLabel->font();

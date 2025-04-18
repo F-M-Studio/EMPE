@@ -32,8 +32,8 @@
             <translation>Zakres osi Y:</translation>
         </message>
         <message>
-            <source>Auto-remove points</source>
-            <translation>Auto-usuwanie punktów</translation>
+            <source>Auto-scroll X axis</source>
+            <translation>Automatycznie przesuwanie osi X punktów</translation>
         </message>
         <message>
             <source>Points limit:</source>
