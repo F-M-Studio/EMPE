@@ -20,6 +20,7 @@
 #include <QMenu>
 #include <QAction>
 #include <QApplication>
+#include <QPixmap>
 
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), isReading(false),
@@ -177,6 +178,7 @@ void MainWindow::createControls() {
     timeInput2->setDisplayFormat("mm:ss.zzz");
     timeInput2->setReadOnly(true);
 
+
     controlsLayout->addWidget(distanceLabel, 0, 0);
     controlsLayout->addWidget(distanceInput, 0, 1);
     controlsLayout->addWidget(timeLabel, 1, 0);
@@ -192,6 +194,18 @@ void MainWindow::createControls() {
     // Create and add the "Always on Top" checkbox
     alwaysOnTopCheckbox = new QCheckBox(tr("Always on Top"), this);
     mainLayout->addWidget(alwaysOnTopCheckbox);
+    // mainwindow.cpp
+
+    QHBoxLayout *bottomLayout = new QHBoxLayout();
+    bottomLayout->addStretch(); // Dodaj elastyczną przestrzeń po lewej stronie
+
+    QLabel *imageLabel = new QLabel(this);
+    QPixmap pixmap(":/images/FundedByEU.png");
+    imageLabel->setPixmap(pixmap.scaled(100, 100, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    imageLabel->setAlignment(Qt::AlignRight | Qt::AlignBottom);
+
+    bottomLayout->addWidget(imageLabel); // Dodaj obrazek do układu
+    mainLayout->addLayout(bottomLayout); // Dodaj układ do głównego układu
 
     connect(alwaysOnTopCheckbox, &QCheckBox::checkStateChanged, this, [this](int state) {
         Qt::WindowFlags flags = windowFlags();
@@ -204,6 +218,7 @@ void MainWindow::createControls() {
         show();
     });
 }
+
 
 void MainWindow::saveDataToFile(const QTextEdit *display, const QString &regexPattern) {
     QString defaultFileName = QString("EMPE_%1.csv").arg(QDate::currentDate().toString("ddMMyyyy"));

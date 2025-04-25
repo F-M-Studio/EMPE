@@ -131,7 +131,7 @@ if(WIN32)
     endif()
 
     # Deploy MinGW runtime DLLs
-    set(MINGW_BIN_PATH "C:/Qt/Tools/mingw1120_64/bin")
+    set(MINGW_BIN_PATH "F:/Qt/Tools/mingw1120_64/bin")
     foreach(MINGW_DLL
             libgcc_s_seh-1.dll
             libstdc++-6.dll
