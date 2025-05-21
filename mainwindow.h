@@ -134,6 +134,31 @@ private:
     bool useRawData = false;
     int lastValidDistance = 0;
     QLabel *creatorsNoteLabel{};
+
+    // Stałe dla stoperów
+    const int SIGNIFICANT_CHANGE_THRESHOLD = 30;
+    const int SMALL_CHANGE_THRESHOLD = 10;
+
+    // Zmienne dla stoperów
+    QTimer *stopwatchTimer1;
+    QTimer *stopwatchTimer2;
+    int stopwatchTime1 = 0;
+    int stopwatchTime2 = 0;
+    bool stopwatchRunning1 = false;
+    bool stopwatchRunning2 = false;
+    QLabel *stopwatchLabel1;
+    QLabel *stopwatchLabel2;
+    int lastDistance1 = 0;
+    int lastDistance2 = 0;
+
+    // Metody stoperów
+    void updateStopwatch1();
+    void updateStopwatch2();
+    void resetStopwatch1();
+    void resetStopwatch2();
+
+    QCheckBox *stopwatchCheck1;
+    QCheckBox *stopwatchCheck2;
 };
 
 #endif // MAINWINDOW_H

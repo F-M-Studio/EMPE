@@ -189,6 +189,25 @@ void MainWindow::createControls() {
     // controlsLayout->addWidget(timeLabel2, 1, 2);
     // controlsLayout->addWidget(timeInput2, 1, 3);
 
+
+    stopwatchLabel1 = new QLabel(tr("Stoper: 00:00.000"));
+    stopwatchLabel1->setAlignment(Qt::AlignCenter);
+    stopwatchLabel2 = new QLabel(tr("Stoper: 00:00.000"));
+    stopwatchLabel2->setAlignment(Qt::AlignCenter);
+
+    // Dodanie do layoutu
+    controlsLayout->addWidget(stopwatchLabel1, 1, 1);
+    controlsLayout->addWidget(stopwatchLabel2, 1, 3);
+
+    stopwatchTimer1 = new QTimer(this);
+    stopwatchTimer2 = new QTimer(this);
+    stopwatchTimer1->setInterval(10);
+    stopwatchTimer2->setInterval(10);
+    connect(stopwatchTimer1, &QTimer::timeout, this, &MainWindow::updateStopwatch1);
+    connect(stopwatchTimer2, &QTimer::timeout, this, &MainWindow::updateStopwatch2);
+
+
+
     mainLayout->addLayout(controlsLayout);
 
     // Create and add the "Always on Top" checkbox
@@ -299,8 +318,51 @@ void MainWindow::saveDataToFile(const QTextEdit *display, const QString &regexPa
     }
 }
 
+void MainWindow::updateStopwatch1() {
+    stopwatchTime1 += 10;
+    int mins = stopwatchTime1 / 60000;
+    int secs = (stopwatchTime1 % 60000) / 1000;
+    int ms = stopwatchTime1 % 1000;
+
+    stopwatchLabel1->setText(tr("Stoper: %1:%2.%3")
+        .arg(mins, 2, 10, QChar('0'))
+        .arg(secs, 2, 10, QChar('0'))
+        .arg(ms, 3, 10, QChar('0')));
+}
+
+void MainWindow::updateStopwatch2() {
+    stopwatchTime2 += 10;
+    int mins = stopwatchTime2 / 60000;
+    int secs = (stopwatchTime2 % 60000) / 1000;
+    int ms = stopwatchTime2 % 1000;
+
+    stopwatchLabel2->setText(tr("Stoper: %1:%2.%3")
+        .arg(mins, 2, 10, QChar('0'))
+        .arg(secs, 2, 10, QChar('0'))
+        .arg(ms, 3, 10, QChar('0')));
+}
+
+void MainWindow::resetStopwatch1() {
+    stopwatchTime1 = 0;
+    stopwatchRunning1 = false;
+    stopwatchTimer1->stop();
+    stopwatchLabel1->setText(tr("Stoper: 00:00.000"));
+}
+
+void MainWindow::resetStopwatch2() {
+    stopwatchTime2 = 0;
+    stopwatchRunning2 = false;
+    stopwatchTimer2->stop();
+    stopwatchLabel2->setText(tr("Stoper: 00:00.000"));
+}
+
 
 void MainWindow::startReading() {
+    resetStopwatch1();
+    resetStopwatch2();
+    lastDistance1 = 0;
+    lastDistance2 = 0;
+
     // Clear data buffers
     dataBuffer1.clear();
     dataBuffer2.clear();
@@ -431,7 +493,6 @@ void MainWindow::processBuffer(QString &buffer, QTextEdit *display, void (MainWi
 }
 
 void MainWindow::parseData(const QString &data) {
-    // Optimized parsing for first COM port (YYxxxTxxxE format)
     static QRegularExpression regex("YY(\\d+)T(\\d+)E");
     QRegularExpressionMatchIterator matchIterator = regex.globalMatch(data);
 
@@ -450,6 +511,25 @@ void MainWindow::parseData(const QString &data) {
             qDebug() << tr("Ignoring invalid data point (distance dropped to 0)");
             continue;
         }
+
+        // Oblicz zmianę odległości
+        int distanceChange = abs(newDistance - lastDistance1);
+
+        // Obsługa stopera: uruchomienie/zatrzymanie tylko przy znaczących zmianach
+        if (distanceChange > SIGNIFICANT_CHANGE_THRESHOLD) {
+            if (!stopwatchRunning1) {
+                // Uruchom stoper przy znaczącej zmianie
+                stopwatchRunning1 = true;
+                stopwatchTimer1->start();
+            } else {
+                // Zatrzymaj stoper przy kolejnej znaczącej zmianie
+                stopwatchRunning1 = false;
+                stopwatchTimer1->stop();
+            }
+        }
+        // Przy małych zmianach (<10) nie modyfikuj stanu stopera
+
+        lastDistance1 = newDistance;
 
         // Update current values
         distance = newDistance;
@@ -470,7 +550,6 @@ void MainWindow::parseData(const QString &data) {
 }
 
 void MainWindow::parseData2(const QString &data) {
-    // Optimized parsing for second COM port (using same format as port 1)
     static QRegularExpression regex("YY(\\d+)T(\\d+)E");
     QRegularExpressionMatchIterator matchIterator = regex.globalMatch(data);
 
@@ -490,6 +569,25 @@ void MainWindow::parseData2(const QString &data) {
             continue;
         }
 
+        // Oblicz zmianę odległości
+        int distanceChange = abs(newDistance - lastDistance2);
+
+        // Obsługa stopera: uruchomienie/zatrzymanie tylko przy znaczących zmianach
+        if (distanceChange > SIGNIFICANT_CHANGE_THRESHOLD) {
+            if (!stopwatchRunning2) {
+                // Uruchom stoper przy znaczącej zmianie
+                stopwatchRunning2 = true;
+                stopwatchTimer2->start();
+            } else {
+                // Zatrzymaj stoper przy kolejnej znaczącej zmianie
+                stopwatchRunning2 = false;
+                stopwatchTimer2->stop();
+            }
+        }
+        // Przy małych zmianach (<10) nie modyfikuj stanu stopera
+
+        lastDistance2 = newDistance;
+
         // Update current values
         distance2 = newDistance;
         timeInMilliseconds2 = newTime;
@@ -504,12 +602,22 @@ void MainWindow::parseData2(const QString &data) {
 
         // Update UI
         distanceInput2->setText(QString::number(distance2));
-        //timeInput2->setTime(QTime(0, minutes2, seconds2, milliseconds2));
+        // timeInput2->setTime(QTime(0, minutes2, seconds2, milliseconds2));
     }
 }
 
 void MainWindow::stopReading() {
     Reading = false;
+
+    // Zatrzymaj stopery jeśli działają
+    if (stopwatchRunning1) {
+        stopwatchRunning1 = false;
+        stopwatchTimer1->stop();
+    }
+    if (stopwatchRunning2) {
+        stopwatchRunning2 = false;
+        stopwatchTimer2->stop();
+    }
 
     // Close port 1
     if (serialPort && serialPort->isOpen()) {
