@@ -103,12 +103,12 @@ void MainWindow::createStoperControls() {
     QGridLayout *stoperLayout = new QGridLayout(stoperGroupBox);
 
     // Sensitivity slider
-    QLabel *sensLabel = new QLabel(tr("Drop Sensitivity:"), this);
+    QLabel *sensLabel = new QLabel(tr("Drop Sensitivity (mm):"), this);
     sensitivitySlider = new QSlider(Qt::Horizontal, this);
-    sensitivitySlider->setRange(5, 100);
+    sensitivitySlider->setRange(5, 100); // Sensitivity range from 5mm to 100mm
     sensitivitySlider->setValue(dropSensitivity);
     sensitivitySlider->setTickPosition(QSlider::TicksBelow);
-    sensitivitySlider->setTickInterval(10);
+    sensitivitySlider->setTickInterval(5);
 
     sensitivityLabel = new QLabel(QString::number(dropSensitivity), this);
     sensitivityLabel->setMinimumWidth(30);
@@ -165,6 +165,8 @@ void MainWindow::resetStoperCounters() {
     dropCount1 = 0;
     dropCount2 = 0;
     dropEvents.clear();
+    previousDistance1 = 0;
+    previousDistance2 = 0;
     updateStoperDisplay();
 
     QMessageBox::information(this, tr("Reset Complete"),
@@ -179,12 +181,12 @@ void MainWindow::saveStoperLogs() {
     }
 
     QString defaultFileName = QString("EMPE_DropLogs_%1.csv")
-                             .arg(QDateTime::currentDateTime().toString("ddMMyyyy_hhmmss"));
+                             .arg(QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss"));
 
     QString fileName = QFileDialog::getSaveFileName(this,
-                                                    tr("Save Drop Logs"),
-                                                    defaultFileName,
-                                                    tr("CSV Files (*.csv)"));
+                                                  tr("Save Drop Logs"),
+                                                  defaultFileName,
+                                                  tr("CSV Files (*.csv)"));
 
     if (fileName.isEmpty()) {
         return;
@@ -199,19 +201,17 @@ void MainWindow::saveStoperLogs() {
         QMessageBox::warning(this, tr("Error"),
                            tr("Cannot write file %1:\n%2.")
                            .arg(QDir::toNativeSeparators(fileName),
-                                file.errorString()));
+                           file.errorString()));
         return;
     }
 
     QTextStream out(&file);
+    out << "Timestamp,Sensor,Previous Value (mm),Current Value (mm),Drop Amount (mm),Sensitivity (mm)\n";
 
-    // Write header
-    out << tr("Timestamp,Sensor,Previous Value,Current Value,Drop Amount,Sensitivity Used\n");
-
-    // Write drop events
+    // Write all drop events
     for (const auto &event : dropEvents) {
         out << QString("%1,%2,%3,%4,%5,%6\n")
-               .arg(event.timestamp.toString("yyyy-MM-dd hh:mm:ss.zzz"))
+               .arg(event.timestamp.toString("yyyy-MM-dd HH:mm:ss.zzz"))
                .arg(event.sensorNumber)
                .arg(event.previousValue)
                .arg(event.currentValue)
@@ -227,6 +227,7 @@ void MainWindow::saveStoperLogs() {
                            .arg(dropEvents.size()));
 }
 
+
 void MainWindow::checkForDrop1(int currentDistance) {
     if (!stoper1Enabled || previousDistance1 == 0) {
         previousDistance1 = currentDistance;
@@ -235,13 +236,26 @@ void MainWindow::checkForDrop1(int currentDistance) {
 
     int dropAmount = previousDistance1 - currentDistance;
 
+    // Only consider positive drops (current < previous) that exceed sensitivity
     if (dropAmount >= dropSensitivity) {
         dropCount1++;
-        logDropEvent(1, previousDistance1, currentDistance, dropAmount);
+
+        // Log the drop event with timestamp
+        DropEvent event;
+        event.timestamp = QDateTime::currentDateTime();
+        event.sensorNumber = 1;
+        event.previousValue = previousDistance1;
+        event.currentValue = currentDistance;
+        event.dropAmount = dropAmount;
+        dropEvents.append(event);
+
+        // Update UI
         updateStoperDisplay();
 
         qDebug() << QString("Drop detected on Sensor 1: %1 -> %2 (drop: %3)")
-                    .arg(previousDistance1).arg(currentDistance).arg(dropAmount);
+                    .arg(previousDistance1)
+                    .arg(currentDistance)
+                    .arg(dropAmount);
     }
 
     previousDistance1 = currentDistance;
@@ -255,27 +269,29 @@ void MainWindow::checkForDrop2(int currentDistance) {
 
     int dropAmount = previousDistance2 - currentDistance;
 
+    // Only consider positive drops (current < previous) that exceed sensitivity
     if (dropAmount >= dropSensitivity) {
         dropCount2++;
-        logDropEvent(2, previousDistance2, currentDistance, dropAmount);
+
+        // Log the drop event with timestamp
+        DropEvent event;
+        event.timestamp = QDateTime::currentDateTime();
+        event.sensorNumber = 2;
+        event.previousValue = previousDistance2;
+        event.currentValue = currentDistance;
+        event.dropAmount = dropAmount;
+        dropEvents.append(event);
+
+        // Update UI
         updateStoperDisplay();
 
         qDebug() << QString("Drop detected on Sensor 2: %1 -> %2 (drop: %3)")
-                    .arg(previousDistance2).arg(currentDistance).arg(dropAmount);
+                    .arg(previousDistance2)
+                    .arg(currentDistance)
+                    .arg(dropAmount);
     }
 
     previousDistance2 = currentDistance;
-}
-
-void MainWindow::logDropEvent(int sensorNumber, int previousValue, int currentValue, int dropAmount) {
-    DropEvent event;
-    event.timestamp = QDateTime::currentDateTime();
-    event.sensorNumber = sensorNumber;
-    event.previousValue = previousValue;
-    event.currentValue = currentValue;
-    event.dropAmount = dropAmount;
-
-    dropEvents.append(event);
 }
 
 void MainWindow::updateStoperDisplay() {
@@ -677,37 +693,16 @@ void MainWindow::parseData(const QString &data) {
     while (matchIterator.hasNext()) {
         QRegularExpressionMatch match = matchIterator.next();
 
-        // Direct numeric conversion
         int newDistance = match.captured(1).toInt();
         if (newDistance > 1000) {
             newDistance = newDistance / 10;
         }
         int newTime = match.captured(2).toInt();
 
-        // Ignore data if distance suddenly drops to 0
+        // Ignore invalid data points
         if (newDistance == 0 && distance > 0) {
-            qDebug() << tr("Ignoring invalid data point (distance dropped to 0)");
             continue;
         }
-
-        // Oblicz zmianę odległości
-        int distanceChange = abs(newDistance - lastDistance1);
-
-        // Obsługa stopera: uruchomienie/zatrzymanie tylko przy znaczących zmianach
-        if (distanceChange > SIGNIFICANT_CHANGE_THRESHOLD) {
-            if (!stopwatchRunning1) {
-                // Uruchom stoper przy znaczącej zmianie
-                stopwatchRunning1 = true;
-                stopwatchTimer1->start();
-            } else {
-                // Zatrzymaj stoper przy kolejnej znaczącej zmianie
-                stopwatchRunning1 = false;
-                stopwatchTimer1->stop();
-            }
-        }
-        // Przy małych zmianach (<10) nie modyfikuj stanu stopera
-
-        lastDistance1 = newDistance;
 
         // Update current values
         distance = newDistance;
@@ -724,6 +719,11 @@ void MainWindow::parseData(const QString &data) {
         // Update UI
         distanceInput->setText(QString::number(distance));
         timeInput->setTime(QTime(0, minutes, seconds, milliseconds));
+
+        // Check for drops (only if stoper is enabled)
+        if (stoper1Enabled) {
+            checkForDrop1(distance);
+        }
     }
 }
 
@@ -734,37 +734,16 @@ void MainWindow::parseData2(const QString &data) {
     while (matchIterator.hasNext()) {
         QRegularExpressionMatch match = matchIterator.next();
 
-        // Direct numeric conversion
         int newDistance = match.captured(1).toInt();
         if (newDistance > 1000) {
             newDistance = newDistance / 10;
         }
         int newTime = match.captured(2).toInt();
 
-        // Ignore data if distance suddenly drops to 0
+        // Ignore invalid data points
         if (newDistance == 0 && distance2 > 0) {
-            qDebug() << tr("Ignoring invalid data point (distance2 dropped to 0)");
             continue;
         }
-
-        // Oblicz zmianę odległości
-        int distanceChange = abs(newDistance - lastDistance2);
-
-        // Obsługa stopera: uruchomienie/zatrzymanie tylko przy znaczących zmianach
-        if (distanceChange > SIGNIFICANT_CHANGE_THRESHOLD) {
-            if (!stopwatchRunning2) {
-                // Uruchom stoper przy znaczącej zmianie
-                stopwatchRunning2 = true;
-                stopwatchTimer2->start();
-            } else {
-                // Zatrzymaj stoper przy kolejnej znaczącej zmianie
-                stopwatchRunning2 = false;
-                stopwatchTimer2->stop();
-            }
-        }
-        // Przy małych zmianach (<10) nie modyfikuj stanu stopera
-
-        lastDistance2 = newDistance;
 
         // Update current values
         distance2 = newDistance;
@@ -780,7 +759,11 @@ void MainWindow::parseData2(const QString &data) {
 
         // Update UI
         distanceInput2->setText(QString::number(distance2));
-        // timeInput2->setTime(QTime(0, minutes2, seconds2, milliseconds2));
+
+        // Check for drops (only if stoper is enabled)
+        if (stoper2Enabled) {
+            checkForDrop2(distance2);
+        }
     }
 }
 
