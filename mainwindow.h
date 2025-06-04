@@ -17,6 +17,7 @@
 #include <QKeyEvent>
 #include <QSerialPort>
 #include <QtWidgets>
+#include <QDateTime>
 
 #include "portsettings.h"
 
@@ -52,12 +53,25 @@ public:
     QVector<DataPoint> dataPoints;
     QVector<DataPoint> dataPoints2;
 
+    // Stoper drop detection structure
+    struct DropEvent {
+        QDateTime timestamp;
+        int previousValue;
+        int currentValue;
+        int dropAmount;
+        int sensorNumber; // 1 or 2
+    };
+
 protected:
     void keyPressEvent(QKeyEvent *event) override;
 
 private slots:
-    // Istniejące sloty
+    // Existing slots
     void showAboutUsDialog();
+    // New stoper slots
+    void onSensitivityChanged(int value);
+    void resetStoperCounters();
+    void saveStoperLogs();
 
 private:
     QWidget *centralWidget;
@@ -135,11 +149,11 @@ private:
     int lastValidDistance = 0;
     QLabel *creatorsNoteLabel{};
 
-    // Stałe dla stoperów
+    // Existing stopwatch constants
     const int SIGNIFICANT_CHANGE_THRESHOLD = 30;
     const int SMALL_CHANGE_THRESHOLD = 10;
 
-    // Zmienne dla stoperów
+    // Existing stopwatch variables
     QTimer *stopwatchTimer1;
     QTimer *stopwatchTimer2;
     int stopwatchTime1 = 0;
@@ -151,7 +165,7 @@ private:
     int lastDistance1 = 0;
     int lastDistance2 = 0;
 
-    // Metody stoperów
+    // Existing stopwatch methods
     void updateStopwatch1();
     void updateStopwatch2();
     void resetStopwatch1();
@@ -159,6 +173,37 @@ private:
 
     QCheckBox *stopwatchCheck1;
     QCheckBox *stopwatchCheck2;
+
+    // NEW STOPER FEATURE VARIABLES
+    // Stoper controls
+    QGroupBox *stoperGroupBox;
+    QSlider *sensitivitySlider;
+    QLabel *sensitivityLabel;
+    QLabel *dropCounter1Label;
+    QLabel *dropCounter2Label;
+    QPushButton *resetStoperBtn;
+    QPushButton *saveStoperLogsBtn;
+    QCheckBox *enableStoper1CheckBox;
+    QCheckBox *enableStoper2CheckBox;
+
+    // Stoper data
+    int dropSensitivity = 20; // Default sensitivity threshold
+    int dropCount1 = 0;
+    int dropCount2 = 0;
+    int previousDistance1 = 0;
+    int previousDistance2 = 0;
+    bool stoper1Enabled = true;
+    bool stoper2Enabled = true;
+
+    // Drop event logging
+    QVector<DropEvent> dropEvents;
+
+    // Stoper methods
+    void createStoperControls();
+    void checkForDrop1(int currentDistance);
+    void checkForDrop2(int currentDistance);
+    void logDropEvent(int sensorNumber, int previousValue, int currentValue, int dropAmount);
+    void updateStoperDisplay();
 };
 
 #endif // MAINWINDOW_H
