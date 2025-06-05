@@ -74,6 +74,19 @@ private slots:
     void saveStoperLogs();
 
 private:
+    // Add these to mainwindow.h under private:
+    QPushButton *startStopStoperBtn;
+    QTimer *stoperTimer;
+    int stoperTime;
+    bool stoperRunning;
+
+    // Add this new slot under private slots:
+    void handleStoperStartStop();
+    void updateStoperTime();
+    // Add these member variables in mainwindow.h under private:
+    QDateTime lastDropTime1;
+    QDateTime lastDropTime2;
+    const int DROP_COOLDOWN_MS = 400; // 400ms cooldown between drops
     QWidget *centralWidget;
     QVBoxLayout *mainLayout;
     QComboBox *portBox{};

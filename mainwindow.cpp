@@ -126,6 +126,11 @@ void MainWindow::createStoperControls() {
     // Control buttons
     resetStoperBtn = new QPushButton(tr("Reset Counters"), this);
     saveStoperLogsBtn = new QPushButton(tr("Save Drop Logs"), this);
+    startStopStoperBtn = new QPushButton(tr("Start Stoper"), this);
+    stoperTimer = new QTimer(this);
+    stoperTimer->setInterval(10); // 10ms interval for smooth countdown
+    stoperTime = 60000; // Start with 60 seconds (adjust as needed)
+    stoperRunning = false;
 
     // Layout arrangement
     stoperLayout->addWidget(sensLabel, 0, 0);
@@ -141,10 +146,21 @@ void MainWindow::createStoperControls() {
     stoperLayout->addWidget(resetStoperBtn, 3, 0);
     stoperLayout->addWidget(saveStoperLogsBtn, 3, 1, 1, 2);
 
+    // Add start/stop stoper button
+
+
+    // Add the button to layout
+    stoperLayout->addWidget(startStopStoperBtn, 4, 0, 1, 3);
+
+    // Connect signals
+
     // Add to main layout
     mainLayout->addWidget(stoperGroupBox);
 
     // Connect signals
+    connect(startStopStoperBtn, &QPushButton::clicked, this, &MainWindow::handleStoperStartStop);
+    connect(stoperTimer, &QTimer::timeout, this, &MainWindow::updateStoperTime);
+
     connect(sensitivitySlider, &QSlider::valueChanged, this, &MainWindow::onSensitivityChanged);
     connect(resetStoperBtn, &QPushButton::clicked, this, &MainWindow::resetStoperCounters);
     connect(saveStoperLogsBtn, &QPushButton::clicked, this, &MainWindow::saveStoperLogs);
@@ -160,17 +176,55 @@ void MainWindow::onSensitivityChanged(int value) {
     dropSensitivity = value;
     sensitivityLabel->setText(QString::number(value));
 }
+void MainWindow::handleStoperStartStop() {
+    if (!stoperRunning) {
+        stoperRunning = true;
+        startStopStoperBtn->setText(tr("Stop Stoper"));
+        stoperTimer->start();
+    } else {
+        stoperRunning = false;
+        startStopStoperBtn->setText(tr("Start Stoper"));
+        stoperTimer->stop();
+    }
+}
+void MainWindow::updateStoperTime() {
+    if (stoperTime > 0) {
+        stoperTime -= 10;
+        int mins = stoperTime / 60000;
+        int secs = (stoperTime % 60000) / 1000;
+        int ms = (stoperTime % 1000) / 10;
 
+        QString timeStr = QString("%1:%2.%3")
+            .arg(mins, 2, 10, QChar('0'))
+            .arg(secs, 2, 10, QChar('0'))
+            .arg(ms, 2, 10, QChar('0'));
+
+        startStopStoperBtn->setText(tr("Stop Stoper (%1)").arg(timeStr));
+    } else {
+        stoperTimer->stop();
+        stoperRunning = false;
+        startStopStoperBtn->setText(tr("Start Stoper"));
+        QMessageBox::information(this, tr("Stoper"), tr("Time's up!"));
+    }
+}
 void MainWindow::resetStoperCounters() {
     dropCount1 = 0;
     dropCount2 = 0;
     dropEvents.clear();
     previousDistance1 = 0;
     previousDistance2 = 0;
+    lastDropTime1 = QDateTime();
+    lastDropTime2 = QDateTime();
+    stoperTime = 60000; // Reset to initial time
+    if (stoperRunning) {
+        stoperTimer->stop();
+        stoperRunning = false;
+        startStopStoperBtn->setText(tr("Start Stoper"));
+    }
     updateStoperDisplay();
 
     QMessageBox::information(this, tr("Reset Complete"),
-                           tr("Drop counters and logs have been reset."));
+                           tr("Drop counters, logs, and stoper have been reset."));
 }
 
 void MainWindow::saveStoperLogs() {
@@ -227,7 +281,6 @@ void MainWindow::saveStoperLogs() {
                            .arg(dropEvents.size()));
 }
 
-
 void MainWindow::checkForDrop1(int currentDistance) {
     if (!stoper1Enabled || previousDistance1 == 0) {
         previousDistance1 = currentDistance;
@@ -235,28 +288,24 @@ void MainWindow::checkForDrop1(int currentDistance) {
     }
 
     int dropAmount = previousDistance1 - currentDistance;
+    QDateTime currentTime = QDateTime::currentDateTime();
 
-    // Only consider positive drops (current < previous) that exceed sensitivity
-    if (dropAmount >= dropSensitivity) {
+    // Check if enough time has passed since last drop
+    if (dropAmount >= dropSensitivity &&
+        (!lastDropTime1.isValid() || lastDropTime1.msecsTo(currentTime) > DROP_COOLDOWN_MS)) {
         dropCount1++;
+        lastDropTime1 = currentTime;
 
-        // Log the drop event with timestamp
         DropEvent event;
-        event.timestamp = QDateTime::currentDateTime();
+        event.timestamp = currentTime;
         event.sensorNumber = 1;
         event.previousValue = previousDistance1;
         event.currentValue = currentDistance;
         event.dropAmount = dropAmount;
         dropEvents.append(event);
 
-        // Update UI
         updateStoperDisplay();
-
-        qDebug() << QString("Drop detected on Sensor 1: %1 -> %2 (drop: %3)")
-                    .arg(previousDistance1)
-                    .arg(currentDistance)
-                    .arg(dropAmount);
-    }
+        }
 
     previousDistance1 = currentDistance;
 }
@@ -268,28 +317,24 @@ void MainWindow::checkForDrop2(int currentDistance) {
     }
 
     int dropAmount = previousDistance2 - currentDistance;
+    QDateTime currentTime = QDateTime::currentDateTime();
 
-    // Only consider positive drops (current < previous) that exceed sensitivity
-    if (dropAmount >= dropSensitivity) {
+    // Check if enough time has passed since last drop
+    if (dropAmount >= dropSensitivity &&
+        (!lastDropTime2.isValid() || lastDropTime2.msecsTo(currentTime) > DROP_COOLDOWN_MS)) {
         dropCount2++;
+        lastDropTime2 = currentTime;
 
-        // Log the drop event with timestamp
         DropEvent event;
-        event.timestamp = QDateTime::currentDateTime();
+        event.timestamp = currentTime;
         event.sensorNumber = 2;
         event.previousValue = previousDistance2;
         event.currentValue = currentDistance;
         event.dropAmount = dropAmount;
         dropEvents.append(event);
 
-        // Update UI
         updateStoperDisplay();
-
-        qDebug() << QString("Drop detected on Sensor 2: %1 -> %2 (drop: %3)")
-                    .arg(previousDistance2)
-                    .arg(currentDistance)
-                    .arg(dropAmount);
-    }
+        }
 
     previousDistance2 = currentDistance;
 }
