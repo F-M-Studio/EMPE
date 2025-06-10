@@ -113,15 +113,55 @@ void MainWindow::createStoperControls() {
     sensitivityLabel = new QLabel(QString::number(dropSensitivity), this);
     sensitivityLabel->setMinimumWidth(30);
 
+    // Label i layout dla trybu stopera
+    QLabel *modeLabel = new QLabel(tr("Stopwatch Mode:"), this);
+    QHBoxLayout *stoperModeLayout = new QHBoxLayout();
+
+    singleLidarModeRadio = new QRadioButton(tr("Jeden lidar"), this);
+    dualLidarModeRadio = new QRadioButton(tr("Dwa lidary"), this);
+    singleLidarModeRadio->setChecked(true);
+
+    stoperModeLayout->addWidget(singleLidarModeRadio);
+    stoperModeLayout->addWidget(dualLidarModeRadio);
+
+    stoperLayout->addWidget(modeLabel, 1, 0);
+    stoperLayout->addLayout(stoperModeLayout, 1, 1, 1, 2);
+
+
+    connect(singleLidarModeRadio, &QRadioButton::toggled, this, [this](bool checked) {
+       if (checked) {
+           stoper1Enabled = true;
+           stoper2Enabled = false;
+           dropCounter1Label->setEnabled(true);
+           dropCounter2Label->setEnabled(false);
+           dualLidarMode = false;
+           resetStopwatch1();
+           resetStopwatch2();
+       }
+   });
+
+    connect(dualLidarModeRadio, &QRadioButton::toggled, this, [this](bool checked) {
+    if (checked) {
+        stoper1Enabled = true;
+        stoper2Enabled = true;
+        dropCounter1Label->setEnabled(true);
+        dropCounter2Label->setEnabled(true);
+        dualLidarMode = true;
+        resetStopwatch1();
+        resetStopwatch2();
+    }
+});
+
     // Drop counters
-    dropCounter1Label = new QLabel(tr("Sensor 1 Drops: 0"), this);
-    dropCounter2Label = new QLabel(tr("Sensor 2 Drops: 0"), this);
+    // dropCounter1Label = new QLabel(tr("Sensor 1 Drops: 0"), this);
+    // dropCounter2Label = new QLabel(tr("Sensor 2 Drops: 0"), this);
+
 
     // Enable checkboxes
-    enableStoper1CheckBox = new QCheckBox(tr("Enable Sensor 1"), this);
-    enableStoper1CheckBox->setChecked(stoper1Enabled);
-    enableStoper2CheckBox = new QCheckBox(tr("Enable Sensor 2"), this);
-    enableStoper2CheckBox->setChecked(stoper2Enabled);
+    // enableStoper1CheckBox = new QCheckBox(tr("Enable Sensor 1"), this);
+    // enableStoper1CheckBox->setChecked(stoper1Enabled);
+    // enableStoper2CheckBox = new QCheckBox(tr("Enable Sensor 2"), this);
+    // enableStoper2CheckBox->setChecked(stoper2Enabled);
 
     // Control buttons
     resetStoperBtn = new QPushButton(tr("Reset Counters"), this);
@@ -137,11 +177,11 @@ void MainWindow::createStoperControls() {
     stoperLayout->addWidget(sensitivitySlider, 0, 1);
     stoperLayout->addWidget(sensitivityLabel, 0, 2);
 
-    stoperLayout->addWidget(enableStoper1CheckBox, 1, 0);
-    stoperLayout->addWidget(dropCounter1Label, 1, 1, 1, 2);
-
-    stoperLayout->addWidget(enableStoper2CheckBox, 2, 0);
-    stoperLayout->addWidget(dropCounter2Label, 2, 1, 1, 2);
+    // stoperLayout->addWidget(enableStoper1CheckBox, 1, 0);
+    // stoperLayout->addWidget(dropCounter1Label, 1, 1, 1, 2);
+    //
+    // stoperLayout->addWidget(enableStoper2CheckBox, 2, 0);
+    // stoperLayout->addWidget(dropCounter2Label, 2, 1, 1, 2);
 
     stoperLayout->addWidget(resetStoperBtn, 3, 0);
     stoperLayout->addWidget(saveStoperLogsBtn, 3, 1, 1, 2);
@@ -164,12 +204,12 @@ void MainWindow::createStoperControls() {
     connect(sensitivitySlider, &QSlider::valueChanged, this, &MainWindow::onSensitivityChanged);
     connect(resetStoperBtn, &QPushButton::clicked, this, &MainWindow::resetStoperCounters);
     connect(saveStoperLogsBtn, &QPushButton::clicked, this, &MainWindow::saveStoperLogs);
-    connect(enableStoper1CheckBox, &QCheckBox::toggled, this, [this](bool checked) {
-        stoper1Enabled = checked;
-    });
-    connect(enableStoper2CheckBox, &QCheckBox::toggled, this, [this](bool checked) {
-        stoper2Enabled = checked;
-    });
+    // connect(enableStoper1CheckBox, &QCheckBox::toggled, this, [this](bool checked) {
+    //     stoper1Enabled = checked;
+    // });
+    // connect(enableStoper2CheckBox, &QCheckBox::toggled, this, [this](bool checked) {
+    //     stoper2Enabled = checked;
+    // });
 }
 
 void MainWindow::onSensitivityChanged(int value) {
@@ -375,6 +415,34 @@ void MainWindow::createControls() {
     buttonLayout->addWidget(showRawDataBtn);
 
     mainLayout->addLayout(buttonLayout);
+    // Add stopwatch mode options
+    // QGroupBox *stopwatchModeGroup = new QGroupBox(tr("Stopwatch Mode"), this);
+    // QVBoxLayout *modeLayout = new QVBoxLayout(stopwatchModeGroup);
+
+    // singleLidarModeRadio = new QRadioButton(tr("Single Lidar Mode (Start/Stop on one sensor)"), this);
+    // dualLidarModeRadio = new QRadioButton(tr("Dual Lidar Mode (Start on sensor 1, stop on sensor 2)"), this);
+
+    // singleLidarModeRadio->setChecked(true); // Default mode
+
+    // modeLayout->addWidget(singleLidarModeRadio);
+    // modeLayout->addWidget(dualLidarModeRadio);
+
+    // connect(singleLidarModeRadio, &QRadioButton::toggled, this, [this](bool checked) {
+    //     if (checked) {
+    //         dualLidarMode = false;
+    //         resetStopwatch1();
+    //         resetStopwatch2();
+    //     }
+    // });
+    // connect(dualLidarModeRadio, &QRadioButton::toggled, this, [this](bool checked) {
+    //     if (checked) {
+    //         dualLidarMode = true;
+    //         resetStopwatch1();
+    //         resetStopwatch2();
+    //     }
+    // });
+    //
+    // mainLayout->addWidget(stopwatchModeGroup);
 
     connect(portSettingsBtn, &QPushButton::clicked, this, [this]() {
         portSettings->exec();
@@ -735,6 +803,7 @@ void MainWindow::parseData(const QString &data) {
     static QRegularExpression regex("YY(\\d+)T(\\d+)E");
     QRegularExpressionMatchIterator matchIterator = regex.globalMatch(data);
 
+
     while (matchIterator.hasNext()) {
         QRegularExpressionMatch match = matchIterator.next();
 
@@ -748,6 +817,7 @@ void MainWindow::parseData(const QString &data) {
         if (newDistance == 0 && distance > 0) {
             continue;
         }
+
 
         // Update current values
         distance = newDistance;
@@ -769,12 +839,29 @@ void MainWindow::parseData(const QString &data) {
         if (stoper1Enabled) {
             checkForDrop1(distance);
         }
+        // Check for significant distance change for stopwatch1
+        if (isReading && abs(distance - lastDistance1) > SIGNIFICANT_CHANGE_THRESHOLD) {
+            if (!stopwatchRunning1) {
+                // Start the stopwatch on first significant change
+                stopwatchRunning1 = true;
+                stopwatchTime1 = 0;
+                stopwatchTimer1->start();
+                stopwatchLabel1->setText(tr("Stoper: 00:00.000"));
+            } else if (serialPort2 == nullptr || !serialPort2->isOpen()) {
+                // If only one lidar is active, stop the stopwatch on second significant change
+                stopwatchRunning1 = false;
+                stopwatchTimer1->stop();
+            }
+            lastDistance1 = distance;
+        }
     }
 }
 
 void MainWindow::parseData2(const QString &data) {
     static QRegularExpression regex("YY(\\d+)T(\\d+)E");
     QRegularExpressionMatchIterator matchIterator = regex.globalMatch(data);
+
+
 
     while (matchIterator.hasNext()) {
         QRegularExpressionMatch match = matchIterator.next();
@@ -809,13 +896,23 @@ void MainWindow::parseData2(const QString &data) {
         if (stoper2Enabled) {
             checkForDrop2(distance2);
         }
+        // Check for significant distance change for stopwatch2
+        if (isReading && abs(distance2 - lastDistance2) > SIGNIFICANT_CHANGE_THRESHOLD) {
+            // If we're using two lidars and stopwatch1 is running, stop it
+            if (stopwatchRunning1 && serialPort && serialPort->isOpen() &&
+                serialPort2 && serialPort2->isOpen()) {
+                stopwatchRunning1 = false;
+                stopwatchTimer1->stop();
+                }
+            lastDistance2 = distance2;
+        }
     }
 }
 
 void MainWindow::stopReading() {
     Reading = false;
 
-    // Zatrzymaj stopery jeśli działają
+    // Stop stopwatches
     if (stopwatchRunning1) {
         stopwatchRunning1 = false;
         stopwatchTimer1->stop();

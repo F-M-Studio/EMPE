@@ -80,6 +80,10 @@ private:
     int stoperTime;
     bool stoperRunning;
 
+    bool dualLidarMode = false;
+    QRadioButton *singleLidarModeRadio;
+    QRadioButton *dualLidarModeRadio;
+
     // Add this new slot under private slots:
     void handleStoperStartStop();
     void updateStoperTime();
