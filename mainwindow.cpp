@@ -24,7 +24,7 @@
 #include <QGroupBox>
 #include <QGridLayout>
 #include <QDateTime>
-
+#include <QScrollBar>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), isReading(false),
       portSettings(new PortSettings(this)) {
@@ -74,6 +74,17 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), isReading(false),
     });
     connect(appMenu, &AppMenu::aboutUsRequested, this, &MainWindow::showAboutUsDialog);
 
+    QHBoxLayout *bottomLayout = new QHBoxLayout();
+    bottomLayout->addStretch();
+
+    QLabel *imageLabel = new QLabel(this);
+    QPixmap pixmap(":/images/FundedByEU.png");
+    imageLabel->setPixmap(pixmap.scaled(100, 100, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    imageLabel->setAlignment(Qt::AlignRight | Qt::AlignBottom);
+
+    bottomLayout->addWidget(imageLabel);
+    mainLayout->addLayout(bottomLayout);
+
     QFrame *separator = new QFrame(this);
     separator->setFrameShape(QFrame::HLine);
     separator->setFrameShadow(QFrame::Sunken);
@@ -99,7 +110,7 @@ MainWindow::~MainWindow() {
 
 void MainWindow::createStoperControls() {
     // Create stoper group box
-    stoperGroupBox = new QGroupBox(tr("Drop Counter (Stoper)"), this);
+    stoperGroupBox = new QGroupBox(tr("Counting System"), this);
     QGridLayout *stoperLayout = new QGridLayout(stoperGroupBox);
 
     // Sensitivity slider
@@ -111,59 +122,80 @@ void MainWindow::createStoperControls() {
     sensitivitySlider->setTickInterval(5);
 
     sensitivityLabel = new QLabel(QString::number(dropSensitivity), this);
-    sensitivityLabel->setMinimumWidth(30);
-
-    // Drop counters
-    dropCounter1Label = new QLabel(tr("Sensor 1 Drops: 0"), this);
-    dropCounter2Label = new QLabel(tr("Sensor 2 Drops: 0"), this);
-
-    // Enable checkboxes
-    enableStoper1CheckBox = new QCheckBox(tr("Enable Sensor 1"), this);
-    enableStoper1CheckBox->setChecked(stoper1Enabled);
-    enableStoper2CheckBox = new QCheckBox(tr("Enable Sensor 2"), this);
-    enableStoper2CheckBox->setChecked(stoper2Enabled);
+    sensitivityLabel->setMinimumWidth(5);
 
     // Control buttons
-    resetStoperBtn = new QPushButton(tr("Reset Counters"), this);
-    saveStoperLogsBtn = new QPushButton(tr("Save Drop Logs"), this);
-    startStopStoperBtn = new QPushButton(tr("Start Stoper"), this);
+    resetStoperBtn = new QPushButton(tr("Reset All"), this);
+
+    // Inicjalizacja timera bez przycisku
     stoperTimer = new QTimer(this);
     stoperTimer->setInterval(10); // 10ms interval for smooth countdown
     stoperTime = 60000; // Start with 60 seconds (adjust as needed)
     stoperRunning = false;
 
-    // Layout arrangement
+    // Add common controls to layout
     stoperLayout->addWidget(sensLabel, 0, 0);
-    stoperLayout->addWidget(sensitivitySlider, 0, 1);
-    stoperLayout->addWidget(sensitivityLabel, 0, 2);
+    stoperLayout->addWidget(sensitivitySlider, 0, 1, 1, 2);
+    stoperLayout->addWidget(sensitivityLabel, 0, 3);
 
-    stoperLayout->addWidget(enableStoper1CheckBox, 1, 0);
-    stoperLayout->addWidget(dropCounter1Label, 1, 1, 1, 2);
+    // Create sensor 1 frame
+    QGroupBox *sensor1GroupBox = new QGroupBox(tr("Sensor 1"), this);
+    QVBoxLayout *sensor1Layout = new QVBoxLayout(sensor1GroupBox);
 
-    stoperLayout->addWidget(enableStoper2CheckBox, 2, 0);
-    stoperLayout->addWidget(dropCounter2Label, 2, 1, 1, 2);
+    // Enable checkboxes
+    enableStoper1CheckBox = new QCheckBox(tr("Enable Sensor 1"), this);
+    enableStoper1CheckBox->setChecked(stoper1Enabled);
+    sensor1Layout->addWidget(enableStoper1CheckBox);
 
-    stoperLayout->addWidget(resetStoperBtn, 3, 0);
-    stoperLayout->addWidget(saveStoperLogsBtn, 3, 1, 1, 2);
+    // Drop counter
+    dropCounter1Label = new QLabel(tr("Drops: 0"), this);
+    dropCounter1Label->setAlignment(Qt::AlignCenter);
+    sensor1Layout->addWidget(dropCounter1Label);
 
-    // Add start/stop stoper button
+    // Add stopwatch
+    stopwatchLabel1 = new QLabel(tr("Stoper: 00:00.000"));
+    stopwatchLabel1->setAlignment(Qt::AlignCenter);
+    stopwatchTimer1 = new QTimer(this);
+    stopwatchTimer1->setInterval(10);
+    connect(stopwatchTimer1, &QTimer::timeout, this, &MainWindow::updateStopwatch1);
+    sensor1Layout->addWidget(stopwatchLabel1);
 
+    // Create sensor 2 frame
+    QGroupBox *sensor2GroupBox = new QGroupBox(tr("Sensor 2"), this);
+    QVBoxLayout *sensor2Layout = new QVBoxLayout(sensor2GroupBox);
 
-    // Add the button to layout
-    stoperLayout->addWidget(startStopStoperBtn, 4, 0, 1, 3);
+    // Enable checkbox
+    enableStoper2CheckBox = new QCheckBox(tr("Enable Sensor 2"), this);
+    enableStoper2CheckBox->setChecked(stoper2Enabled);
+    sensor2Layout->addWidget(enableStoper2CheckBox);
 
-    // Connect signals
+    // Drop counter
+    dropCounter2Label = new QLabel(tr("Drops: 0"), this);
+    dropCounter2Label->setAlignment(Qt::AlignCenter);
+    sensor2Layout->addWidget(dropCounter2Label);
+
+    // Add stopwatch
+    stopwatchLabel2 = new QLabel(tr("Stoper: 00:00.000"));
+    stopwatchLabel2->setAlignment(Qt::AlignCenter);
+    stopwatchTimer2 = new QTimer(this);
+    stopwatchTimer2->setInterval(10);
+    connect(stopwatchTimer2, &QTimer::timeout, this, &MainWindow::updateStopwatch2);
+    sensor2Layout->addWidget(stopwatchLabel2);
+
+    // Add sensor frames to layout
+    stoperLayout->addWidget(sensor1GroupBox, 1, 0, 1, 2);
+    stoperLayout->addWidget(sensor2GroupBox, 1, 2, 1, 2);
+
+    // Add reset button only
+    stoperLayout->addWidget(resetStoperBtn, 2, 0, 1, 4);
 
     // Add to main layout
     mainLayout->addWidget(stoperGroupBox);
 
     // Connect signals
-    connect(startStopStoperBtn, &QPushButton::clicked, this, &MainWindow::handleStoperStartStop);
     connect(stoperTimer, &QTimer::timeout, this, &MainWindow::updateStoperTime);
-
     connect(sensitivitySlider, &QSlider::valueChanged, this, &MainWindow::onSensitivityChanged);
     connect(resetStoperBtn, &QPushButton::clicked, this, &MainWindow::resetStoperCounters);
-    connect(saveStoperLogsBtn, &QPushButton::clicked, this, &MainWindow::saveStoperLogs);
     connect(enableStoper1CheckBox, &QCheckBox::toggled, this, [this](bool checked) {
         stoper1Enabled = checked;
     });
@@ -216,11 +248,17 @@ void MainWindow::resetStoperCounters() {
     lastDropTime1 = QDateTime();
     lastDropTime2 = QDateTime();
     stoperTime = 60000; // Reset to initial time
+
+    // Zatrzymaj główny timer stoper jeśli działa
     if (stoperRunning) {
         stoperTimer->stop();
         stoperRunning = false;
-        startStopStoperBtn->setText(tr("Start Stoper"));
     }
+
+    // Resetuj oba stopery
+    resetStopwatch1();
+    resetStopwatch2();
+
     updateStoperDisplay();
 
     QMessageBox::information(this, tr("Reset Complete"),
@@ -282,66 +320,100 @@ void MainWindow::saveStoperLogs() {
 }
 
 void MainWindow::checkForDrop1(int currentDistance) {
-    if (!stoper1Enabled || previousDistance1 == 0) {
-        previousDistance1 = currentDistance;
-        return;
-    }
+    if (!stoper1Enabled) return;
 
-    int dropAmount = previousDistance1 - currentDistance;
-    QDateTime currentTime = QDateTime::currentDateTime();
+    // Sprawdzamy, czy jest znacząca różnica odległości (drop)
+    int difference = previousDistance1 - currentDistance;
 
-    // Check if enough time has passed since last drop
-    if (dropAmount >= dropSensitivity &&
-        (!lastDropTime1.isValid() || lastDropTime1.msecsTo(currentTime) > DROP_COOLDOWN_MS)) {
+    // Jeśli różnica przekracza próg czułości, wykryto kroplę
+    if (difference >= dropSensitivity) {
+        // Zwiększ licznik kropli
         dropCount1++;
-        lastDropTime1 = currentTime;
 
-        DropEvent event;
-        event.timestamp = currentTime;
-        event.sensorNumber = 1;
-        event.previousValue = previousDistance1;
-        event.currentValue = currentDistance;
-        event.dropAmount = dropAmount;
-        dropEvents.append(event);
+        // Loguj zdarzenie
+        logDropEvent(1, previousDistance1, currentDistance, difference);
 
-        updateStoperDisplay();
+        // Przełącz stan stopera (uruchom lub zatrzymaj)
+        if (!stopwatchRunning1) {
+            // Jeśli stoper nie jest uruchomiony - uruchom go
+            stopwatchRunning1 = true;
+            stopwatchTimer1->start(10);
+
+            QDateTime currentTime = QDateTime::currentDateTime();
+            dataDisplay->append(tr("[%1] Automatyczne uruchomienie stopera 1 po wykryciu kropli")
+                .arg(currentTime.toString("hh:mm:ss.zzz")));
+            qDebug() << "Automatycznie uruchomiono stoper 1 po wykryciu kropli";
+        } else {
+            // Jeśli stoper jest uruchomiony - zatrzymaj go
+            stopwatchRunning1 = false;
+            stopwatchTimer1->stop();
+
+            QDateTime currentTime = QDateTime::currentDateTime();
+            dataDisplay->append(tr("[%1] Automatyczne zatrzymanie stopera 1 po wykryciu kropli")
+                .arg(currentTime.toString("hh:mm:ss.zzz")));
+            qDebug() << "Automatycznie zatrzymano stoper 1 po wykryciu kropli";
         }
 
+        // Aktualizuj wyświetlacz
+        updateStoperDisplay();
+
+        // Odśwież czas ostatniego wykrycia
+        lastDropTime1 = QDateTime::currentDateTime();
+    }
+
+    // Zapamiętaj aktualną odległość do następnego porównania
     previousDistance1 = currentDistance;
 }
 
 void MainWindow::checkForDrop2(int currentDistance) {
-    if (!stoper2Enabled || previousDistance2 == 0) {
-        previousDistance2 = currentDistance;
-        return;
-    }
+    if (!stoper2Enabled) return;
 
-    int dropAmount = previousDistance2 - currentDistance;
-    QDateTime currentTime = QDateTime::currentDateTime();
+    // Sprawdzamy, czy jest znacząca różnica odległości (drop)
+    int difference = previousDistance2 - currentDistance;
 
-    // Check if enough time has passed since last drop
-    if (dropAmount >= dropSensitivity &&
-        (!lastDropTime2.isValid() || lastDropTime2.msecsTo(currentTime) > DROP_COOLDOWN_MS)) {
+    // Jeśli różnica przekracza próg czułości, wykryto kroplę
+    if (difference >= dropSensitivity) {
+        // Zwiększ licznik kropli
         dropCount2++;
-        lastDropTime2 = currentTime;
 
-        DropEvent event;
-        event.timestamp = currentTime;
-        event.sensorNumber = 2;
-        event.previousValue = previousDistance2;
-        event.currentValue = currentDistance;
-        event.dropAmount = dropAmount;
-        dropEvents.append(event);
+        // Loguj zdarzenie
+        logDropEvent(2, previousDistance2, currentDistance, difference);
 
-        updateStoperDisplay();
+        // Przełącz stan stopera (uruchom lub zatrzymaj)
+        if (!stopwatchRunning2) {
+            // Jeśli stoper nie jest uruchomiony - uruchom go
+            stopwatchRunning2 = true;
+            stopwatchTimer2->start(10);
+
+            QDateTime currentTime = QDateTime::currentDateTime();
+            dataDisplay2->append(tr("[%1] Automatyczne uruchomienie stopera 2 po wykryciu kropli")
+                .arg(currentTime.toString("hh:mm:ss.zzz")));
+            qDebug() << "Automatycznie uruchomiono stoper 2 po wykryciu kropli";
+        } else {
+            // Jeśli stoper jest uruchomiony - zatrzymaj go
+            stopwatchRunning2 = false;
+            stopwatchTimer2->stop();
+
+            QDateTime currentTime = QDateTime::currentDateTime();
+            dataDisplay2->append(tr("[%1] Automatyczne zatrzymanie stopera 2 po wykryciu kropli")
+                .arg(currentTime.toString("hh:mm:ss.zzz")));
+            qDebug() << "Automatycznie zatrzymano stoper 2 po wykryciu kropli";
         }
 
+        // Aktualizuj wyświetlacz
+        updateStoperDisplay();
+
+        // Odśwież czas ostatniego wykrycia
+        lastDropTime2 = QDateTime::currentDateTime();
+    }
+
+    // Zapamiętaj aktualną odległość do następnego porównania
     previousDistance2 = currentDistance;
 }
 
 void MainWindow::updateStoperDisplay() {
-    dropCounter1Label->setText(tr("Sensor 1 Drops: %1").arg(dropCount1));
-    dropCounter2Label->setText(tr("Sensor 2 Drops: %1").arg(dropCount2));
+    dropCounter1Label->setText(tr("Drops: %1").arg(dropCount1));
+    dropCounter2Label->setText(tr("Drops: %1").arg(dropCount2));
 }
 
 void MainWindow::handleStartStopButton() {
@@ -412,61 +484,54 @@ void MainWindow::createControls() {
 
     QGridLayout *controlsLayout = new QGridLayout();
 
-    QLabel *distanceLabel = new QLabel(tr("Distance 1:"));
+    // Sensor 1 distance
+    QGroupBox *sensor1Box = new QGroupBox(tr("Sensor 1"));
+    QVBoxLayout *sensor1Layout = new QVBoxLayout(sensor1Box);
+
+    QLabel *distanceLabel = new QLabel(tr("Distance:"));
     distanceInput = new QLineEdit("00");
     distanceInput->setReadOnly(true);
-    QLabel *timeLabel = new QLabel(tr("Time:"));
-    timeInput = new QTimeEdit();
-    timeInput->setDisplayFormat("mm:ss.zzz");
-    timeInput->setReadOnly(true);
 
-    QLabel *distanceLabel2 = new QLabel(tr("Distance 2:"));
+    sensor1Layout->addWidget(distanceLabel);
+    sensor1Layout->addWidget(distanceInput);
+
+    // Sensor 2 distance
+    QGroupBox *sensor2Box = new QGroupBox(tr("Sensor 2"));
+    QVBoxLayout *sensor2Layout = new QVBoxLayout(sensor2Box);
+
+    QLabel *distanceLabel2 = new QLabel(tr("Distance:"));
     distanceInput2 = new QLineEdit("00");
     distanceInput2->setReadOnly(true);
-    QLabel *timeLabel2 = new QLabel(tr("Time 2:"));
-    timeInput2 = new QTimeEdit();
-    timeInput2->setDisplayFormat("mm:ss.zzz");
-    timeInput2->setReadOnly(true);
 
-    controlsLayout->addWidget(distanceLabel, 0, 0);
-    controlsLayout->addWidget(distanceInput, 0, 1);
-    controlsLayout->addWidget(timeLabel, 1, 0);
-    controlsLayout->addWidget(timeInput, 1, 1);
+    sensor2Layout->addWidget(distanceLabel2);
+    sensor2Layout->addWidget(distanceInput2);
 
-    controlsLayout->addWidget(distanceLabel2, 0, 2);
-    controlsLayout->addWidget(distanceInput2, 0, 3);
+    // Dodaj etykietę globalnego czasu
+    QGroupBox *timeBox = new QGroupBox(tr("Globalny czas"));
+    QVBoxLayout *timeLayout = new QVBoxLayout(timeBox);
 
-    stopwatchLabel1 = new QLabel(tr("Stoper: 00:00.000"));
-    stopwatchLabel1->setAlignment(Qt::AlignCenter);
-    stopwatchLabel2 = new QLabel(tr("Stoper: 00:00.000"));
-    stopwatchLabel2->setAlignment(Qt::AlignCenter);
+    globalTimeLabel = new QLabel("00:00.000");
+    globalTimeLabel->setAlignment(Qt::AlignCenter);
+    QFont timeFont = globalTimeLabel->font();
+    timeFont.setPointSize(timeFont.pointSize() + 2);
+    globalTimeLabel->setFont(timeFont);
 
-    controlsLayout->addWidget(stopwatchLabel1, 1, 1);
-    controlsLayout->addWidget(stopwatchLabel2, 1, 3);
+    timeLayout->addWidget(globalTimeLabel);
 
-    stopwatchTimer1 = new QTimer(this);
-    stopwatchTimer2 = new QTimer(this);
-    stopwatchTimer1->setInterval(10);
-    stopwatchTimer2->setInterval(10);
-    connect(stopwatchTimer1, &QTimer::timeout, this, &MainWindow::updateStopwatch1);
-    connect(stopwatchTimer2, &QTimer::timeout, this, &MainWindow::updateStopwatch2);
+    // Dodaj wszystkie boksy do układu
+    controlsLayout->addWidget(sensor1Box, 0, 0);
+    controlsLayout->addWidget(sensor2Box, 0, 1);
+    controlsLayout->addWidget(timeBox, 1, 0, 1, 2);
+
+    // Add sensor boxes to control layout
+    controlsLayout->addWidget(sensor1Box, 0, 0);
+    controlsLayout->addWidget(sensor2Box, 0, 1);
 
     mainLayout->addLayout(controlsLayout);
 
     // Create and add the "Always on Top" checkbox
     alwaysOnTopCheckbox = new QCheckBox(tr("Always on Top"), this);
     mainLayout->addWidget(alwaysOnTopCheckbox);
-
-    QHBoxLayout *bottomLayout = new QHBoxLayout();
-    bottomLayout->addStretch();
-
-    QLabel *imageLabel = new QLabel(this);
-    QPixmap pixmap(":/images/FundedByEU.png");
-    imageLabel->setPixmap(pixmap.scaled(100, 100, Qt::KeepAspectRatio, Qt::SmoothTransformation));
-    imageLabel->setAlignment(Qt::AlignRight | Qt::AlignBottom);
-
-    bottomLayout->addWidget(imageLabel);
-    mainLayout->addLayout(bottomLayout);
 
     connect(alwaysOnTopCheckbox, &QCheckBox::checkStateChanged, this, [this](int state) {
         Qt::WindowFlags flags = windowFlags();
@@ -744,28 +809,31 @@ void MainWindow::parseData(const QString &data) {
         }
         int newTime = match.captured(2).toInt();
 
-        // Ignore invalid data points
+        // Ignoruj nieprawidłowe punkty danych
         if (newDistance == 0 && distance > 0) {
             continue;
         }
 
-        // Update current values
+        // Aktualizuj bieżące wartości
         distance = newDistance;
         timeInMilliseconds = newTime;
 
-        // Calculate time components
+        // Oblicz komponenty czasu
         minutes = timeInMilliseconds / 60000;
         seconds = (timeInMilliseconds % 60000) / 1000;
         milliseconds = timeInMilliseconds % 1000;
 
-        // Store the data point
+        // Zapisz punkt danych
         dataPoints.append({distance, timeInMilliseconds});
 
-        // Update UI
+        // Aktualizuj UI - tylko pole odległości
         distanceInput->setText(QString::number(distance));
-        timeInput->setTime(QTime(0, minutes, seconds, milliseconds));
 
-        // Check for drops (only if stoper is enabled)
+        updateGlobalTimeDisplay(timeInMilliseconds);
+
+        // USUNIĘTO: timeInput->setTime(QTime(0, minutes, seconds, milliseconds));
+
+        // Sprawdzanie kropli (tylko jeśli stoper jest włączony)
         if (stoper1Enabled) {
             checkForDrop1(distance);
         }
@@ -804,6 +872,8 @@ void MainWindow::parseData2(const QString &data) {
 
         // Update UI
         distanceInput2->setText(QString::number(distance2));
+
+        updateGlobalTimeDisplay(timeInMilliseconds2);
 
         // Check for drops (only if stoper is enabled)
         if (stoper2Enabled) {
@@ -860,4 +930,39 @@ void MainWindow::showAboutUsDialog() {
     auto *dialog = new AboutUsDialog(this);
     dialog->setAttribute(Qt::WA_DeleteOnClose);
     dialog->show();
+}
+
+void MainWindow::logDropEvent(int sensorId, int previousDistance, int currentDistance, int difference) {
+    QTextEdit *display = (sensorId == 1) ? dataDisplay : dataDisplay2;
+    QDateTime currentTime = QDateTime::currentDateTime();
+
+    // Zapisz informację o wykryciu kropli
+    display->append(tr("[%1] Wykryto kroplę (sensor %2): Poprzednia odległość: %3, Aktualna: %4, Różnica: %5")
+                   .arg(currentTime.toString("hh:mm:ss.zzz"))
+                   .arg(sensorId)
+                   .arg(previousDistance)
+                   .arg(currentDistance)
+                   .arg(difference));
+
+    // Przewiń na dół, aby pokazać najnowszy wpis
+    QScrollBar *scrollBar = display->verticalScrollBar();
+    scrollBar->setValue(scrollBar->maximum());
+
+    qDebug() << "Wykryto kroplę na sensorze" << sensorId
+             << "- Poprzednia:" << previousDistance
+             << "Aktualna:" << currentDistance
+             << "Różnica:" << difference;
+}
+
+void MainWindow::updateGlobalTimeDisplay(int time) {
+    // Przetwarzanie czasu do formatu mm:ss.ms
+    int mins = time / 60000;
+    int secs = (time % 60000) / 1000;
+    int ms = time % 1000;
+
+    // Aktualizacja etykiety
+    globalTimeLabel->setText(QString("%1:%2.%3")
+        .arg(mins, 2, 10, QChar('0'))
+        .arg(secs, 2, 10, QChar('0'))
+        .arg(ms, 3, 10, QChar('0')));
 }

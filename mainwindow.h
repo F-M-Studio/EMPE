@@ -74,6 +74,9 @@ private slots:
     void saveStoperLogs();
 
 private:
+    QLabel *globalTimeLabel;
+    void updateGlobalTimeDisplay(int time);
+
     // Add these to mainwindow.h under private:
     QPushButton *startStopStoperBtn;
     QTimer *stoperTimer;
@@ -215,8 +218,7 @@ private:
     void createStoperControls();
     void checkForDrop1(int currentDistance);
     void checkForDrop2(int currentDistance);
-    void logDropEvent(int sensorNumber, int previousValue, int currentValue, int dropAmount);
-    void updateStoperDisplay();
+    void logDropEvent(int sensorId, int previousDistance, int currentDistance, int difference);    void updateStoperDisplay();
 };
 
 #endif // MAINWINDOW_H
