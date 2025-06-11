@@ -1,12 +1,6 @@
 #ifndef PORTSETTINGS_H
 #define PORTSETTINGS_H
 
-#include <QDialog>
-#include <QComboBox>
-#include <QPushButton>
-#include <QGridLayout>
-#include <QLabel>
-#include <QTabWidget>
 #include <QtWidgets>
 
 class PortSettings : public QDialog {

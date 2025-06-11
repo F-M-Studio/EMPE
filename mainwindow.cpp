@@ -16,9 +16,6 @@
 #include <QTextStream>
 #include <QDir>
 #include <QFile>
-#include <QLineSeries>
-#include <QMenu>
-#include <QAction>
 #include <QApplication>
 #include <QPixmap>
 #include <QGroupBox>
@@ -110,13 +107,13 @@ MainWindow::~MainWindow() {
 
 void MainWindow::createStoperControls() {
     // Create stoper group box
-    stoperGroupBox = new QGroupBox(tr("Counting System"), this);
+    stoperGroupBox = new QGroupBox(this);
     QGridLayout *stoperLayout = new QGridLayout(stoperGroupBox);
 
     // Sensitivity slider
     QLabel *sensLabel = new QLabel(tr("Drop Sensitivity (mm):"), this);
     sensitivitySlider = new QSlider(Qt::Horizontal, this);
-    sensitivitySlider->setRange(5, 100); // Sensitivity range from 5mm to 100mm
+    sensitivitySlider->setRange(5, 100);
     sensitivitySlider->setValue(dropSensitivity);
     sensitivitySlider->setTickPosition(QSlider::TicksBelow);
     sensitivitySlider->setTickInterval(5);
@@ -204,10 +201,6 @@ void MainWindow::createStoperControls() {
     });
 }
 
-void MainWindow::onSensitivityChanged(int value) {
-    dropSensitivity = value;
-    sensitivityLabel->setText(QString::number(value));
-}
 void MainWindow::handleStoperStartStop() {
     if (!stoperRunning) {
         stoperRunning = true;
@@ -659,7 +652,10 @@ void MainWindow::resetStopwatch2() {
     stopwatchLabel2->setText(tr("Stoper: 00:00.000"));
 }
 
-
+void MainWindow::onSensitivityChanged(int value) {
+    dropSensitivity = value;
+    sensitivityLabel->setText(QString::number(value));
+}
 
 void MainWindow::startReading() {
     resetStopwatch1();

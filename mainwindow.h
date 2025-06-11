@@ -3,18 +3,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QMainWindow>
-#include <QMenuBar>
 #include <QMenu>
 #include <QAction>
-#include <QVBoxLayout>
-#include <QPushButton>
-#include <QSlider>
-#include <QLabel>
-#include <QLineEdit>
-#include <QTimeEdit>
-#include <QTextEdit>
-#include <QKeyEvent>
 #include <QSerialPort>
 #include <QtWidgets>
 #include <QDateTime>
@@ -89,7 +79,7 @@ private:
     // Add these member variables in mainwindow.h under private:
     QDateTime lastDropTime1;
     QDateTime lastDropTime2;
-    const int DROP_COOLDOWN_MS = 400; // 400ms cooldown between drops
+    const int DROP_COOLDOWN_MS = 800; // 800ms cooldown between drops
     QWidget *centralWidget;
     QVBoxLayout *mainLayout;
     QComboBox *portBox{};
@@ -203,7 +193,7 @@ private:
     QCheckBox *enableStoper2CheckBox;
 
     // Stoper data
-    int dropSensitivity = 20; // Default sensitivity threshold
+    int dropSensitivity = 50; // Default sensitivity threshold
     int dropCount1 = 0;
     int dropCount2 = 0;
     int previousDistance1 = 0;
