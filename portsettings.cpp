@@ -1,3 +1,31 @@
+/*
+* Nazwa Projektu: EMPE
+ * Plik: portsettings.cpp
+ *
+ * Krótki opis pliku: Implementacja klasy ustawień portów szeregowych umożliwiającej wykrywanie i konfigurację połączeń.
+ *
+ * Autorzy:
+ * Mateusz Korniak <mkorniak04@gmail.com>
+ * Mateusz Machowski <machowskimateusz51@gmail.com>
+ * Filip Leśnik <filip.lesnik170@gmail.com>
+ *
+ * Data Utworzenia: 4 Marca 2025
+ * Ostatnia Modyfikacja: 18 Czerwaca 2025
+ *
+ * Ten program jest wolnym oprogramowaniem; możesz go rozprowadzać i/lub
+ * modyfikować na warunkach Powszechnej Licencji Publicznej GNU,
+ * opublikowanej przez Free Software Foundation, w wersji 3 tej Licencji
+ * lub (według twojego wyboru) dowolnej późniejszej wersji.
+ *
+ * Ten program jest rozpowszechniany w nadziei, że będzie użyteczny, ale
+ * BEZ ŻADNEJ GWARANCJI; nawet bez domyślnej gwarancji PRZYDATNOŚCI
+ * HANDLOWEJ lub PRZYDATNOŚCI DO OKREŚLONEGO CELU. Zobacz Powszechną
+ * Licencję Publiczną GNU, aby uzyskać więcej szczegółów.
+ *
+ * Powinieneś otrzymać kopię Powszechnej Licencji Publicznej GNU wraz z
+ * tym programem. Jeśli nie, zobacz <http://www.gnu.org/licenses/>.
+*/
+
 #include "portsettings.h"
 #include <QtSerialPort/QSerialPortInfo>
 #include <QEvent>
@@ -22,11 +50,10 @@ void PortSettings::retranslateUi() {
     okButton->setText(tr("OK"));
     cancelButton->setText(tr("Cancel"));
 
-    // Update tab names
     tabWidget->setTabText(0, tr("Port 1"));
     tabWidget->setTabText(1, tr("Port 2"));
 
-    // Update combo boxes that have translatable items
+
     const int parityIndex1 = parityBox1->currentIndex();
     const int parityIndex2 = parityBox2->currentIndex();
     parityBox1->clear();
@@ -51,10 +78,10 @@ void PortSettings::setupUI() {
 
     auto *mainLayout = new QVBoxLayout(this);
 
-    // Create tab widget
+
     tabWidget = new QTabWidget(this);
 
-    // Create port tabs
+
     QWidget *port1Tab = createPortTab(tr("Port 1"), portBox1, baudRateBox1, dataBitsBox1,
                                       stopBitsBox1, parityBox1, flowControlBox1);
     QWidget *port2Tab = createPortTab(tr("Port 2"), portBox2, baudRateBox2, dataBitsBox2,
@@ -65,12 +92,11 @@ void PortSettings::setupUI() {
 
     mainLayout->addWidget(tabWidget);
 
-    // Refresh Button
     refreshButton = new QPushButton(this);
     mainLayout->addWidget(refreshButton);
     connect(refreshButton, &QPushButton::clicked, this, &PortSettings::refreshPorts);
 
-    // Add port information text box
+
     QLabel *infoLabel = new QLabel(tr("<b>Connected Serial Ports Information:</b>"));
     mainLayout->addWidget(infoLabel);
 
@@ -79,7 +105,7 @@ void PortSettings::setupUI() {
     portInfoText->setMinimumHeight(150);
     mainLayout->addWidget(portInfoText);
 
-    // Buttons
+
     okButton = new QPushButton(this);
     cancelButton = new QPushButton(this);
 
@@ -88,7 +114,7 @@ void PortSettings::setupUI() {
     buttonLayout->addWidget(cancelButton);
     mainLayout->addLayout(buttonLayout);
 
-    // Connect buttons
+
     connect(okButton, &QPushButton::clicked, this, &QDialog::accept);
     connect(cancelButton, &QPushButton::clicked, this, &QDialog::reject);
 
@@ -103,43 +129,42 @@ QWidget *PortSettings::createPortTab(const QString &tabName, QComboBox * &portBo
     QWidget *tab = new QWidget();
     auto *layout = new QGridLayout(tab);
 
-    // Settings label
+
     layout->addWidget(new QLabel(QString("<b>%1 %2</b>").arg(tabName, tr("Settings"))), 0, 0, 1, 2);
 
-    // Port Selection
+
     layout->addWidget(new QLabel(tr("Port")), 1, 0);
     portBox = new QComboBox();
     layout->addWidget(portBox, 1, 1);
 
-    // Baud Rate
+
     layout->addWidget(new QLabel(tr("Baud rate")), 2, 0);
     baudRateBox = new QComboBox();
     baudRateBox->addItems({tr("9600"), tr("19200"), tr("38400"), tr("57600"), tr("115200")});
     baudRateBox->setCurrentText(tr("115200"));
     layout->addWidget(baudRateBox, 2, 1);
 
-    // Data Bits
+
     layout->addWidget(new QLabel(tr("Data bits")), 3, 0);
     dataBitsBox = new QComboBox();
     dataBitsBox->addItems({tr("6"), tr("7"), tr("8")});
     dataBitsBox->setCurrentText(tr("8"));
     layout->addWidget(dataBitsBox, 3, 1);
 
-    // Stop Bits
+
     layout->addWidget(new QLabel(tr("Stop bits")), 4, 0);
     stopBitsBox = new QComboBox();
     stopBitsBox->addItems({tr("1"), tr("1.5"), tr("2")});
     stopBitsBox->setCurrentText(tr("1"));
     layout->addWidget(stopBitsBox, 4, 1);
 
-    // Parity
+
     layout->addWidget(new QLabel(tr("Parity")), 5, 0);
     parityBox = new QComboBox();
     parityBox->addItems({tr("None"), tr("Even"), tr("Odd"), tr("Mark"), tr("Space")});
     parityBox->setCurrentText(tr("None"));
     layout->addWidget(parityBox, 5, 1);
 
-    // Flow Control
     layout->addWidget(new QLabel(tr("Flow control")), 6, 0);
     flowControlBox = new QComboBox();
     flowControlBox->addItems({tr("None"), tr("Software"), tr("Hardware")});
@@ -155,30 +180,28 @@ void PortSettings::refreshPorts() {
         portList << info.portName();
     }
 
-    // Save current selections
+
     QString currentPort1 = portBox1->currentText();
     QString currentPort2 = portBox2->currentText();
 
-    // Update port lists
+
     portBox1->clear();
     portBox2->clear();
 
     portBox1->addItems(portList);
     portBox2->addItems(portList);
 
-    // Restore selections if possible
+
     int idx1 = portBox1->findText(currentPort1);
     int idx2 = portBox2->findText(currentPort2);
 
     if (idx1 >= 0) portBox1->setCurrentIndex(idx1);
     if (idx2 >= 0) portBox2->setCurrentIndex(idx2);
 
-    // Select different ports if both are set to the same one
     if (portBox1->count() > 1 && portBox1->currentText() == portBox2->currentText()) {
         portBox2->setCurrentIndex((portBox1->currentIndex() + 1) % portBox2->count());
     }
 
-    // Update port information text box
     updatePortInfo();
 }
 
@@ -241,7 +264,7 @@ void PortSettings::updatePortInfo() {
 
     QString info;
     for (const QSerialPortInfo &port: ports) {
-        // Check if this is likely a Bluetooth device
+
         bool isBluetooth = port.description().contains("Bluetooth", Qt::CaseInsensitive) ||
                            port.manufacturer().contains("Bluetooth", Qt::CaseInsensitive) ||
                            port.portName().contains("BT", Qt::CaseInsensitive) ||
@@ -249,7 +272,6 @@ void PortSettings::updatePortInfo() {
                            port.manufacturer().contains("empesensor", Qt::CaseInsensitive) ||
                            port.portName().contains("empesensor", Qt::CaseInsensitive);
 
-        // Add Bluetooth indicator if applicable
         if (isBluetooth) {
             info += tr("<b style='color:blue;'>Bluetooth Device</b><br>");
         }
@@ -259,6 +281,7 @@ void PortSettings::updatePortInfo() {
         info += tr("<b>Manufacturer:</b> %1<br>").arg(port.manufacturer().isEmpty() ? tr("N/A") : port.manufacturer());
         info += tr("<b>Serial Number:</b> %1<br>").arg(port.serialNumber().isEmpty() ? tr("N/A") : port.serialNumber());
         info += tr("<b>Location:</b> %1<br>").arg(port.systemLocation());
+        //jakaś stara implementacja
         /*
         info += tr("<b>Vendor ID:</b> %1<br>").arg(port.hasVendorIdentifier()
                                                        ? QString("0x%1").arg(port.vendorIdentifier(), 4, 16, QChar('0'))

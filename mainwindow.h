@@ -1,4 +1,30 @@
-// mainwindow.h
+/*
+* Nazwa Projektu: EMPE
+ * Plik: mainwindow.h
+ *
+ * Krótki opis pliku: inicjalizacja i elementy logiki głównego okna aplikacji (nagłówki)
+ *
+ * Autorzy:
+ * Mateusz Korniak <mkorniak04@gmail.com>
+ * Mateusz Machowski <machowskimateusz51@gmail.com>
+ * Filip Leśnik <filip.lesnik170@gmail.com>
+ *
+ * Data Utworzenia: 4 Marca 2025
+ * Ostatnia Modyfikacja: 18 Czerwaca 2025
+ *
+ * Ten program jest wolnym oprogramowaniem; możesz go rozprowadzać i/lub
+ * modyfikować na warunkach Powszechnej Licencji Publicznej GNU,
+ * opublikowanej przez Free Software Foundation, w wersji 3 tej Licencji
+ * lub (według twojego wyboru) dowolnej późniejszej wersji.
+ *
+ * Ten program jest rozpowszechniany w nadziei, że będzie użyteczny, ale
+ * BEZ ŻADNEJ GWARANCJI; nawet bez domyślnej gwarancji PRZYDATNOŚCI
+ * HANDLOWEJ lub PRZYDATNOŚCI DO OKREŚLONEGO CELU. Zobacz Powszechną
+ * Licencję Publiczną GNU, aby uzyskać więcej szczegółów.
+ *
+ * Powinieneś otrzymać kopię Powszechnej Licencji Publicznej GNU wraz z
+ * tym programem. Jeśli nie, zobacz <http://www.gnu.org/licenses/>.
+*/
 
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
@@ -11,7 +37,6 @@
 
 #include "portsettings.h"
 
-// Replace include with forward declaration
 class PortSettings;
 class AppMenu;
 class MovingAverageFilterParallel;
@@ -43,22 +68,19 @@ public:
     QVector<DataPoint> dataPoints;
     QVector<DataPoint> dataPoints2;
 
-    // Stoper drop detection structure
     struct DropEvent {
         QDateTime timestamp;
         int previousValue;
         int currentValue;
         int dropAmount;
-        int sensorNumber; // 1 or 2
+        int sensorNumber;
     };
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;
 
 private slots:
-    // Existing slots
     void showAboutUsDialog();
-    // New stoper slots
     void onSensitivityChanged(int value);
     void resetStoperCounters();
     void saveStoperLogs();
@@ -67,19 +89,16 @@ private:
     QLabel *globalTimeLabel;
     void updateGlobalTimeDisplay(int time);
 
-    // Add these to mainwindow.h under private:
     QPushButton *startStopStoperBtn;
     QTimer *stoperTimer;
     int stoperTime;
     bool stoperRunning;
 
-    // Add this new slot under private slots:
     void handleStoperStartStop();
     void updateStoperTime();
-    // Add these member variables in mainwindow.h under private:
     QDateTime lastDropTime1;
     QDateTime lastDropTime2;
-    const int DROP_COOLDOWN_MS = 800; // 800ms cooldown between drops
+    const int DROP_COOLDOWN_MS = 800;
     QWidget *centralWidget;
     QVBoxLayout *mainLayout;
     QComboBox *portBox{};
@@ -87,7 +106,6 @@ private:
 
     QString dataBuffer1;
     QString dataBuffer2;
-    // Add these variables for smoothing
     std::vector<double> distanceBuffer;
     MovingAverageFilterParallel *filter = nullptr;
 
@@ -117,7 +135,6 @@ private:
     void retranslateUi();
 
 
-    // Menu Bar
     QMenuBar *menuBar{};
     QMenu *mainMenu{};
     PortSettings *portSettings;
@@ -126,7 +143,6 @@ private:
     QAction *startMeasurementAction{};
     QAction *saveDataAction{};
 
-    // Buttons
     QPushButton *portSettingsBtn{};
     QPushButton *showGraphBtn{};
     QPushButton *startStopBtn{};
@@ -135,7 +151,6 @@ private:
     QPushButton *clearGraphBtn{};
     QPushButton *showRawDataBtn{};
 
-    // Sliders & Controls
     QSlider *yAxisSlider{};
     QLineEdit *maxYInput{};
     QLineEdit *distanceInput{};
@@ -144,7 +159,6 @@ private:
     QTimeEdit *timeInput2{};
     QLabel *yAxisValueLabel{};
 
-    // Serial port
     QSerialPort *serialPort{};
     QSerialPort *serialPort2{};
 
@@ -155,11 +169,11 @@ private:
     int lastValidDistance = 0;
     QLabel *creatorsNoteLabel{};
 
-    // Existing stopwatch constants
+
     const int SIGNIFICANT_CHANGE_THRESHOLD = 30;
     const int SMALL_CHANGE_THRESHOLD = 10;
 
-    // Existing stopwatch variables
+
     QTimer *stopwatchTimer1;
     QTimer *stopwatchTimer2;
     int stopwatchTime1 = 0;
@@ -171,7 +185,7 @@ private:
     int lastDistance1 = 0;
     int lastDistance2 = 0;
 
-    // Existing stopwatch methods
+
     void updateStopwatch1();
     void updateStopwatch2();
     void resetStopwatch1();
@@ -180,8 +194,7 @@ private:
     QCheckBox *stopwatchCheck1;
     QCheckBox *stopwatchCheck2;
 
-    // NEW STOPER FEATURE VARIABLES
-    // Stoper controls
+
     QGroupBox *stoperGroupBox;
     QSlider *sensitivitySlider;
     QLabel *sensitivityLabel;
@@ -192,8 +205,8 @@ private:
     QCheckBox *enableStoper1CheckBox;
     QCheckBox *enableStoper2CheckBox;
 
-    // Stoper data
-    int dropSensitivity = 50; // Default sensitivity threshold
+
+    int dropSensitivity = 50;
     int dropCount1 = 0;
     int dropCount2 = 0;
     int previousDistance1 = 0;
@@ -201,14 +214,14 @@ private:
     bool stoper1Enabled = true;
     bool stoper2Enabled = true;
 
-    // Drop event logging
+
     QVector<DropEvent> dropEvents;
 
-    // Stoper methods
+
     void createStoperControls();
     void checkForDrop1(int currentDistance);
     void checkForDrop2(int currentDistance);
     void logDropEvent(int sensorId, int previousDistance, int currentDistance, int difference);    void updateStoperDisplay();
 };
 
-#endif // MAINWINDOW_H
+#endif
