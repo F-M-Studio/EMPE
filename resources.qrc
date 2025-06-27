@@ -35,4 +35,11 @@
         <file>fonts/AdwaitaSans-Regular.ttf</file>
         <file>images/FundedByEU.png</file>
     </qresource>
+    <qresource prefix="/translations">
+        <file>translations/lidar_en.qm</file>
+        <file>translations/lidar_pl.qm</file>
+    </qresource>
+    <qresource prefix="/images">
+        <file>images/FundedByEU.png</file>
+    </qresource>
 </RCC>

@@ -31,7 +31,8 @@
 #include "appmenu.h"
 #include "graphwindow.h"
 #include "aboutusdialog.h"
-
+#include <QCoreApplication>
+#include <QEvent>
 #include <QDebug>
 #include <QTimer>
 #include <QSerialPort>
@@ -114,6 +115,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), isReading(false),
 
     creatorsNoteLabel = new QLabel(tr("Program powstał w ramach projektu Embodying Math&Physics Education 2023-1-PL01-KA210-SCH-000165829"),
                                   this);
+    connect(appMenu, &AppMenu::languageChanged, this, &MainWindow::loadLanguage);
+
+    // Wczytaj domyślny język przy starcie (np. angielski)
+    loadLanguage("pl");
     creatorsNoteLabel->setAlignment(Qt::AlignCenter);
     QFont noteFont = creatorsNoteLabel->font();
     noteFont.setPointSize(noteFont.pointSize() - 1);
@@ -127,6 +132,21 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), isReading(false),
 MainWindow::~MainWindow() {
     if (isReading) {
         stopReading();
+    }
+}
+void MainWindow::loadLanguage(const QString& language) {
+    // 1. Usuń poprzednie tłumaczenie
+    QCoreApplication::removeTranslator(&appTranslator);
+
+    // 2. Wczytaj nowy plik .qm
+    // Zakładamy, że pliki .qm znajdują się w podkatalogu 'translations'
+    // w tym samym folderze co plik wykonywalny.
+    if (appTranslator.load("lidar_" + language, ":/translations")) {
+        // 3. Zainstaluj nowe tłumaczenie
+        QCoreApplication::installTranslator(&appTranslator);
+    } else {
+        // Opcjonalnie: obsługa błędu, gdy plik .qm nie zostanie znaleziony
+        qWarning() << "Could not load translation for" << language;
     }
 }
 

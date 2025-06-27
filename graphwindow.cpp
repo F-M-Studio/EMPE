@@ -463,6 +463,9 @@ void GraphWindow::keyPressEvent(QKeyEvent *event) {
 }
 
 void GraphWindow::changeEvent(QEvent *event) {
+    if (event->type() == QEvent::LanguageChange) {
+        retranslateUi(); // <-- DODAJ TĘ LINIĘ
+    }
     if (event->type() == QEvent::PaletteChange) {
         updateChartTheme();
     }

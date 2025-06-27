@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
         qWarning() << "Failed to load translation for" << lang << "from" << tsFile;
         tsFile = translationPath + "/lidar_pl";
         if (!translator.load(tsFile)) {
-            qWarning() << "Failed to load fallback English translation from" << tsFile;
+            qWarning() << "Failed to load fallback translation from" << tsFile;
         }
     }
     a.installTranslator(&translator);
