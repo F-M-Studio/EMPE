@@ -29,18 +29,19 @@
 
 
 #include "aboutusdialog.h"
+#include <QEvent>
 #include <QFont>
 #include <QLabel>
 #include <QPixmap>
 #include <QHBoxLayout>
 
 AboutUsDialog::AboutUsDialog(QWidget *parent) : QDialog(parent) {
-    setWindowTitle(tr("O nas"));
+    setWindowTitle(tr("About Us"));
     setMinimumWidth(400);
 
     auto *layout = new QVBoxLayout(this);
 
-    titleLabel = new QLabel(tr("Program powstał w ramach projektu:"), this);
+    titleLabel = new QLabel(tr("This program was created as part of the project:"), this);
     QFont titleFont = titleLabel->font();
     titleFont.setBold(true);
     titleFont.setPointSize(titleFont.pointSize() + 1);
@@ -51,7 +52,7 @@ AboutUsDialog::AboutUsDialog(QWidget *parent) : QDialog(parent) {
     authorsLabel->setAlignment(Qt::AlignCenter);
     authorsLabel->setWordWrap(true);
 
-    QLabel *authorsHeaderLabel = new QLabel(tr("Autorzy:"), this);
+    QLabel *authorsHeaderLabel = new QLabel(tr("The program was written as part of the Procedural Programming course under the supervision of Dr. Hab. Roman Rosiek and was developed by:"), this);
     QFont authorsFont = authorsHeaderLabel->font();
     authorsFont.setBold(true);
     authorsHeaderLabel->setFont(authorsFont);

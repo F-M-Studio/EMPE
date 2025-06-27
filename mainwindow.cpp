@@ -112,7 +112,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), isReading(false),
     separator->setFrameShadow(QFrame::Sunken);
     mainLayout->addWidget(separator);
 
-    creatorsNoteLabel = new QLabel(tr("Program powstał w ramach projektu Embodying Math&Physics Education 2023-1-PL01-KA210-SCH-000165829"),
+    creatorsNoteLabel = new QLabel(tr("This program was created as part of the Embodying Math&Physics Education project 2023-1-PL01-KA210-SCH-000165829"),
                                   this);
     creatorsNoteLabel->setAlignment(Qt::AlignCenter);
     QFont noteFont = creatorsNoteLabel->font();
@@ -353,16 +353,16 @@ void MainWindow::checkForDrop1(int currentDistance) {
             stopwatchTimer1->start(10);
 
             QDateTime currentTime = QDateTime::currentDateTime();
-            dataDisplay->append(tr("[%1] Automatyczne uruchomienie stopera 1 po wykryciu kropli")
+            dataDisplay->append(tr("[%1] Automatic start of stopwatch 1 after drop detection")
                 .arg(currentTime.toString("hh:mm:ss.zzz")));
-            qDebug() << "Automatycznie uruchomiono stoper 1 po wykryciu kropli";
+            qDebug() << "Automatically started stopwatch 1 after drop detection";
         } else {
 
             stopwatchRunning1 = false;
             stopwatchTimer1->stop();
 
             QDateTime currentTime = QDateTime::currentDateTime();
-            dataDisplay->append(tr("[%1] Automatyczne zatrzymanie stopera 1 po wykryciu kropli")
+            dataDisplay->append(tr("[%1] Automatic stop of stopwatch 1 after drop detection")
                 .arg(currentTime.toString("hh:mm:ss.zzz")));
             qDebug() << "Automatycznie zatrzymano stoper 1 po wykryciu kropli";
         }
@@ -399,18 +399,18 @@ void MainWindow::checkForDrop2(int currentDistance) {
             stopwatchTimer2->start(10);
 
             QDateTime currentTime = QDateTime::currentDateTime();
-            dataDisplay2->append(tr("[%1] Automatyczne uruchomienie stopera 2 po wykryciu kropli")
+            dataDisplay2->append(tr("[%1] Automatic start of stopwatch 2 after drop detection")
                 .arg(currentTime.toString("hh:mm:ss.zzz")));
-            qDebug() << "Automatycznie uruchomiono stoper 2 po wykryciu kropli";
+            qDebug() << "Automatically started stopwatch 2 after drop detection";
         } else {
 
             stopwatchRunning2 = false;
             stopwatchTimer2->stop();
 
             QDateTime currentTime = QDateTime::currentDateTime();
-            dataDisplay2->append(tr("[%1] Automatyczne zatrzymanie stopera 2 po wykryciu kropli")
+            dataDisplay2->append(tr("[%1] Automatic stop of stopwatch 2 after drop detection")
                 .arg(currentTime.toString("hh:mm:ss.zzz")));
-            qDebug() << "Automatycznie zatrzymano stoper 2 po wykryciu kropli";
+            qDebug() << "Automatically stopped stopwatch 2 after drop detection";
         }
 
 
@@ -519,7 +519,7 @@ void MainWindow::createControls() {
     sensor2Layout->addWidget(distanceLabel2);
     sensor2Layout->addWidget(distanceInput2);
 
-    QGroupBox *timeBox = new QGroupBox(tr("Globalny czas"));
+    QGroupBox *timeBox = new QGroupBox(tr("Global Time"));
     QVBoxLayout *timeLayout = new QVBoxLayout(timeBox);
 
     globalTimeLabel = new QLabel("00:00.000");
@@ -925,7 +925,7 @@ void MainWindow::logDropEvent(int sensorId, int previousDistance, int currentDis
     QDateTime currentTime = QDateTime::currentDateTime();
 
 
-    display->append(tr("[%1] Wykryto kroplę (sensor %2): Poprzednia odległość: %3, Aktualna: %4, Różnica: %5")
+    display->append(tr("[%1] Drop detected (sensor %2): Previous distance: %3, Current: %4, Difference: %5")
                    .arg(currentTime.toString("hh:mm:ss.zzz"))
                    .arg(sensorId)
                    .arg(previousDistance)
@@ -936,10 +936,10 @@ void MainWindow::logDropEvent(int sensorId, int previousDistance, int currentDis
     QScrollBar *scrollBar = display->verticalScrollBar();
     scrollBar->setValue(scrollBar->maximum());
 
-    qDebug() << "Wykryto kroplę na sensorze" << sensorId
-             << "- Poprzednia:" << previousDistance
-             << "Aktualna:" << currentDistance
-             << "Różnica:" << difference;
+    qDebug() << "Drop detected on sensor" << sensorId
+             << "- Previous:" << previousDistance
+             << "Current:" << currentDistance
+             << "Difference:" << difference;
 }
 
 void MainWindow::updateGlobalTimeDisplay(int time) {

@@ -48,7 +48,7 @@ AppMenu::AppMenu(QMainWindow *window, MainWindow *mainWindow) : QObject(window),
     graphAction = new QAction(tr("Graph"), window);
     startMeasurementAction = new QAction(tr("Start measurement"), window);
     saveDataAction = new QAction(tr("Save data to file"), window);
-    aboutUsAction = new QAction(tr("O nas"), window);
+    aboutUsAction = new QAction(tr("About us"), window);
 
 
     mainMenu->addAction(portSettingsAction);
