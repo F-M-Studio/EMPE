@@ -213,7 +213,7 @@
         </message>
         <message>
             <source>Drop counters, logs, and stoper have been reset.</source>
-            <translation>Liczniki kropel, dzienniki i stoper zostały zresetowane.</translation>
+            <translation>Liczniki spadków, dzienniki i stoper zostały zresetowane.</translation>
         </message>
         <message>
             <source>No Data</source>
