@@ -109,6 +109,6 @@ void AppMenu::setLanguage(const QString &language) const {
     }
 }
 
-void AppMenu::updateStartStopAction(const bool isReading) const {
-    startMeasurementAction->setText(isReading ? tr("Zatrzymaj pomiar") : tr("Rozpocznij pomiar"));
+void AppMenu::updateStartStopAction(bool isReading) const {
+    startMeasurementAction->setText(isReading ? tr("Stop measurement") : tr("Start measurement"));
 }
