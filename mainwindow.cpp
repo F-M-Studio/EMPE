@@ -10,7 +10,7 @@
  * Filip Leśnik <filip.lesnik170@gmail.com>
  *
  * Data Utworzenia: 4 Marca 2025
- * Ostatnia Modyfikacja: 18 Czerwaca 2025
+ * Ostatnia Modyfikacja: 18 Czerwca 2025
  *
  * Ten program jest wolnym oprogramowaniem; możesz go rozprowadzać i/lub
  * modyfikować na warunkach Powszechnej Licencji Publicznej GNU,
@@ -1076,39 +1076,56 @@ void MainWindow::changeLanguage(const QString &language) {
     // Usuwamy stary translator
     qApp->removeTranslator(&translator);
 
-    // Sprawdzamy różne lokalizacje plików tłumaczeń
-    QString appTranslationPath = QCoreApplication::applicationDirPath() + "/translations";
-    QString projTranslationPath = QDir::currentPath() + "/translations";
-
+    // Utworzenie nowego translatora jako właściwość instancji MainWindow
+    // Tworzymy w tej funkcji, a nie używamy globalnego, aby uniknąć konfliktów
     bool loaded = false;
-    // Próbujemy załadować plik .qm (nie .ts)
-    if (translator.load("lidar_" + language, appTranslationPath)) {
-        loaded = true;
-        qDebug() << "Załadowano tłumaczenie z:" << appTranslationPath;
-    } else if (translator.load("lidar_" + language, projTranslationPath)) {
-        loaded = true;
-        qDebug() << "Załadowano tłumaczenie z:" << projTranslationPath;
-    } else if (translator.load(":/translations/lidar_" + language)) {
+
+    // Najpierw spróbuj załadować z zasobów (najszybciej)
+    qDebug() << "Próbuję załadować tłumaczenie z zasobów: :/translations/lidar_" + language;
+    if (translator.load(":/translations/lidar_" + language)) {
         loaded = true;
         qDebug() << "Załadowano tłumaczenie z zasobów";
-    } else {
-        qWarning() << "Nie udało się załadować tłumaczenia dla" << language;
+    }
+    else {
+        // Sprawdzamy różne lokalizacje plików tłumaczeń
+        QString appTranslationPath = QCoreApplication::applicationDirPath() + "/translations";
+        QString projTranslationPath = QDir::currentPath() + "/translations";
 
-        // Próbujemy załadować domyślne tłumaczenie polskie
-        if (language != "pl" && (
-            translator.load("lidar_pl", appTranslationPath) ||
-            translator.load("lidar_pl", projTranslationPath) ||
-            translator.load(":/translations/lidar_pl"))) {
+        qDebug() << "Próbuję załadować tłumaczenie z: " << appTranslationPath;
+        if (translator.load("lidar_" + language, appTranslationPath)) {
             loaded = true;
-            qDebug() << "Załadowano domyślne tłumaczenie polskie";
-        } else {
-            qWarning() << "Nie udało się załadować domyślnego tłumaczenia polskiego";
+            qDebug() << "Załadowano tłumaczenie z:" << appTranslationPath;
+        }
+        else {
+            qDebug() << "Próbuję załadować tłumaczenie z: " << projTranslationPath;
+            if (translator.load("lidar_" + language, projTranslationPath)) {
+                loaded = true;
+                qDebug() << "Załadowano tłumaczenie z:" << projTranslationPath;
+            }
+            else {
+                qWarning() << "Nie udało się załadować tłumaczenia dla" << language;
+
+                // Próbujemy załadować domyślne tłumaczenie polskie jeśli wybrano angielski
+                if (language == "en") {
+                    if (translator.load(":/translations/lidar_en")) {
+                        loaded = true;
+                        qDebug() << "Załadowano domyślne tłumaczenie angielskie z zasobów";
+                    }
+                }
+                // Inaczej próbujemy polski
+                else {
+                    if (translator.load(":/translations/lidar_pl")) {
+                        loaded = true;
+                        qDebug() << "Załadowano domyślne tłumaczenie polskie z zasobów";
+                    }
+                }
+            }
         }
     }
 
     if (loaded) {
+        qDebug() << "Instaluję translator dla języka:" << language;
         qApp->installTranslator(&translator);
-        qDebug() << "Zainstalowano tłumacza dla języka:" << language;
     }
 
     // Aktualizacja interfejsu
@@ -1117,6 +1134,7 @@ void MainWindow::changeLanguage(const QString &language) {
     if (appMenu) {
         appMenu->retranslateUi();
         appMenu->setLanguage(language);
+        appMenu->updateStartStopAction(isReading);
     }
 
     // Znajdź wszystkie otwarte okna GraphWindow i zaktualizuj ich interfejs
