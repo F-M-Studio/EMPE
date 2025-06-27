@@ -78,8 +78,6 @@ public:
         int dropAmount;
         int sensorNumber;
     };
-public slots:
-    void loadLanguage(const QString &language);
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;
@@ -94,7 +92,6 @@ private slots:
     void changeLanguage(const QString &language);
 
 private:
-    QTranslator appTranslator;
     QLabel *globalTimeLabel;
     void updateGlobalTimeDisplay(int time);
 
