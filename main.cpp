@@ -25,9 +25,6 @@
  * Powinieneś otrzymać kopię Powszechnej Licencji Publicznej GNU wraz z
  * tym programem. Jeśli nie, zobacz <http://www.gnu.org/licenses/>.
 */
-#ifdef Q_OS_WIN
-    #include <windows.h>
-#endif
 #include <QApplication>
 #include <QTranslator>
 #include <QLocale>
