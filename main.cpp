@@ -39,6 +39,11 @@
 int main(int argc, char *argv[]) {
     QApplication a(argc, argv);
 
+    // Dodaję identyfikację wersji Qt
+    qDebug() << "Qt version:" << QT_VERSION_STR;
+    qDebug() << "---------------";
+    qDebug() << "Starting translation system";
+
     QSettings settings;
     QString lang = settings.value("language", "pl").toString(); // Domyślny język to polski
     qDebug() << "Wybrany język z ustawień:" << lang;
@@ -48,49 +53,125 @@ int main(int argc, char *argv[]) {
 
     // Sprawdzamy najpierw w katalogu zasobów (wkompilowane)
     qDebug() << "Próbuję załadować plik z zasobów: :/translations/lidar_" + lang;
-    if (translator.load(":/translations/lidar_" + lang)) {
-        qDebug() << "Załadowano tłumaczenie z zasobów";
-        qDebug() << "Translator jest ważny:" << !translator.isEmpty();
-        a.installTranslator(&translator);
+
+    // Bardziej szczegółowy debug - sprawdźmy czy pliki zasobów są dostępne
+    QDir resourceDir(":/translations");
+    if (resourceDir.exists()) {
+        qDebug() << "Katalog zasobów istnieje. Zawartość:";
+        QStringList files = resourceDir.entryList();
+        for (const QString& file : files) {
+            qDebug() << "   -" << file;
+        }
+    } else {
+        qDebug() << "UWAGA: Katalog zasobów :/translations nie istnieje!";
     }
-    // Następnie sprawdzamy w katalogu aplikacji
-    else {
+
+    bool loaded = false;
+    // Sprawdzamy plik w zasobach
+    if (QFile::exists(":/translations/lidar_" + lang + ".qm")) {
+        qDebug() << "Plik tłumaczeń istnieje w zasobach:" << ":/translations/lidar_" + lang + ".qm";
+        if (translator.load(":/translations/lidar_" + lang)) {
+            loaded = true;
+            qDebug() << "Załadowano tłumaczenie z zasobów";
+            qDebug() << "Translator jest ważny:" << !translator.isEmpty();
+        } else {
+            qDebug() << "Nie udało się załadować mimo że plik istnieje!";
+        }
+    } else {
+        qDebug() << "Plik tłumaczeń NIE istnieje w zasobach:" << ":/translations/lidar_" + lang + ".qm";
+    }
+
+    if (!loaded) {
+        // Następnie sprawdzamy w katalogu aplikacji
         QString appTranslationPath = QCoreApplication::applicationDirPath() + "/translations";
         qDebug() << "Próbuję załadować plik z:" << appTranslationPath << "/lidar_" + lang;
+
+        QDir appDir(appTranslationPath);
+        if (appDir.exists()) {
+            qDebug() << "Katalog aplikacji istnieje. Zawartość:";
+            QStringList files = appDir.entryList();
+            for (const QString& file : files) {
+                qDebug() << "   -" << file;
+            }
+        } else {
+            qDebug() << "UWAGA: Katalog aplikacji" << appTranslationPath << "nie istnieje!";
+        }
+
+        if (QFile::exists(appTranslationPath + "/lidar_" + lang + ".qm")) {
+            qDebug() << "Plik istnieje:" << appTranslationPath + "/lidar_" + lang + ".qm";
+        } else {
+            qDebug() << "Plik NIE istnieje:" << appTranslationPath + "/lidar_" + lang + ".qm";
+        }
+
         if (translator.load("lidar_" + lang, appTranslationPath)) {
+            loaded = true;
             qDebug() << "Załadowano tłumaczenie z:" << appTranslationPath;
             qDebug() << "Translator jest ważny:" << !translator.isEmpty();
-            a.installTranslator(&translator);
         }
         // Na koniec sprawdzamy w katalogu projektu
         else {
             QString projTranslationPath = QDir::currentPath() + "/translations";
             qDebug() << "Próbuję załadować plik z:" << projTranslationPath << "/lidar_" + lang;
+
+            QDir projDir(projTranslationPath);
+            if (projDir.exists()) {
+                qDebug() << "Katalog projektu istnieje. Zawartość:";
+                QStringList files = projDir.entryList();
+                for (const QString& file : files) {
+                    qDebug() << "   -" << file;
+                }
+            } else {
+                qDebug() << "UWAGA: Katalog projektu" << projTranslationPath << "nie istnieje!";
+            }
+
+            if (QFile::exists(projTranslationPath + "/lidar_" + lang + ".qm")) {
+                qDebug() << "Plik istnieje:" << projTranslationPath + "/lidar_" + lang + ".qm";
+            } else {
+                qDebug() << "Plik NIE istnieje:" << projTranslationPath + "/lidar_" + lang + ".qm";
+            }
+
             if (translator.load("lidar_" + lang, projTranslationPath)) {
+                loaded = true;
                 qDebug() << "Załadowano tłumaczenie z:" << projTranslationPath;
                 qDebug() << "Translator jest ważny:" << !translator.isEmpty();
-                a.installTranslator(&translator);
             } else {
                 qWarning() << "Nie udało się załadować pliku tłumaczeń dla języka:" << lang;
-                qDebug() << "Sprawdzane lokalizacje:";
-                qDebug() << "- :/translations/lidar_" + lang;
-                qDebug() << "- " << appTranslationPath << "/lidar_" + lang;
-                qDebug() << "- " << projTranslationPath << "/lidar_" + lang;
+
+                // Próbujemy bezpośrednio załadować plik .qm
+                QString absoluteQmPath = projTranslationPath + "/lidar_" + lang + ".qm";
+                if (QFile::exists(absoluteQmPath)) {
+                    qDebug() << "Próba bezpośredniego załadowania pliku:" << absoluteQmPath;
+                    if (translator.load(absoluteQmPath)) {
+                        loaded = true;
+                        qDebug() << "Załadowano tłumaczenie bezpośrednio z pliku";
+                    } else {
+                        qDebug() << "Nie udało się załadować pliku mimo podania pełnej ścieżki!";
+                    }
+                }
 
                 // Jeśli nie udało się załadować wybranego języka, próbujemy polski jako domyślny
-                if (lang != "pl") {
+                if (!loaded && lang != "pl") {
                     qDebug() << "Próbuję załadować domyślny polski plik tłumaczeń";
                     if (translator.load(":/translations/lidar_pl") ||
                         translator.load("lidar_pl", appTranslationPath) ||
                         translator.load("lidar_pl", projTranslationPath)) {
+                        loaded = true;
                         qDebug() << "Załadowano domyślne polskie tłumaczenie";
                         qDebug() << "Translator jest ważny:" << !translator.isEmpty();
-                        a.installTranslator(&translator);
                     }
                 }
             }
         }
     }
+
+    if (loaded) {
+        qDebug() << "Instaluję tłumacza dla języka:" << lang;
+        a.installTranslator(&translator);
+    } else {
+        qDebug() << "UWAGA: Tłumaczenia NIE zostały załadowane!";
+    }
+
+    qDebug() << "---------------";
 
     QFontDatabase::addApplicationFont(":/fonts/AdwaitaSans-Regular.ttf");
 
