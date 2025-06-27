@@ -700,19 +700,3 @@ void GraphWindow::updateGraph() {
         }
     }
 }
-
-void GraphWindow::retranslateUi() {
-    setWindowTitle(tr("Graph"));
-    clearGraphBtn->setText(tr("Clear Graph"));
-    startStopBtn->setText(mainWindow->Reading ? tr("Stop") : tr("Start"));
-    axisX->setTitleText(tr("Time (min:ms)"));
-    axisY->setTitleText(tr("Distance"));
-    recordingTitleLabel->setText(tr("Recording period [ms]:"));
-    yAxisToggle->setText(tr("Set Y"));
-    yAxisTitleLabel->setText(tr("Y axis range:"));
-    autoRemoveToggle->setText(tr("Auto-scroll X axis"));
-    pointsLimitLabel->setText(tr("Points limit:"));
-    smoothingToggle->setText(tr("Smooth Graph"));
-    smoothingLevelLabel->setText(tr("Smoothing:"));
-    timeAxisToggle->setText(tr("Use Relative Time"));
-}

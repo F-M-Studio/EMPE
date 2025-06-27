@@ -272,12 +272,12 @@
             <translation>Dropy: %1</translation>
         </message>
         <message>
-            <source>START</source>
-            <translation>START</translation>
+            <source>Start</source>
+            <translation>Start</translation>
         </message>
         <message>
-            <source>STOP</source>
-            <translation>STOP</translation>
+            <source>Stop</source>
+            <translation>Stop</translation>
         </message>
         <message>
             <source>PORT settings</source>

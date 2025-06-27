@@ -92,20 +92,6 @@ AppMenu::AppMenu(QMainWindow *window, MainWindow *mainWindow) : QObject(window),
     });
 }
 
-void AppMenu::retranslateUi() const {
-    mainMenu->setTitle(tr("☰ Menu"));
-    portSettingsAction->setText(tr("Port settings"));
-    graphAction->setText(tr("Graph"));
-    startMeasurementAction->setText(tr("Start measurement"));
-    saveDataAction->setText(tr("Save data to file"));
-
-    languageAction->setText(tr("Language"));
-    aboutUsAction->setText(tr("About us"));
-
-    englishAction->setText(tr("English"));
-    polishAction->setText(tr("Polish"));
-}
-
 void AppMenu::setLanguage(const QString &language) const {
     if (language == "en") {
         englishAction->setChecked(true);
