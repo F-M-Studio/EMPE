@@ -461,7 +461,6 @@ void MainWindow::createControls() {
 
     mainLayout->addLayout(buttonLayout);
 
-    // Dodanie checkboxa do włączania drugiego lidaru
     enableSecondLidarCheckBox = new QCheckBox(tr("Włącz drugi lidar"), this);
     enableSecondLidarCheckBox->setChecked(false);
     mainLayout->addWidget(enableSecondLidarCheckBox);
@@ -1073,103 +1072,68 @@ void MainWindow::changeLanguage(const QString &language) {
     QSettings settings;
     settings.setValue("language", language);
 
-    // Usuwamy stary translator
-    qApp->removeTranslator(&translator);
+    // Usuń stary translator jeśli istnieje
+    if (currentTranslator) {
+        qApp->removeTranslator(currentTranslator);
+        delete currentTranslator;
+        currentTranslator = nullptr;
+    }
 
-    // Utworzenie nowego translatora jako właściwość instancji MainWindow
-    // Tworzymy w tej funkcji, a nie używamy globalnego, aby uniknąć konfliktów
+    // Utwórz nowy translator
+    currentTranslator = new QTranslator(this);
     bool loaded = false;
 
-    // Najpierw spróbuj załadować z zasobów (najszybciej)
-    qDebug() << "Próbuję załadować tłumaczenie z zasobów: :/translations/lidar_" + language;
-    if (translator.load(":/translations/lidar_" + language)) {
+    // Spróbuj załadować z zasobów
+    QString resourcePath = QString(":/translations/lidar_%1").arg(language);
+    if (currentTranslator->load(resourcePath)) {
         loaded = true;
-        qDebug() << "Załadowano tłumaczenie z zasobów";
-    }
-    else {
-        // Sprawdzamy różne lokalizacje plików tłumaczeń
-        QString appTranslationPath = QCoreApplication::applicationDirPath() + "/translations";
-        QString projTranslationPath = QDir::currentPath() + "/translations";
-
-        qDebug() << "Próbuję załadować tłumaczenie z: " << appTranslationPath;
-        if (translator.load("lidar_" + language, appTranslationPath)) {
-            loaded = true;
-            qDebug() << "Załadowano tłumaczenie z:" << appTranslationPath;
-        }
-        else {
-            qDebug() << "Próbuję załadować tłumaczenie z: " << projTranslationPath;
-            if (translator.load("lidar_" + language, projTranslationPath)) {
-                loaded = true;
-                qDebug() << "Załadowano tłumaczenie z:" << projTranslationPath;
-            }
-            else {
-                qWarning() << "Nie udało się załadować tłumaczenia dla" << language;
-
-                // Próbujemy załadować domyślne tłumaczenie polskie jeśli wybrano angielski
-                if (language == "en") {
-                    if (translator.load(":/translations/lidar_en")) {
-                        loaded = true;
-                        qDebug() << "Załadowano domyślne tłumaczenie angielskie z zasobów";
-                    }
-                }
-                // Inaczej próbujemy polski
-                else {
-                    if (translator.load(":/translations/lidar_pl")) {
-                        loaded = true;
-                        qDebug() << "Załadowano domyślne tłumaczenie polskie z zasobów";
-                    }
-                }
-            }
-        }
+        qDebug() << "Załadowano tłumaczenie z zasobów:" << resourcePath;
     }
 
     if (loaded) {
-        qDebug() << "Instaluję translator dla języka:" << language;
-        qApp->installTranslator(&translator);
+        qApp->installTranslator(currentTranslator);
+        qDebug() << "Zainstalowano translator dla języka:" << language;
     }
 
-    // Aktualizacja interfejsu
-    retranslateUi();
-    if (portSettings) portSettings->retranslateUi();
-    if (appMenu) {
-        appMenu->retranslateUi();
-        appMenu->setLanguage(language);
-        appMenu->updateStartStopAction(isReading);
-    }
-
-    // Znajdź wszystkie otwarte okna GraphWindow i zaktualizuj ich interfejs
-    const QWidgetList topLevelWidgets = QApplication::topLevelWidgets();
-    for (QWidget *widget : topLevelWidgets) {
-        GraphWindow *graphWindow = qobject_cast<GraphWindow*>(widget);
-        if (graphWindow) {
-            graphWindow->retranslateUi();
-        }
-
-        AboutUsDialog *aboutDialog = qobject_cast<AboutUsDialog*>(widget);
-        if (aboutDialog) {
-            aboutDialog->retranslateUi();
-        }
-    }
+    // Wymuś aktualizację interfejsu
+    QEvent languageChangeEvent(QEvent::LanguageChange);
+    QCoreApplication::sendEvent(this, &languageChangeEvent);
 }
 
 void MainWindow::retranslateUi() {
     setWindowTitle(tr("EMPE - System Pomiarowy"));
+
     if (portSettingsBtn) portSettingsBtn->setText(tr("Ustawienia portu"));
     if (showGraphBtn) showGraphBtn->setText(tr("Pokaż wykres"));
-    if (startStopBtn) startStopBtn->setText(tr("START"));
+    if (startStopBtn) {
+        startStopBtn->setText(isReading ? tr("STOP") : tr("START"));
+    }
     if (saveDataBtn) saveDataBtn->setText(tr("Zapisz dane 1"));
     if (saveData2Btn) saveData2Btn->setText(tr("Zapisz dane 2"));
     if (clearGraphBtn) clearGraphBtn->setText(tr("Wyczyść wykres"));
-    if (showRawDataBtn) showRawDataBtn->setText(tr("Pokaż surowe dane"));
+    if (showRawDataBtn) {
+        bool isVisible = dataDisplay && dataDisplay->isVisible();
+        showRawDataBtn->setText(isVisible ? tr("Ukryj surowe dane") : tr("Pokaż surowe dane"));
+    }
     if (alwaysOnTopCheckbox) alwaysOnTopCheckbox->setText(tr("Zawsze na wierzchu"));
     if (enableSecondLidarCheckBox) enableSecondLidarCheckBox->setText(tr("Włącz drugi lidar"));
+    if (creatorsNoteLabel) {
+        creatorsNoteLabel->setText(tr("Program powstał w ramach projektu Embodying Math&Physics Education 2023-1-PL01-KA210-SCH-000165829"));
+    }
+
+    // Zaktualizuj elementy stopera
+    updateStoperLabels();
+}
+
+void MainWindow::updateStoperLabels() {
     if (dropCounter1Label) dropCounter1Label->setText(tr("Spadki: %1").arg(dropCount1));
     if (dropCounter2Label) dropCounter2Label->setText(tr("Spadki: %1").arg(dropCount2));
-    if (stopwatchLabel1) stopwatchLabel1->setText(tr("Stoper: 00:00.000"));
-    if (stopwatchLabel2) stopwatchLabel2->setText(tr("Stoper: 00:00.000"));
     if (resetStoperBtn) resetStoperBtn->setText(tr("Resetuj"));
-    if (saveStoperLogsBtn) saveStoperLogsBtn->setText(tr("Zapisz logi stopera"));
     if (enableStoper1CheckBox) enableStoper1CheckBox->setText(tr("Włącz czujnik 1"));
     if (enableStoper2CheckBox) enableStoper2CheckBox->setText(tr("Włącz czujnik 2"));
-    if (sensitivityLabel) sensitivityLabel->setText(QString::number(dropSensitivity));
+    if (stoperGroupBox) stoperGroupBox->setTitle(tr("Stoper"));
+
+    // Zaktualizuj etykiety czasu
+    updateStopwatch1();
+    updateStopwatch2();
 }

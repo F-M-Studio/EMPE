@@ -92,6 +92,9 @@ private slots:
     void changeLanguage(const QString &language);
 
 private:
+    QTranslator *currentTranslator = nullptr;
+    void updateStoperLabels();
+
     QLabel *globalTimeLabel;
     void updateGlobalTimeDisplay(int time);
 
