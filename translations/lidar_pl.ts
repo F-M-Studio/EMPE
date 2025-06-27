@@ -11,7 +11,7 @@
   Filip Leśnik <filip.lesnik170@gmail.com>
 
   Data Utworzenia: 21 Marca 2025
-  Ostatnia Modyfikacja: 18 Czerwaca 2025
+  Ostatnia Modyfikacja: 27 Czerwaca 2025
 
   Ten program jest wolnym oprogramowaniem; możesz go rozprowadzać i/lub
   modyfikować na warunkach Powszechnej Licencji Publicznej GNU,

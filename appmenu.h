@@ -10,7 +10,7 @@
  * Filip Leśnik <filip.lesnik170@gmail.com>
  *
  * Data Utworzenia: 10 Marca 2025
- * Ostatnia Modyfikacja: 18 Czerwaca 2025
+ * Ostatnia Modyfikacja: 27 Czerwaca 2025
  *
  * Ten program jest wolnym oprogramowaniem; możesz go rozprowadzać i/lub
  * modyfikować na warunkach Powszechnej Licencji Publicznej GNU,
@@ -25,11 +25,6 @@
  * Powinieneś otrzymać kopię Powszechnej Licencji Publicznej GNU wraz z
  * tym programem. Jeśli nie, zobacz <http://www.gnu.org/licenses/>.
 */
-
-
-
-// appmenu.h
-
 
 #pragma once
 
@@ -51,7 +46,6 @@ public:
     ~AppMenu() override = default;
 
     [[nodiscard]] QMenu* getMainMenu() const { return mainMenu; }
-    void retranslateUi() const;
     void updateStartStopAction(bool isReading) const;
 
     signals:

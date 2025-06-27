@@ -10,7 +10,7 @@
  * Filip Leśnik <filip.lesnik170@gmail.com>
  *
  * Data Utworzenia: 10 Marca 2025
- * Ostatnia Modyfikacja: 18 Czerwaca 2025
+ * Ostatnia Modyfikacja: 27 Czerwaca 2025
  *
  * Ten program jest wolnym oprogramowaniem; możesz go rozprowadzać i/lub
  * modyfikować na warunkach Powszechnej Licencji Publicznej GNU,
@@ -26,9 +26,6 @@
  * tym programem. Jeśli nie, zobacz <http://www.gnu.org/licenses/>.
 */
 
-
-
-// appmenu.cpp
 #include "appmenu.h"
 #include "mainwindow.h"
 
