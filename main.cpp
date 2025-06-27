@@ -35,14 +35,31 @@ int main(int argc, char *argv[]) {
     QApplication a(argc, argv);
 
 
+
+    QSettings settings;
+
+    QString translationPath = QCoreApplication::applicationDirPath() + "/translations";
+
+    qDebug() << "Looking for translations in:" << translationPath;
+
+
+
+    QString lang = settings.value("language", "en").toString();
     QTranslator translator;
-    for (const QStringList uiLanguages = QLocale::system().uiLanguages(); const QString &locale: uiLanguages) {
-        if (const QString baseName = "lidar_" + QLocale(locale).name().split('_').first(); translator.load(":/translations/" + baseName)) {
-            a.installTranslator(&translator);
-            break;
+    QString tsFile = translationPath + "/lidar_" + lang;
+    qDebug() << "Trying to load translation file:" << tsFile;
+    if (!translator.load(tsFile)) {
+        qWarning() << "Failed to load translation for" << lang << "from" << tsFile;
+        tsFile = translationPath + "/lidar_en";
+        if (!translator.load(tsFile)) {
+            qWarning() << "Failed to load fallback English translation from" << tsFile;
+            qWarning() << "Failed to load fallback translation from" << tsFile;
+
         }
+
     }
 
+    a.installTranslator(&translator);
     QFontDatabase::addApplicationFont(":/fonts/AdwaitaSans-Regular.ttf");
 
     QFont font;
