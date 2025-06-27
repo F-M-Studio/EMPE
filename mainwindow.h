@@ -34,7 +34,6 @@
 #include <QSerialPort>
 #include <QtWidgets>
 #include <QDateTime>
-#include <QTranslator>
 
 #include "portsettings.h"
 
@@ -49,8 +48,6 @@ public:
     MainWindow(QWidget *parent = nullptr);
 
     ~MainWindow();
-
-    void retranslateUi();
 
     bool Reading;
     int distance, timeInMilliseconds, minutes, seconds, milliseconds;
@@ -81,20 +78,14 @@ public:
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;
-    void changeEvent(QEvent *) override;
 
 private slots:
     void showAboutUsDialog();
     void onSensitivityChanged(int value);
     void resetStoperCounters();
     void saveStoperLogs();
-    void onEnableSecondLidarToggled(bool checked); // Slot do obsługi checkboxa
-    void changeLanguage(const QString &language);
 
 private:
-    QTranslator *currentTranslator = nullptr;
-    void updateStoperLabels();
-
     QLabel *globalTimeLabel;
     void updateGlobalTimeDisplay(int time);
 
@@ -138,10 +129,11 @@ private:
     bool deviceValidated = false;
     const int VALIDATION_TIMEOUT = 3000;
 
-    QTranslator translator;
+    QTranslator *translator = nullptr;
     QAction *languageAction{};
-    QAction *languageActionPL;
-    QAction *languageActionEN;
+
+    void retranslateUi();
+
 
     QMenuBar *menuBar{};
     QMenu *mainMenu{};
@@ -212,7 +204,6 @@ private:
     QPushButton *saveStoperLogsBtn;
     QCheckBox *enableStoper1CheckBox;
     QCheckBox *enableStoper2CheckBox;
-    QCheckBox *enableSecondLidarCheckBox{}; // Checkbox do włączania drugiego lidaru
 
 
     int dropSensitivity = 50;

@@ -44,70 +44,33 @@ void PortSettings::changeEvent(QEvent *event) {
 }
 
 void PortSettings::retranslateUi() {
-    setWindowTitle(tr("Ustawienia"));
-    if (refreshButton) refreshButton->setText(tr("Odśwież"));
-    if (okButton) okButton->setText(tr("OK"));
-    if (cancelButton) cancelButton->setText(tr("Anuluj"));
-    if (tabWidget) {
-        tabWidget->setTabText(0, tr("Port 1"));
-        tabWidget->setTabText(1, tr("Port 2"));
-    }
-    // Etykiety i comboboxy w zakładkach
-    if (portBox1) portBox1->setEditable(true); // by placeholder działał
-    if (portBox2) portBox2->setEditable(true);
-    if (portBox1) portBox1->setPlaceholderText(tr("Wybierz port"));
-    if (portBox2) portBox2->setPlaceholderText(tr("Wybierz port"));
-    if (baudRateBox1) baudRateBox1->setItemText(0, tr("9600"));
-    if (baudRateBox1) baudRateBox1->setItemText(1, tr("19200"));
-    if (baudRateBox1) baudRateBox1->setItemText(2, tr("38400"));
-    if (baudRateBox1) baudRateBox1->setItemText(3, tr("57600"));
-    if (baudRateBox1) baudRateBox1->setItemText(4, tr("115200"));
-    if (baudRateBox2) baudRateBox2->setItemText(0, tr("9600"));
-    if (baudRateBox2) baudRateBox2->setItemText(1, tr("19200"));
-    if (baudRateBox2) baudRateBox2->setItemText(2, tr("38400"));
-    if (baudRateBox2) baudRateBox2->setItemText(3, tr("57600"));
-    if (baudRateBox2) baudRateBox2->setItemText(4, tr("115200"));
-    if (dataBitsBox1) dataBitsBox1->setItemText(0, tr("6"));
-    if (dataBitsBox1) dataBitsBox1->setItemText(1, tr("7"));
-    if (dataBitsBox1) dataBitsBox1->setItemText(2, tr("8"));
-    if (dataBitsBox2) dataBitsBox2->setItemText(0, tr("6"));
-    if (dataBitsBox2) dataBitsBox2->setItemText(1, tr("7"));
-    if (dataBitsBox2) dataBitsBox2->setItemText(2, tr("8"));
-    if (stopBitsBox1) stopBitsBox1->setItemText(0, tr("1"));
-    if (stopBitsBox1) stopBitsBox1->setItemText(1, tr("1.5"));
-    if (stopBitsBox1) stopBitsBox1->setItemText(2, tr("2"));
-    if (stopBitsBox2) stopBitsBox2->setItemText(0, tr("1"));
-    if (stopBitsBox2) stopBitsBox2->setItemText(1, tr("1.5"));
-    if (stopBitsBox2) stopBitsBox2->setItemText(2, tr("2"));
-    // Parity i flowControl już obsłużone poniżej
-    const int parityIndex1 = parityBox1 ? parityBox1->currentIndex() : 0;
-    const int parityIndex2 = parityBox2 ? parityBox2->currentIndex() : 0;
-    if (parityBox1) {
-        parityBox1->clear();
-        parityBox1->addItems({tr("None"), tr("Even"), tr("Odd"), tr("Mark"), tr("Space")});
-        parityBox1->setCurrentIndex(parityIndex1);
-    }
-    if (parityBox2) {
-        parityBox2->clear();
-        parityBox2->addItems({tr("None"), tr("Even"), tr("Odd"), tr("Mark"), tr("Space")});
-        parityBox2->setCurrentIndex(parityIndex2);
-    }
-    const int flowIndex1 = flowControlBox1 ? flowControlBox1->currentIndex() : 0;
-    const int flowIndex2 = flowControlBox2 ? flowControlBox2->currentIndex() : 0;
-    if (flowControlBox1) {
-        flowControlBox1->clear();
-        flowControlBox1->addItems({tr("None"), tr("Software"), tr("Hardware")});
-        flowControlBox1->setCurrentIndex(flowIndex1);
-    }
-    if (flowControlBox2) {
-        flowControlBox2->clear();
-        flowControlBox2->addItems({tr("None"), tr("Software"), tr("Hardware")});
-        flowControlBox2->setCurrentIndex(flowIndex2);
-    }
-    if (portInfoText) portInfoText->setPlaceholderText(tr("No serial ports detected"));
-    // Info label
-    // Jeśli infoLabel jest polem klasy, ustaw tekst:
-    // if (infoLabel) infoLabel->setText(tr("<b>Connected Serial Ports Information:</b>"));
+    setWindowTitle(tr("Setup"));
+
+    refreshButton->setText(tr("Refresh"));
+    okButton->setText(tr("OK"));
+    cancelButton->setText(tr("Cancel"));
+
+    tabWidget->setTabText(0, tr("Port 1"));
+    tabWidget->setTabText(1, tr("Port 2"));
+
+
+    const int parityIndex1 = parityBox1->currentIndex();
+    const int parityIndex2 = parityBox2->currentIndex();
+    parityBox1->clear();
+    parityBox2->clear();
+    parityBox1->addItems({tr("None"), tr("Even"), tr("Odd"), tr("Mark"), tr("Space")});
+    parityBox2->addItems({tr("None"), tr("Even"), tr("Odd"), tr("Mark"), tr("Space")});
+    parityBox1->setCurrentIndex(parityIndex1);
+    parityBox2->setCurrentIndex(parityIndex2);
+
+    const int flowIndex1 = flowControlBox1->currentIndex();
+    const int flowIndex2 = flowControlBox2->currentIndex();
+    flowControlBox1->clear();
+    flowControlBox2->clear();
+    flowControlBox1->addItems({tr("None"), tr("Software"), tr("Hardware")});
+    flowControlBox2->addItems({tr("None"), tr("Software"), tr("Hardware")});
+    flowControlBox1->setCurrentIndex(flowIndex1);
+    flowControlBox2->setCurrentIndex(flowIndex2);
 }
 
 void PortSettings::setupUI() {

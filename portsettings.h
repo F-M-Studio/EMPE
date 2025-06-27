@@ -36,7 +36,6 @@ class PortSettings : public QDialog {
 
 public:
     explicit PortSettings(QWidget *parent = nullptr);
-    void retranslateUi();
 
     QString getPortName1() const;
     int getBaudRate1() const;
@@ -54,6 +53,7 @@ public:
 
     private slots:
         void refreshPorts();
+    void retranslateUi();
 
 private:
     void updatePortInfo();

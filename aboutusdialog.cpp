@@ -36,12 +36,12 @@
 #include <QHBoxLayout>
 
 AboutUsDialog::AboutUsDialog(QWidget *parent) : QDialog(parent) {
-    setWindowTitle(tr("O nas"));
+    setWindowTitle(tr("About Us"));
     setMinimumWidth(400);
 
     auto *layout = new QVBoxLayout(this);
 
-    titleLabel = new QLabel(tr("Program powstał w ramach projektu:"), this);
+    titleLabel = new QLabel(tr("This program was created as part of the project:"), this);
     QFont titleFont = titleLabel->font();
     titleFont.setBold(true);
     titleFont.setPointSize(titleFont.pointSize() + 1);
@@ -52,7 +52,7 @@ AboutUsDialog::AboutUsDialog(QWidget *parent) : QDialog(parent) {
     authorsLabel->setAlignment(Qt::AlignCenter);
     authorsLabel->setWordWrap(true);
 
-    QLabel *authorsHeaderLabel = new QLabel(tr("Program został napisany w ramach przemediotu Programowanie Proceduralne pod okiem Pana Dr. Hab. Romana Rośka i został zaprogramowany przez:"), this);
+    QLabel *authorsHeaderLabel = new QLabel(tr("The program was written as part of the Procedural Programming course under the supervision of Dr. Hab. Roman Rosiek and was developed by:"), this);
     QFont authorsFont = authorsHeaderLabel->font();
     authorsFont.setBold(true);
     authorsHeaderLabel->setFont(authorsFont);
@@ -90,18 +90,4 @@ AboutUsDialog::AboutUsDialog(QWidget *parent) : QDialog(parent) {
     layout->addWidget(closeButton);
 
     setLayout(layout);
-}
-
-void AboutUsDialog::retranslateUi() {
-    setWindowTitle(tr("O nas"));
-    if (titleLabel) titleLabel->setText(tr("Program powstał w ramach projektu:"));
-    if (authorsLabel) authorsLabel->setText(tr("Embodying Math&Physics Education 2023-1-PL01-KA210-SCH-000165829"));
-    if (closeButton) closeButton->setText(tr("Zamknij"));
-}
-
-void AboutUsDialog::changeEvent(QEvent *event) {
-    if (event->type() == QEvent::LanguageChange) {
-        retranslateUi();
-    }
-    QDialog::changeEvent(event);
 }

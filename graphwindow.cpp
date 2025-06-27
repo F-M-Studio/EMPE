@@ -58,16 +58,16 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     clearBtnLayout->addStretch();
 
 
-    startStopBtn = new QPushButton(mainWindow->Reading ? tr("Zatrzymaj") : tr("Start"));
+    startStopBtn = new QPushButton(mainWindow->Reading ? tr("Stop") : tr("Start"));
     startStopBtn->setFixedWidth(80);
     connect(startStopBtn, &QPushButton::clicked, mainWindow, &MainWindow::handleStartStopButton);
     connect(startStopBtn, &QPushButton::clicked, this, [this, mainWindow]() {
-        startStopBtn->setText(mainWindow->Reading ? tr("Zatrzymaj") : tr("Start"));
+        startStopBtn->setText(mainWindow->Reading ? tr("Stop") : tr("Start"));
     });
     clearBtnLayout->addWidget(startStopBtn);
 
 
-    clearGraphBtn = new QPushButton(tr("Wyczyść wykres"));
+    clearGraphBtn = new QPushButton(tr("Clear Graph"));
     clearGraphBtn->setFixedWidth(140);
     clearBtnLayout->addWidget(clearGraphBtn);
     clearBtnLayout->addStretch();
@@ -82,8 +82,8 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
 
     axisX = new QValueAxis();
     axisY = new QValueAxis();
-    axisX->setTitleText(tr("Czas (min:ms)"));
-    axisY->setTitleText(tr("Odległość"));
+    axisX->setTitleText(tr("Time (min:ms)"));
+    axisY->setTitleText(tr("Distance"));
     axisX->setRange(mainWindow->distance, mainWindow->distance + 1000);
     axisY->setRange(mainWindow->milliseconds, mainWindow->milliseconds + 100);
 
@@ -109,7 +109,7 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     chartView->setFrameStyle(QFrame::NoFrame);
 
 
-    recordingTitleLabel = new QLabel(tr("Okres próbkowania [ms]:"));
+    recordingTitleLabel = new QLabel(tr("Recording period [ms]:"));
     recordingSlider = new QSlider(Qt::Horizontal);
     recordingEdit = new QLineEdit("100");
     recordingEdit->setAlignment(Qt::AlignRight);
@@ -120,8 +120,8 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     recordingSlider->setValue(100);
 
 
-    yAxisToggle = new QCheckBox(tr("Ustaw zakres Y"));
-    yAxisTitleLabel = new QLabel(tr("Zakres osi Y:"));
+    yAxisToggle = new QCheckBox(tr("Set Y"));
+    yAxisTitleLabel = new QLabel(tr("Y axis range:"));
     yAxisTitleLabel->setContentsMargins(10, 0, 0, 0);
     yAxisSlider = new QSlider(Qt::Horizontal);
     yAxisEdit = new QLineEdit("100");
@@ -136,9 +136,9 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     yAxisEdit->setEnabled(false);
 
 
-    autoRemoveToggle = new QCheckBox(tr("Auto-przewijanie osi X"));
+    autoRemoveToggle = new QCheckBox(tr("Auto-scroll X axis"));
     autoRemoveToggle->setChecked(true);
-    pointsLimitLabel = new QLabel(tr("Limit punktów:"));
+    pointsLimitLabel = new QLabel(tr("Points limit:"));
     pointsLimitLabel->setContentsMargins(10, 0, 0, 0);
     pointsLimitSlider = new QSlider(Qt::Horizontal);
     pointsLimitEdit = new QLineEdit("100");
@@ -150,9 +150,9 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     pointsLimitSlider->setValue(100);
 
 
-    smoothingToggle = new QCheckBox(tr("Wygładzanie wykresu"));
+    smoothingToggle = new QCheckBox(tr("Smooth Graph"));
     smoothingToggle->setChecked(false);
-    smoothingLevelLabel = new QLabel(tr("Poziom wygładzania:"));
+    smoothingLevelLabel = new QLabel(tr("Smoothing:"));
     smoothingLevelLabel->setContentsMargins(10, 0, 0, 0);
     smoothingLevelSlider = new QSlider(Qt::Horizontal);
     smoothingLevelEdit = new QLineEdit("5");
@@ -360,7 +360,7 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
         smoothingLevelSlider->setValue(value);
     });
 
-    timeAxisToggle = new QCheckBox(tr("Użyj czasu względnego"));
+    timeAxisToggle = new QCheckBox(tr("Use Relative Time"));
     timeAxisToggle->setChecked(true);
     timeAxisToggle->hide();
 
@@ -386,9 +386,9 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     });
 
 
-    showSeries1Toggle = new QCheckBox(tr("Pokaż serię 1"));
+    showSeries1Toggle = new QCheckBox(tr("Show Series 1"));
     showSeries1Toggle->setChecked(true);
-    showSeries2Toggle = new QCheckBox(tr("Pokaż serię 2"));
+    showSeries2Toggle = new QCheckBox(tr("Show Series 2"));
     showSeries2Toggle->setChecked(true);
 
 
@@ -643,7 +643,7 @@ void GraphWindow::resizeEvent(QResizeEvent *event) {
 }
 
 void GraphWindow::updateGraph() {
-    startStopBtn->setText(mainWindow->Reading ? tr("Zatrzymaj") : tr("Start"));
+    startStopBtn->setText(mainWindow->Reading ? tr("Stop") : tr("Start"));
 
     if (mainWindow->Reading) {
         double xValue = useAbsoluteTime ? mainWindow->timeInMilliseconds : mainWindow->timeInMilliseconds - initialTime;
@@ -702,17 +702,17 @@ void GraphWindow::updateGraph() {
 }
 
 void GraphWindow::retranslateUi() {
-    setWindowTitle(tr("Wykres"));
-    clearGraphBtn->setText(tr("Wyczyść wykres"));
-    startStopBtn->setText(mainWindow->Reading ? tr("Zatrzymaj") : tr("Start"));
-    axisX->setTitleText(tr("Czas (min:ms)"));
-    axisY->setTitleText(tr("Odległość"));
-    recordingTitleLabel->setText(tr("Okres próbkowania [ms]:"));
-    yAxisToggle->setText(tr("Ustaw zakres Y"));
-    yAxisTitleLabel->setText(tr("Zakres osi Y:"));
-    autoRemoveToggle->setText(tr("Auto-przewijanie osi X"));
-    pointsLimitLabel->setText(tr("Limit punktów:"));
-    smoothingToggle->setText(tr("Wygładzanie wykresu"));
-    smoothingLevelLabel->setText(tr("Poziom wygładzania:"));
-    timeAxisToggle->setText(tr("Użyj czasu względnego"));
+    setWindowTitle(tr("Graph"));
+    clearGraphBtn->setText(tr("Clear Graph"));
+    startStopBtn->setText(mainWindow->Reading ? tr("Stop") : tr("Start"));
+    axisX->setTitleText(tr("Time (min:ms)"));
+    axisY->setTitleText(tr("Distance"));
+    recordingTitleLabel->setText(tr("Recording period [ms]:"));
+    yAxisToggle->setText(tr("Set Y"));
+    yAxisTitleLabel->setText(tr("Y axis range:"));
+    autoRemoveToggle->setText(tr("Auto-scroll X axis"));
+    pointsLimitLabel->setText(tr("Points limit:"));
+    smoothingToggle->setText(tr("Smooth Graph"));
+    smoothingLevelLabel->setText(tr("Smoothing:"));
+    timeAxisToggle->setText(tr("Use Relative Time"));
 }
