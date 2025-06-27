@@ -29,6 +29,7 @@
 
 
 #include "aboutusdialog.h"
+#include <QEvent>
 #include <QFont>
 #include <QLabel>
 #include <QPixmap>
@@ -89,4 +90,18 @@ AboutUsDialog::AboutUsDialog(QWidget *parent) : QDialog(parent) {
     layout->addWidget(closeButton);
 
     setLayout(layout);
+}
+
+void AboutUsDialog::retranslateUi() {
+    setWindowTitle(tr("O nas"));
+    if (titleLabel) titleLabel->setText(tr("Program powstał w ramach projektu:"));
+    if (authorsLabel) authorsLabel->setText(tr("Embodying Math&Physics Education 2023-1-PL01-KA210-SCH-000165829"));
+    if (closeButton) closeButton->setText(tr("Zamknij"));
+}
+
+void AboutUsDialog::changeEvent(QEvent *event) {
+    if (event->type() == QEvent::LanguageChange) {
+        retranslateUi();
+    }
+    QDialog::changeEvent(event);
 }

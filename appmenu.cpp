@@ -10,7 +10,7 @@
  * Filip Leśnik <filip.lesnik170@gmail.com>
  *
  * Data Utworzenia: 10 Marca 2025
- * Ostatnia Modyfikacja: 18 Czerwaca 2025
+ * Ostatnia Modyfikacja: 18 Czerwca 2025
  *
  * Ten program jest wolnym oprogramowaniem; możesz go rozprowadzać i/lub
  * modyfikować na warunkach Powszechnej Licencji Publicznej GNU,
@@ -35,19 +35,17 @@
 AppMenu::AppMenu(QMainWindow *window, MainWindow *mainWindow) : QObject(window), window(window),
                                                                 mainWindow(mainWindow) {
     auto *englishAction = new QAction(tr("English"), window);
-    auto *polishAction = new QAction(tr("Polish"), window);
+    auto *polishAction = new QAction(tr("Polski"), window);
     this->englishAction = englishAction;
     this->polishAction = polishAction;
-
 
     mainMenu = new QMenu(tr("☰ Menu"), window);
     window->menuBar()->addMenu(mainMenu);
 
-
-    portSettingsAction = new QAction(tr("Port settings"), window);
-    graphAction = new QAction(tr("Graph"), window);
-    startMeasurementAction = new QAction(tr("Start measurement"), window);
-    saveDataAction = new QAction(tr("Save data to file"), window);
+    portSettingsAction = new QAction(tr("Ustawienia portu"), window);
+    graphAction = new QAction(tr("Wykres"), window);
+    startMeasurementAction = new QAction(tr("Rozpocznij pomiar"), window);
+    saveDataAction = new QAction(tr("Zapisz dane do pliku"), window);
     aboutUsAction = new QAction(tr("O nas"), window);
 
 
@@ -93,17 +91,14 @@ AppMenu::AppMenu(QMainWindow *window, MainWindow *mainWindow) : QObject(window),
 }
 
 void AppMenu::retranslateUi() const {
-    mainMenu->setTitle(tr("☰ Menu"));
-    portSettingsAction->setText(tr("Port settings"));
-    graphAction->setText(tr("Graph"));
-    startMeasurementAction->setText(tr("Start measurement"));
-    saveDataAction->setText(tr("Save data to file"));
-
-    languageAction->setText(tr("Language"));
-    aboutUsAction->setText(tr("About us"));
-
-    englishAction->setText(tr("English"));
-    polishAction->setText(tr("Polish"));
+    if (mainMenu) mainMenu->setTitle(tr("☰ Menu"));
+    if (portSettingsAction) portSettingsAction->setText(tr("Ustawienia portu"));
+    if (graphAction) graphAction->setText(tr("Wykres"));
+    if (startMeasurementAction) startMeasurementAction->setText(tr("Rozpocznij pomiar"));
+    if (saveDataAction) saveDataAction->setText(tr("Zapisz dane do pliku"));
+    if (aboutUsAction) aboutUsAction->setText(tr("O nas"));
+    if (englishAction) englishAction->setText(tr("Angielski"));
+    if (polishAction) polishAction->setText(tr("Polski"));
 }
 
 void AppMenu::setLanguage(const QString &language) const {

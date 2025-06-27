@@ -135,7 +135,7 @@ void MainWindow::createStoperControls() {
     stoperGroupBox = new QGroupBox(this);
     QGridLayout *stoperLayout = new QGridLayout(stoperGroupBox);
 
-    QLabel *sensLabel = new QLabel(tr("Drop Sensitivity (mm):"), this);
+    QLabel *sensLabel = new QLabel(tr("Czułość spadku (mm):"), this);
     sensitivitySlider = new QSlider(Qt::Horizontal, this);
     sensitivitySlider->setRange(5, 100);
     sensitivitySlider->setValue(dropSensitivity);
@@ -144,7 +144,7 @@ void MainWindow::createStoperControls() {
 
     sensitivityLabel = new QLabel(QString::number(dropSensitivity), this);
     sensitivityLabel->setMinimumWidth(5);
-    resetStoperBtn = new QPushButton(tr("Reset"), this);
+    resetStoperBtn = new QPushButton(tr("Resetuj"), this);
 
 
     stoperTimer = new QTimer(this);
@@ -158,16 +158,16 @@ void MainWindow::createStoperControls() {
     stoperLayout->addWidget(sensitivityLabel, 0, 3);
 
 
-    QGroupBox *sensor1GroupBox = new QGroupBox(tr("Sensor 1"), this);
+    QGroupBox *sensor1GroupBox = new QGroupBox(tr("Czujnik 1"), this);
     QVBoxLayout *sensor1Layout = new QVBoxLayout(sensor1GroupBox);
 
 
-    enableStoper1CheckBox = new QCheckBox(tr("Enable Sensor 1"), this);
+    enableStoper1CheckBox = new QCheckBox(tr("Włącz czujnik 1"), this);
     enableStoper1CheckBox->setChecked(stoper1Enabled);
     sensor1Layout->addWidget(enableStoper1CheckBox);
 
 
-    dropCounter1Label = new QLabel(tr("Drops: 0"), this);
+    dropCounter1Label = new QLabel(tr("Spadki: 0"), this);
     dropCounter1Label->setAlignment(Qt::AlignCenter);
     sensor1Layout->addWidget(dropCounter1Label);
 
@@ -180,16 +180,16 @@ void MainWindow::createStoperControls() {
     sensor1Layout->addWidget(stopwatchLabel1);
 
 
-    QGroupBox *sensor2GroupBox = new QGroupBox(tr("Sensor 2"), this);
+    QGroupBox *sensor2GroupBox = new QGroupBox(tr("Czujnik 2"), this);
     QVBoxLayout *sensor2Layout = new QVBoxLayout(sensor2GroupBox);
 
 
-    enableStoper2CheckBox = new QCheckBox(tr("Enable Sensor 2"), this);
+    enableStoper2CheckBox = new QCheckBox(tr("Włącz czujnik 2"), this);
     enableStoper2CheckBox->setChecked(stoper2Enabled);
     sensor2Layout->addWidget(enableStoper2CheckBox);
 
 
-    dropCounter2Label = new QLabel(tr("Drops: 0"), this);
+    dropCounter2Label = new QLabel(tr("Spadki: 0"), this);
     dropCounter2Label->setAlignment(Qt::AlignCenter);
     sensor2Layout->addWidget(dropCounter2Label);
 
@@ -226,11 +226,11 @@ void MainWindow::createStoperControls() {
 void MainWindow::handleStoperStartStop() {
     if (!stoperRunning) {
         stoperRunning = true;
-        startStopStoperBtn->setText(tr("Stop Stoper"));
+        startStopStoperBtn->setText(tr("Zatrzymaj stoper"));
         stoperTimer->start();
     } else {
         stoperRunning = false;
-        startStopStoperBtn->setText(tr("Start Stoper"));
+        startStopStoperBtn->setText(tr("Uruchom stoper"));
         stoperTimer->stop();
     }
 }
@@ -246,12 +246,12 @@ void MainWindow::updateStoperTime() {
             .arg(secs, 2, 10, QChar('0'))
             .arg(ms, 2, 10, QChar('0'));
 
-        startStopStoperBtn->setText(tr("Stop Stoper (%1)").arg(timeStr));
+        startStopStoperBtn->setText(tr("Zatrzymaj stoper (%1)").arg(timeStr));
     } else {
         stoperTimer->stop();
         stoperRunning = false;
-        startStopStoperBtn->setText(tr("Start Stoper"));
-        QMessageBox::information(this, tr("Stoper"), tr("Time's up!"));
+        startStopStoperBtn->setText(tr("Uruchom stoper"));
+        QMessageBox::information(this, tr("Stoper"), tr("Koniec czasu!"));
     }
 }
 void MainWindow::resetStoperCounters() {
@@ -275,14 +275,14 @@ void MainWindow::resetStoperCounters() {
 
     updateStoperDisplay();
 
-    QMessageBox::information(this, tr("Reset Complete"),
-                           tr("Drop counters, logs, and stoper have been reset."));
+    QMessageBox::information(this, tr("Reset zakończony"),
+                           tr("Liczniki spadków, logi i stoper zostały zresetowane."));
 }
 
 void MainWindow::saveStoperLogs() {
     if (dropEvents.isEmpty()) {
-        QMessageBox::information(this, tr("No Data"),
-                               tr("No drop events to save."));
+        QMessageBox::information(this, tr("Brak danych"),
+                               tr("Brak zdarzeń spadku do zapisania."));
         return;
     }
 
@@ -290,9 +290,9 @@ void MainWindow::saveStoperLogs() {
                              .arg(QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss"));
 
     QString fileName = QFileDialog::getSaveFileName(this,
-                                                  tr("Save Drop Logs"),
+                                                  tr("Zapisz logi spadków"),
                                                   defaultFileName,
-                                                  tr("CSV Files (*.csv)"));
+                                                  tr("Pliki CSV (*.csv)"));
 
     if (fileName.isEmpty()) {
         return;
@@ -304,8 +304,8 @@ void MainWindow::saveStoperLogs() {
 
     QFile file(fileName);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        QMessageBox::warning(this, tr("Error"),
-                           tr("Cannot write file %1:\n%2.")
+        QMessageBox::warning(this, tr("Błąd"),
+                           tr("Nie można zapisać pliku %1:\n%2.")
                            .arg(QDir::toNativeSeparators(fileName),
                            file.errorString()));
         return;
@@ -327,8 +327,8 @@ void MainWindow::saveStoperLogs() {
 
     file.close();
 
-    QMessageBox::information(this, tr("Success"),
-                           tr("Drop logs saved to %1\nTotal events: %2")
+    QMessageBox::information(this, tr("Sukces"),
+                           tr("Logi spadków zapisane w %1\nLiczba zdarzeń: %2")
                            .arg(QDir::toNativeSeparators(fileName))
                            .arg(dropEvents.size()));
 }
@@ -353,18 +353,18 @@ void MainWindow::checkForDrop1(int currentDistance) {
             stopwatchTimer1->start(10);
 
             QDateTime currentTime = QDateTime::currentDateTime();
-            dataDisplay->append(tr("[%1] Automatyczne uruchomienie stopera 1 po wykryciu kropli")
+            dataDisplay->append(tr("[%1] Automatyczne uruchomienie stopera 1 po wykryciu spadku")
                 .arg(currentTime.toString("hh:mm:ss.zzz")));
-            qDebug() << "Automatycznie uruchomiono stoper 1 po wykryciu kropli";
+            qDebug() << "Automatycznie uruchomiono stoper 1 po wykryciu spadku";
         } else {
 
             stopwatchRunning1 = false;
             stopwatchTimer1->stop();
 
             QDateTime currentTime = QDateTime::currentDateTime();
-            dataDisplay->append(tr("[%1] Automatyczne zatrzymanie stopera 1 po wykryciu kropli")
+            dataDisplay->append(tr("[%1] Automatyczne zatrzymanie stopera 1 po wykryciu spadku")
                 .arg(currentTime.toString("hh:mm:ss.zzz")));
-            qDebug() << "Automatycznie zatrzymano stoper 1 po wykryciu kropli";
+            qDebug() << "Automatycznie zatrzymano stoper 1 po wykryciu spadku";
         }
 
 
@@ -399,18 +399,18 @@ void MainWindow::checkForDrop2(int currentDistance) {
             stopwatchTimer2->start(10);
 
             QDateTime currentTime = QDateTime::currentDateTime();
-            dataDisplay2->append(tr("[%1] Automatyczne uruchomienie stopera 2 po wykryciu kropli")
+            dataDisplay2->append(tr("[%1] Automatyczne uruchomienie stopera 2 po wykryciu spadku")
                 .arg(currentTime.toString("hh:mm:ss.zzz")));
-            qDebug() << "Automatycznie uruchomiono stoper 2 po wykryciu kropli";
+            qDebug() << "Automatycznie uruchomiono stoper 2 po wykryciu spadku";
         } else {
 
             stopwatchRunning2 = false;
             stopwatchTimer2->stop();
 
             QDateTime currentTime = QDateTime::currentDateTime();
-            dataDisplay2->append(tr("[%1] Automatyczne zatrzymanie stopera 2 po wykryciu kropli")
+            dataDisplay2->append(tr("[%1] Automatyczne zatrzymanie stopera 2 po wykryciu spadku")
                 .arg(currentTime.toString("hh:mm:ss.zzz")));
-            qDebug() << "Automatycznie zatrzymano stoper 2 po wykryciu kropli";
+            qDebug() << "Automatycznie zatrzymano stoper 2 po wykryciu spadku";
         }
 
 
@@ -425,8 +425,8 @@ void MainWindow::checkForDrop2(int currentDistance) {
 }
 
 void MainWindow::updateStoperDisplay() {
-    dropCounter1Label->setText(tr("Drops: %1").arg(dropCount1));
-    dropCounter2Label->setText(tr("Drops: %1").arg(dropCount2));
+    dropCounter1Label->setText(tr("Spadki: %1").arg(dropCount1));
+    dropCounter2Label->setText(tr("Spadki: %1").arg(dropCount2));
 }
 
 void MainWindow::handleStartStopButton() {
@@ -443,13 +443,13 @@ void MainWindow::handleStartStopButton() {
 void MainWindow::createControls() {
     QHBoxLayout *buttonLayout = new QHBoxLayout();
 
-    portSettingsBtn = new QPushButton(tr("PORT settings"));
-    showGraphBtn = new QPushButton(tr("Show GRAPH"));
+    portSettingsBtn = new QPushButton(tr("Ustawienia portu"));
+    showGraphBtn = new QPushButton(tr("Pokaż wykres"));
     startStopBtn = new QPushButton(tr("START"));
-    saveDataBtn = new QPushButton(tr("SAVE data 1"));
-    saveData2Btn = new QPushButton(tr("SAVE data 2"));
-    clearGraphBtn = new QPushButton(tr("Clear GRAPH"));
-    showRawDataBtn = new QPushButton(tr("Show raw data"));
+    saveDataBtn = new QPushButton(tr("Zapisz dane 1"));
+    saveData2Btn = new QPushButton(tr("Zapisz dane 2"));
+    clearGraphBtn = new QPushButton(tr("Wyczyść wykres"));
+    showRawDataBtn = new QPushButton(tr("Pokaż surowe dane"));
 
     buttonLayout->addWidget(portSettingsBtn);
     buttonLayout->addWidget(showGraphBtn);
@@ -462,7 +462,7 @@ void MainWindow::createControls() {
     mainLayout->addLayout(buttonLayout);
 
     // Dodanie checkboxa do włączania drugiego lidaru
-    enableSecondLidarCheckBox = new QCheckBox(tr("Enable second lidar"), this);
+    enableSecondLidarCheckBox = new QCheckBox(tr("Włącz drugi lidar"), this);
     enableSecondLidarCheckBox->setChecked(false);
     mainLayout->addWidget(enableSecondLidarCheckBox);
     connect(enableSecondLidarCheckBox, &QCheckBox::toggled, this, &MainWindow::onEnableSecondLidarToggled);
@@ -490,7 +490,7 @@ void MainWindow::createControls() {
         bool visible = !dataDisplay->isVisible();
         dataDisplay->setVisible(visible);
         dataDisplay2->setVisible(visible);
-        showRawDataBtn->setText(visible ? tr("Hide raw data") : tr("Show raw data"));
+        showRawDataBtn->setText(visible ? tr("Ukryj surowe dane") : tr("Pokaż surowe dane"));
 
         if (!visible) {
             setMinimumSize(0, 0);
@@ -504,10 +504,10 @@ void MainWindow::createControls() {
     QGridLayout *controlsLayout = new QGridLayout();
 
 
-    QGroupBox *sensor1Box = new QGroupBox(tr("Sensor 1"));
+    QGroupBox *sensor1Box = new QGroupBox(tr("Czujnik 1"));
     QVBoxLayout *sensor1Layout = new QVBoxLayout(sensor1Box);
 
-    QLabel *distanceLabel = new QLabel(tr("Distance:"));
+    QLabel *distanceLabel = new QLabel(tr("Odległość:"));
     distanceInput = new QLineEdit("00");
     distanceInput->setReadOnly(true);
 
@@ -515,17 +515,17 @@ void MainWindow::createControls() {
     sensor1Layout->addWidget(distanceInput);
 
 
-    QGroupBox *sensor2Box = new QGroupBox(tr("Sensor 2"));
+    QGroupBox *sensor2Box = new QGroupBox(tr("Czujnik 2"));
     QVBoxLayout *sensor2Layout = new QVBoxLayout(sensor2Box);
 
-    QLabel *distanceLabel2 = new QLabel(tr("Distance:"));
+    QLabel *distanceLabel2 = new QLabel(tr("Odległość:"));
     distanceInput2 = new QLineEdit("00");
     distanceInput2->setReadOnly(true);
 
     sensor2Layout->addWidget(distanceLabel2);
     sensor2Layout->addWidget(distanceInput2);
 
-    QGroupBox *timeBox = new QGroupBox(tr("Globalny czas"));
+    QGroupBox *timeBox = new QGroupBox(tr("Czas globalny"));
     QVBoxLayout *timeLayout = new QVBoxLayout(timeBox);
 
     globalTimeLabel = new QLabel("00:00.000");
@@ -545,7 +545,7 @@ void MainWindow::createControls() {
 
     mainLayout->addLayout(controlsLayout);
 
-    alwaysOnTopCheckbox = new QCheckBox(tr("Always on Top"), this);
+    alwaysOnTopCheckbox = new QCheckBox(tr("Zawsze na wierzchu"), this);
     mainLayout->addWidget(alwaysOnTopCheckbox);
 
     connect(alwaysOnTopCheckbox, &QCheckBox::checkStateChanged, this, [this](int state) {
@@ -563,8 +563,8 @@ void MainWindow::createControls() {
 void MainWindow::saveDataToFile(const QTextEdit *display, const QString &regexPattern) {
     QString defaultFileName = QString("EMPE_%1.csv").arg(QDate::currentDate().toString("ddMMyyyy"));
     QString fileName = QFileDialog::getSaveFileName(this,
-                                                    tr("Save Data"), defaultFileName,
-                                                    tr("CSV Files (*.csv)"));
+                                                    tr("Zapisz dane"), defaultFileName,
+                                                    tr("Pliki CSV (*.csv)"));
 
     if (fileName.isEmpty()) {
         return;
@@ -577,8 +577,8 @@ void MainWindow::saveDataToFile(const QTextEdit *display, const QString &regexPa
     QFile file(fileName);
     if (file.exists()) {
         QMessageBox::StandardButton reply = QMessageBox::question(this,
-                                                                  tr("File exists"),
-                                                                  tr("The file %1 already exists.\nDo you want to replace it?")
+                                                                  tr("Plik istnieje"),
+                                                                  tr("Plik %1 już istnieje.\nCzy chcesz go zastąpić?")
                                                                   .arg(QDir::toNativeSeparators(fileName)),
                                                                   QMessageBox::Yes | QMessageBox::No);
 
@@ -588,15 +588,15 @@ void MainWindow::saveDataToFile(const QTextEdit *display, const QString &regexPa
     }
 
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        QMessageBox::warning(this, tr("Error"),
-                             tr("Cannot write file %1:\n%2.")
+        QMessageBox::warning(this, tr("Błąd"),
+                             tr("Nie można zapisać pliku %1:\n%2.")
                              .arg(QDir::toNativeSeparators(fileName),
                                   file.errorString()));
         return;
     }
 
     QTextStream out(&file);
-    out << tr("Distance,Time (mm:ss),Milliseconds,Raw Time (ms)\n");
+    out << tr("Odległość,Czas (mm:ss),Milisekundy,Surowy czas (ms)\n");
 
     QString rawData = display->toPlainText();
     QStringList lines = rawData.split('\n');
@@ -630,8 +630,8 @@ void MainWindow::saveDataToFile(const QTextEdit *display, const QString &regexPa
     file.close();
 
     if (dataWritten) {
-        QMessageBox::information(this, tr("Success"),
-                                 tr("Data has been saved to %1")
+        QMessageBox::information(this, tr("Sukces"),
+                                 tr("Dane zostały zapisane w %1")
                                  .arg(QDir::toNativeSeparators(fileName)));
     }
 }
@@ -865,6 +865,11 @@ void MainWindow::parseData2(const QString &data) {
 void MainWindow::changeEvent(QEvent *event) {
     if (event->type() == QEvent::LanguageChange) {
         retranslateUi();
+        // Propagacja do okien podrzędnych
+        if (portSettings) portSettings->retranslateUi();
+        if (appMenu) appMenu->retranslateUi();
+        // Jeśli masz wskaźnik do graphWindow, dodaj:
+        // if (graphWindow) graphWindow->retranslateUi();
     }
     QMainWindow::changeEvent(event);
 }
@@ -906,7 +911,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
         bool visible = !dataDisplay->isVisible();
         dataDisplay->setVisible(visible);
         dataDisplay2->setVisible(visible);
-        showRawDataBtn->setText(visible ? tr("Hide raw data") : tr("Show raw data"));
+        showRawDataBtn->setText(visible ? tr("Ukryj surowe dane") : tr("Pokaż surowe dane"));
     } else {
         QMainWindow::keyPressEvent(event);
     }
@@ -923,7 +928,7 @@ void MainWindow::logDropEvent(int sensorId, int previousDistance, int currentDis
     QDateTime currentTime = QDateTime::currentDateTime();
 
 
-    display->append(tr("[%1] Wykryto kroplę (sensor %2): Poprzednia odległość: %3, Aktualna: %4, Różnica: %5")
+    display->append(tr("[%1] Wykryto spadek (sensor %2): Poprzednia odległość: %3, Aktualna: %4, Różnica: %5")
                    .arg(currentTime.toString("hh:mm:ss.zzz"))
                    .arg(sensorId)
                    .arg(previousDistance)
@@ -934,7 +939,7 @@ void MainWindow::logDropEvent(int sensorId, int previousDistance, int currentDis
     QScrollBar *scrollBar = display->verticalScrollBar();
     scrollBar->setValue(scrollBar->maximum());
 
-    qDebug() << "Wykryto kroplę na sensorze" << sensorId
+    qDebug() << "Wykryto spadek na sensorze" << sensorId
              << "- Poprzednia:" << previousDistance
              << "Aktualna:" << currentDistance
              << "Różnica:" << difference;
@@ -1065,45 +1070,40 @@ void MainWindow::createMenu() {
 }
 
 void MainWindow::changeLanguage(const QString &language) {
+    QSettings settings;
+    settings.setValue("language", language);
     QString translationPath = QCoreApplication::applicationDirPath() + "/translations";
-
     qApp->removeTranslator(&translator);
-
     if (translator.load("lidar_" + language, translationPath)) {
         qApp->installTranslator(&translator);
+    } else {
+        translator.load("lidar_en", translationPath);
+        qApp->installTranslator(&translator);
     }
+    retranslateUi();
+    if (portSettings) portSettings->retranslateUi();
+    if (appMenu) appMenu->retranslateUi();
+    // Dodaj propagację do innych okien podrzędnych jeśli istnieją
 }
 
 void MainWindow::retranslateUi() {
-    setWindowTitle(tr("EMPE - Measurement System"));
-
-    // Buttons
-    portSettingsBtn->setText(tr("PORT settings"));
-    showGraphBtn->setText(tr("Show GRAPH"));
-    startStopBtn->setText(isReading ? tr("STOP") : tr("START"));
-    saveDataBtn->setText(tr("SAVE data 1"));
-    saveData2Btn->setText(tr("SAVE data 2"));
-    clearGraphBtn->setText(tr("Clear GRAPH"));
-    showRawDataBtn->setText(dataDisplay->isVisible() ?
-        tr("Hide raw data") : tr("Show raw data"));
-
-    // Checkboxes
-    enableSecondLidarCheckBox->setText(tr("Enable second lidar"));
-    alwaysOnTopCheckbox->setText(tr("Always on Top"));
-
-    // Labels
-    dropCounter1Label->setText(tr("Drops: %1").arg(dropCount1));
-    dropCounter2Label->setText(tr("Drops: %1").arg(dropCount2));
-
-    // Group boxes
-    QList<QGroupBox*> sensorBoxes = findChildren<QGroupBox*>();
-    for (QGroupBox* box : sensorBoxes) {
-        if (box->title() == "Sensor 1")
-            box->setTitle(tr("Sensor 1"));
-        else if (box->title() == "Sensor 2")
-            box->setTitle(tr("Sensor 2"));
-    }
-
-    // Footer
-    creatorsNoteLabel->setText(tr("Program powstał w ramach projektu Embodying Math&Physics Education 2023-1-PL01-KA210-SCH-000165829"));
+    setWindowTitle(tr("EMPE - System Pomiarowy"));
+    if (portSettingsBtn) portSettingsBtn->setText(tr("Ustawienia portu"));
+    if (showGraphBtn) showGraphBtn->setText(tr("Pokaż wykres"));
+    if (startStopBtn) startStopBtn->setText(tr("START"));
+    if (saveDataBtn) saveDataBtn->setText(tr("Zapisz dane 1"));
+    if (saveData2Btn) saveData2Btn->setText(tr("Zapisz dane 2"));
+    if (clearGraphBtn) clearGraphBtn->setText(tr("Wyczyść wykres"));
+    if (showRawDataBtn) showRawDataBtn->setText(tr("Pokaż surowe dane"));
+    if (alwaysOnTopCheckbox) alwaysOnTopCheckbox->setText(tr("Zawsze na wierzchu"));
+    if (enableSecondLidarCheckBox) enableSecondLidarCheckBox->setText(tr("Włącz drugi lidar"));
+    if (dropCounter1Label) dropCounter1Label->setText(tr("Spadki: %1").arg(dropCount1));
+    if (dropCounter2Label) dropCounter2Label->setText(tr("Spadki: %1").arg(dropCount2));
+    if (stopwatchLabel1) stopwatchLabel1->setText(tr("Stoper: 00:00.000"));
+    if (stopwatchLabel2) stopwatchLabel2->setText(tr("Stoper: 00:00.000"));
+    if (resetStoperBtn) resetStoperBtn->setText(tr("Resetuj"));
+    if (saveStoperLogsBtn) saveStoperLogsBtn->setText(tr("Zapisz logi stopera"));
+    if (enableStoper1CheckBox) enableStoper1CheckBox->setText(tr("Włącz czujnik 1"));
+    if (enableStoper2CheckBox) enableStoper2CheckBox->setText(tr("Włącz czujnik 2"));
+    if (sensitivityLabel) sensitivityLabel->setText(QString::number(dropSensitivity));
 }

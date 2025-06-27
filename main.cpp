@@ -31,18 +31,21 @@
 #include <QApplication>
 #include <QTranslator>
 #include <QLocale>
+#include <QSettings>
 #include "mainwindow.h"
 
 int main(int argc, char *argv[]) {
     QApplication a(argc, argv);
 
-    QTranslator translator;
+    QSettings settings;
     QString translationPath = QCoreApplication::applicationDirPath() + "/translations";
-    QString locale = QLocale::system().name();
-
-    // Load system translation or fallback to English
-    if (!translator.load("lidar_" + locale, translationPath)) {
-        translator.load("lidar_en", translationPath);
+    QString lang = settings.value("language", "pl").toString();
+    QTranslator translator;
+    if (!translator.load("lidar_" + lang, translationPath)) {
+        qWarning() << "Failed to load translation for" << lang;
+        if (!translator.load("lidar_pl", translationPath)) {
+            qWarning() << "Failed to load fallback English translation";
+        }
     }
     a.installTranslator(&translator);
 

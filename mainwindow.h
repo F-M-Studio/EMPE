@@ -49,6 +49,8 @@ public:
 
     ~MainWindow();
 
+    void retranslateUi();
+
     bool Reading;
     int distance, timeInMilliseconds, minutes, seconds, milliseconds;
     int distance2, timeInMilliseconds2, minutes2, seconds2, milliseconds2;
@@ -136,9 +138,6 @@ private:
     QAction *languageAction{};
     QAction *languageActionPL;
     QAction *languageActionEN;
-
-    void retranslateUi();
-
 
     QMenuBar *menuBar{};
     QMenu *mainMenu{};
@@ -231,4 +230,3 @@ private:
 };
 
 #endif
-

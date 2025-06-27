@@ -43,6 +43,9 @@ public:
 
     void retranslateUi();
 
+protected:
+    void changeEvent(QEvent *event) override;
+
 private:
     QLabel *titleLabel;
     QLabel *authorsLabel;
