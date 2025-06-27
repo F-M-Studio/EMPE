@@ -32,6 +32,8 @@
 #include <QTranslator>
 #include <QLocale>
 #include <QSettings>
+#include <QDebug>
+#include <QDir>
 #include "mainwindow.h"
 
 int main(int argc, char *argv[]) {
@@ -39,12 +41,18 @@ int main(int argc, char *argv[]) {
 
     QSettings settings;
     QString translationPath = QCoreApplication::applicationDirPath() + "/translations";
+    qDebug() << "Looking for translations in:" << translationPath;
+
     QString lang = settings.value("language", "pl").toString();
     QTranslator translator;
-    if (!translator.load("lidar_" + lang, translationPath)) {
-        qWarning() << "Failed to load translation for" << lang;
-        if (!translator.load("lidar_pl", translationPath)) {
-            qWarning() << "Failed to load fallback English translation";
+    QString tsFile = translationPath + "/lidar_" + lang;
+    qDebug() << "Trying to load translation file:" << tsFile;
+
+    if (!translator.load(tsFile)) {
+        qWarning() << "Failed to load translation for" << lang << "from" << tsFile;
+        tsFile = translationPath + "/lidar_pl";
+        if (!translator.load(tsFile)) {
+            qWarning() << "Failed to load fallback English translation from" << tsFile;
         }
     }
     a.installTranslator(&translator);

@@ -34,6 +34,7 @@
 #include <QSerialPort>
 #include <QtWidgets>
 #include <QDateTime>
+#include <QTranslator>
 
 #include "portsettings.h"
 

@@ -42,6 +42,17 @@ find_package(Qt6 COMPONENTS
         REQUIRED
 )
 
+# Konfiguracja tłumaczeń
+set(TS_FILES
+    ${CMAKE_SOURCE_DIR}/translations/lidar_en.ts
+    ${CMAKE_SOURCE_DIR}/translations/lidar_pl.ts
+)
+
+qt_add_translations(lidar
+    TS_FILES ${TS_FILES}
+    QM_FILES_OUTPUT_VARIABLE QM_FILES
+)
+
 if(DEFINED ENV{GITHUB_ACTIONS})
     message(STATUS "Running in GitHub Actions CI environment")
     set(CI_MODE TRUE)
@@ -131,12 +142,6 @@ if (UNIX OR APPLE)
     )
 endif ()
 
-qt_add_translations(lidar
-        TS_FILES
-        translations/lidar_pl.ts
-        translations/lidar_en.ts
-        QM_FILES_OUTPUT_VARIABLE QM_FILES
-)
 
 target_link_libraries(lidar
         Qt6::Core

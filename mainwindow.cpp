@@ -1073,17 +1073,28 @@ void MainWindow::changeLanguage(const QString &language) {
     QSettings settings;
     settings.setValue("language", language);
     QString translationPath = QCoreApplication::applicationDirPath() + "/translations";
+
+    // Usuwamy stary translator
     qApp->removeTranslator(&translator);
+
+    bool loaded = false;
+    // Próbujemy załadować nowe tłumaczenie
     if (translator.load("lidar_" + language, translationPath)) {
+        loaded = true;
+    } else if (translator.load("lidar_pl", translationPath)) { // Próbujemy załadować domyślne polskie tłumaczenie
+        loaded = true;
+    }
+
+    if (loaded) {
         qApp->installTranslator(&translator);
     } else {
-        translator.load("lidar_en", translationPath);
-        qApp->installTranslator(&translator);
+        qWarning() << "Failed to load translation for" << language;
     }
+
+    // Aktualizacja interfejsu
     retranslateUi();
     if (portSettings) portSettings->retranslateUi();
     if (appMenu) appMenu->retranslateUi();
-    // Dodaj propagację do innych okien podrzędnych jeśli istnieją
 }
 
 void MainWindow::retranslateUi() {
