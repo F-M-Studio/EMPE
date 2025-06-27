@@ -1,3 +1,29 @@
+# Nazwa Projektu: EMPE
+# Plik: CMakeLists.txt
+#
+# Krótki opis pliku: Główny plik konfiguracyjny CMake zawierający instrukcje budowania projektu i zarządzania zależnościami.
+#
+# Autorzy:
+# Mateusz Korniak <mkorniak04@gmail.com>
+# Mateusz Machowski <machowskimateusz51@gmail.com>
+# Filip Leśnik <filip.lesnik170@gmail.com>
+#
+# Data Utworzenia: 4 Marca 2025
+# Ostatnia Modyfikacja: 18 Czerwaca 2025
+#
+# Ten program jest wolnym oprogramowaniem; możesz go rozprowadzać i/lub
+# modyfikować na warunkach Powszechnej Licencji Publicznej GNU,
+# opublikowanej przez Free Software Foundation, w wersji 3 tej Licencji
+# lub (według twojego wyboru) dowolnej późniejszej wersji.
+#
+# Ten program jest rozpowszechniany w nadziei, że będzie użyteczny, ale
+# BEZ ŻADNEJ GWARANCJI; nawet bez domyślnej gwarancji PRZYDATNOŚCI
+# HANDLOWEJ lub PRZYDATNOŚCI DO OKREŚLONEGO CELU. Zobacz Powszechną
+# Licencję Publiczną GNU, aby uzyskać więcej szczegółów.
+#
+# Powinieneś otrzymać kopię Powszechnej Licencji Publicznej GNU wraz z
+# tym programem. Jeśli nie, zobacz <http://www.gnu.org/licenses/>.
+
 cmake_minimum_required(VERSION 3.30)
 project(lidar)
 
@@ -16,12 +42,12 @@ find_package(Qt6 COMPONENTS
         REQUIRED
 )
 
-if (DEFINED ENV{GITHUB_ACTIONS})
+if(DEFINED ENV{GITHUB_ACTIONS})
     message(STATUS "Running in GitHub Actions CI environment")
     set(CI_MODE TRUE)
-endif ()
+endif()
 
-if (WIN32)
+if(WIN32)
     add_executable(lidar WIN32 main.cpp
             mainwindow.h
             mainwindow.cpp
@@ -33,40 +59,51 @@ if (WIN32)
             resources.qrc
             appmenu.h
             appmenu.cpp
+            aboutusdialog.h
+            aboutusdialog.cpp
     )
-    if (CI_MODE)
-        message(STATUS "Configuring for GitHub Actions CI")
+        if(CI_MODE)
+                message(STATUS "Configuring for GitHub Actions CI")
+                
+                # Use environment variables from GitHub Actions
+                set(QT_PATH $ENV{QT_PATH})
+                set(MINGW_BIN_PATH "$ENV{MINGW_HOME}/bin")
+                
+                # Simplified deployment command
+                add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+                    COMMAND "${QT_PATH}/bin/windeployqt.exe"
+                    --verbose 1
+                    --compiler-runtime
+                    --dir \"$<TARGET_FILE_DIR:${PROJECT_NAME}>/../\"
+                        #--no-translations
+                    \"$<TARGET_FILE:${PROJECT_NAME}>\"
+                    COMMENT "CI: Deploying Qt dependencies..."
+                )
 
-        # Use environment variables from GitHub Actions
-        set(QT_PATH $ENV{QT_PATH})
-        set(MINGW_BIN_PATH "$ENV{MINGW_HOME}/bin")
+                # Copy translations
+                add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:${PROJECT_NAME}>/../translations"
+                    COMMAND ${CMAKE_COMMAND} -E copy_directory
+                    "${CMAKE_SOURCE_DIR}/translations"
+                    "$<TARGET_FILE_DIR:${PROJECT_NAME}>/../translations"
+                    COMMENT "Copying translation files..."
+                )
 
-        # Simplified deployment command
-        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                COMMAND "${QT_PATH}/bin/windeployqt.exe"
-                --verbose 1
-                --compiler-runtime
-                --no-translations
-                --dir \"$<TARGET_FILE_DIR:${PROJECT_NAME}>/../\"
-                \"$<TARGET_FILE:${PROJECT_NAME}>\"
-                COMMENT "CI: Deploying Qt dependencies..."
-        )
-
-        # Copy MinGW runtime DLLs from CI environment
-        foreach (MINGW_DLL
-                libgcc_s_seh-1.dll
-                libstdc++-6.dll
-                libwinpthread-1.dll)
-            add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                    "${MINGW_BIN_PATH}/${MINGW_DLL}"
-                    "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
-                    COMMENT "CI: Copying ${MINGW_DLL}..."
-            )
-        endforeach ()
-
-    else ()
-    endif ()
+                # Copy MinGW runtime DLLs from CI environment
+                foreach(MINGW_DLL
+                    libgcc_s_seh-1.dll
+                    libstdc++-6.dll
+                    libwinpthread-1.dll)
+                    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+                        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                        "${MINGW_BIN_PATH}/${MINGW_DLL}"
+                        "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+                        COMMENT "CI: Copying ${MINGW_DLL}..."
+                    )
+                endforeach()
+                
+            else()
+    endif()
 endif ()
 
 if (UNIX OR APPLE)
@@ -81,6 +118,8 @@ if (UNIX OR APPLE)
             resources.qrc
             appmenu.h
             appmenu.cpp
+            aboutusdialog.h
+            aboutusdialog.cpp
     )
 endif ()
 
@@ -101,34 +140,41 @@ target_link_libraries(lidar
 
 # Add deployment
 include(GNUInstallDirs)
-if (WIN32)
+if(WIN32)
     set(DEBUG_SUFFIX "")
-    if (CMAKE_BUILD_TYPE MATCHES "Debug")
+    if(CMAKE_BUILD_TYPE MATCHES "Debug")
         set(DEBUG_SUFFIX "d")
-    endif ()
+    endif()
     set(WINDOWS_ICON_RC ${CMAKE_CURRENT_BINARY_DIR}/app_icon.rc)
     file(WRITE ${WINDOWS_ICON_RC} "IDI_ICON1 ICON \"${CMAKE_CURRENT_SOURCE_DIR}/icons/EMPE.ico\"")
     target_sources(lidar PRIVATE ${WINDOWS_ICON_RC})
-    # Deploy Qt runtime files
-    if (TARGET Qt6::qmake)
-        get_target_property(_qmake_executable Qt6::qmake IMPORTED_LOCATION)
-        get_filename_component(_qt_bin_dir "${_qmake_executable}" DIRECTORY)
 
+    # Deploy Qt runtime files
+    set(QT_PATH "F:/Qt/6.7.3/mingw_64")
+    if(EXISTS "${QT_PATH}/bin/windeployqt.exe")
         # Deploy Qt plugins
         add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                COMMAND "${_qt_bin_dir}/windeployqt.exe"
+                COMMAND "${QT_PATH}/bin/windeployqt.exe"
                 --verbose 0
                 --no-compiler-runtime
-                --no-translations
-                --no-system-d3d-compiler
+                --dir \"$<TARGET_FILE_DIR:${PROJECT_NAME}>\"
                 \"$<TARGET_FILE:${PROJECT_NAME}>\"
                 COMMENT "Deploying Qt dependencies..."
         )
-    endif ()
+
+        # Copy translations
+        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:${PROJECT_NAME}>/translations"
+                COMMAND ${CMAKE_COMMAND} -E copy_directory
+                "${CMAKE_SOURCE_DIR}/translations"
+                "$<TARGET_FILE_DIR:${PROJECT_NAME}>/translations"
+                COMMENT "Copying translation files..."
+        )
+    endif()
 
     # Deploy MinGW runtime DLLs
-    set(MINGW_BIN_PATH "C:/Qt/Tools/mingw1120_64/bin")
-    foreach (MINGW_DLL
+    set(MINGW_BIN_PATH "F:/Qt/Tools/mingw1120_64/bin")
+    foreach(MINGW_DLL
             libgcc_s_seh-1.dll
             libstdc++-6.dll
             libwinpthread-1.dll)
@@ -138,11 +184,11 @@ if (WIN32)
                 "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
                 COMMENT "Copying ${MINGW_DLL}..."
         )
-    endforeach ()
-endif ()
+    endforeach()
+endif()
 
 # macOS platform-specific settings
-if (APPLE)
+if(APPLE)
     set_target_properties(lidar PROPERTIES
             MACOSX_BUNDLE TRUE
             MACOSX_BUNDLE_GUI_IDENTIFIER com.FMSquaredStudio.EMPE
@@ -158,10 +204,10 @@ if (APPLE)
             MACOSX_PACKAGE_LOCATION "Resources"
     )
     target_sources(lidar PRIVATE ${APP_ICON_MACOSX})
-endif ()
+endif()
 
 # Linux platform-specific settings
-if (UNIX AND NOT APPLE)
+if(UNIX AND NOT APPLE)
     # Install binary
     install(TARGETS lidar DESTINATION bin)
 
@@ -175,4 +221,4 @@ if (UNIX AND NOT APPLE)
             DESTINATION share/icons/hicolor/256x256/apps
             RENAME empe.png)
 
-endif ()
+endif()
