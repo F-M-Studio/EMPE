@@ -40,22 +40,53 @@ int main(int argc, char *argv[]) {
     QApplication a(argc, argv);
 
     QSettings settings;
-    QString translationPath = QCoreApplication::applicationDirPath() + "/translations";
-    qDebug() << "Looking for translations in:" << translationPath;
 
-    QString lang = settings.value("language", "pl").toString();
+    // Poprawione ładowanie tłumaczeń
     QTranslator translator;
-    QString tsFile = translationPath + "/lidar_" + lang;
-    qDebug() << "Trying to load translation file:" << tsFile;
+    QString lang = settings.value("language", "pl").toString(); // Domyślny język to polski
 
-    if (!translator.load(tsFile)) {
-        qWarning() << "Failed to load translation for" << lang << "from" << tsFile;
-        tsFile = translationPath + "/lidar_pl";
-        if (!translator.load(tsFile)) {
-            qWarning() << "Failed to load fallback English translation from" << tsFile;
+    // Sprawdzamy najpierw w katalogu aplikacji
+    QString appTranslationPath = QCoreApplication::applicationDirPath() + "/translations";
+    qDebug() << "Szukam tłumaczeń w:" << appTranslationPath;
+
+    // Potem sprawdzamy bezpośrednio w katalogu projektu (przydatne podczas rozwoju)
+    QString projTranslationPath = QDir::currentPath() + "/translations";
+    qDebug() << "Również szukam w:" << projTranslationPath;
+
+    // Na koniec sprawdzamy w zasobach (wkompilowane do programu)
+    qDebug() << "Również szukam w zasobach Qt";
+
+    bool loaded = false;
+
+    // Próbujemy załadować plik .qm (nie .ts)
+    if (translator.load("lidar_" + lang, appTranslationPath)) {
+        loaded = true;
+        qDebug() << "Załadowano tłumaczenie z:" << appTranslationPath;
+    } else if (translator.load("lidar_" + lang, projTranslationPath)) {
+        loaded = true;
+        qDebug() << "Załadowano tłumaczenie z:" << projTranslationPath;
+    } else if (translator.load(":/translations/lidar_" + lang)) {
+        loaded = true;
+        qDebug() << "Załadowano tłumaczenie z zasobów";
+    } else {
+        qWarning() << "Nie udało się załadować tłumaczenia dla" << lang;
+
+        // Próbujemy załadować domyślne tłumaczenie polskie
+        if (lang != "pl" && (
+            translator.load("lidar_pl", appTranslationPath) ||
+            translator.load("lidar_pl", projTranslationPath) ||
+            translator.load(":/translations/lidar_pl"))) {
+            loaded = true;
+            qDebug() << "Załadowano domyślne tłumaczenie polskie";
+        } else {
+            qWarning() << "Nie udało się załadować domyślnego tłumaczenia polskiego";
         }
     }
-    a.installTranslator(&translator);
+
+    if (loaded) {
+        a.installTranslator(&translator);
+        qDebug() << "Zainstalowano tłumacza dla języka:" << lang;
+    }
 
     QFontDatabase::addApplicationFont(":/fonts/AdwaitaSans-Regular.ttf");
 

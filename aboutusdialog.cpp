@@ -52,7 +52,7 @@ AboutUsDialog::AboutUsDialog(QWidget *parent) : QDialog(parent) {
     authorsLabel->setAlignment(Qt::AlignCenter);
     authorsLabel->setWordWrap(true);
 
-    QLabel *authorsHeaderLabel = new QLabel(tr("Autorzy:"), this);
+    QLabel *authorsHeaderLabel = new QLabel(tr("Program został napisany w ramach przemediotu Programowanie Proceduralne pod okiem Pana Dr. Hab. Romana Rośka i został zaprogramowany przez:"), this);
     QFont authorsFont = authorsHeaderLabel->font();
     authorsFont.setBold(true);
     authorsHeaderLabel->setFont(authorsFont);

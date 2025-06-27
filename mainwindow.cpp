@@ -1072,29 +1072,66 @@ void MainWindow::createMenu() {
 void MainWindow::changeLanguage(const QString &language) {
     QSettings settings;
     settings.setValue("language", language);
-    QString translationPath = QCoreApplication::applicationDirPath() + "/translations";
 
     // Usuwamy stary translator
     qApp->removeTranslator(&translator);
 
+    // Sprawdzamy różne lokalizacje plików tłumaczeń
+    QString appTranslationPath = QCoreApplication::applicationDirPath() + "/translations";
+    QString projTranslationPath = QDir::currentPath() + "/translations";
+
     bool loaded = false;
-    // Próbujemy załadować nowe tłumaczenie
-    if (translator.load("lidar_" + language, translationPath)) {
+    // Próbujemy załadować plik .qm (nie .ts)
+    if (translator.load("lidar_" + language, appTranslationPath)) {
         loaded = true;
-    } else if (translator.load("lidar_pl", translationPath)) { // Próbujemy załadować domyślne polskie tłumaczenie
+        qDebug() << "Załadowano tłumaczenie z:" << appTranslationPath;
+    } else if (translator.load("lidar_" + language, projTranslationPath)) {
         loaded = true;
+        qDebug() << "Załadowano tłumaczenie z:" << projTranslationPath;
+    } else if (translator.load(":/translations/lidar_" + language)) {
+        loaded = true;
+        qDebug() << "Załadowano tłumaczenie z zasobów";
+    } else {
+        qWarning() << "Nie udało się załadować tłumaczenia dla" << language;
+
+        // Próbujemy załadować domyślne tłumaczenie polskie
+        if (language != "pl" && (
+            translator.load("lidar_pl", appTranslationPath) ||
+            translator.load("lidar_pl", projTranslationPath) ||
+            translator.load(":/translations/lidar_pl"))) {
+            loaded = true;
+            qDebug() << "Załadowano domyślne tłumaczenie polskie";
+        } else {
+            qWarning() << "Nie udało się załadować domyślnego tłumaczenia polskiego";
+        }
     }
 
     if (loaded) {
         qApp->installTranslator(&translator);
-    } else {
-        qWarning() << "Failed to load translation for" << language;
+        qDebug() << "Zainstalowano tłumacza dla języka:" << language;
     }
 
     // Aktualizacja interfejsu
     retranslateUi();
     if (portSettings) portSettings->retranslateUi();
-    if (appMenu) appMenu->retranslateUi();
+    if (appMenu) {
+        appMenu->retranslateUi();
+        appMenu->setLanguage(language);
+    }
+
+    // Znajdź wszystkie otwarte okna GraphWindow i zaktualizuj ich interfejs
+    const QWidgetList topLevelWidgets = QApplication::topLevelWidgets();
+    for (QWidget *widget : topLevelWidgets) {
+        GraphWindow *graphWindow = qobject_cast<GraphWindow*>(widget);
+        if (graphWindow) {
+            graphWindow->retranslateUi();
+        }
+
+        AboutUsDialog *aboutDialog = qobject_cast<AboutUsDialog*>(widget);
+        if (aboutDialog) {
+            aboutDialog->retranslateUi();
+        }
+    }
 }
 
 void MainWindow::retranslateUi() {
