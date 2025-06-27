@@ -29,14 +29,72 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="pl_PL">
     <context>
+        <name>AboutUsDialog</name>
+        <message>
+            <source>About Us</source>
+            <translation>O nas</translation>
+        </message>
+        <message>
+            <source>EMPE Team</source>
+            <translation>Zespół EMPE</translation>
+        </message>
+    </context>
+    <context>
+        <name>AppMenu</name>
+        <message>
+            <source>File</source>
+            <translation>Plik</translation>
+        </message>
+        <message>
+            <source>Show Graph</source>
+            <translation>Pokaż wykres</translation>
+        </message>
+        <message>
+            <source>Port Settings</source>
+            <translation>Ustawienia portu</translation>
+        </message>
+        <message>
+            <source>Exit</source>
+            <translation>Wyjdź</translation>
+        </message>
+        <message>
+            <source>Language</source>
+            <translation>Język</translation>
+        </message>
+        <message>
+            <source>English</source>
+            <translation>Angielski</translation>
+        </message>
+        <message>
+            <source>Polish</source>
+            <translation>Polski</translation>
+        </message>
+        <message>
+            <source>Help</source>
+            <translation>Pomoc</translation>
+        </message>
+        <message>
+            <source>About Us</source>
+            <translation>O nas</translation>
+        </message>
+    </context>
+    <context>
         <name>GraphWindow</name>
         <message>
-            <source>MainWindow</source>
-            <translation>Okno Wykresu</translation>
+            <source>Graph</source>
+            <translation>Wykres</translation>
+        </message>
+        <message>
+            <source>Stop</source>
+            <translation>Zatrzymaj</translation>
+        </message>
+        <message>
+            <source>Start</source>
+            <translation>Rozpocznij</translation>
         </message>
         <message>
             <source>Clear Graph</source>
-            <translation>Wyczyść Wykres</translation>
+            <translation>Wyczyść wykres</translation>
         </message>
         <message>
             <source>Time (min:ms)</source>
@@ -48,7 +106,7 @@
         </message>
         <message>
             <source>Recording period [ms]:</source>
-            <translation>Okres nagrywania [ms]:</translation>
+            <translation>Okres rejestracji [ms]:</translation>
         </message>
         <message>
             <source>Set Y</source>
@@ -60,7 +118,7 @@
         </message>
         <message>
             <source>Auto-scroll X axis</source>
-            <translation>Automatycznie przesuwanie osi X punktów</translation>
+            <translation>Automatyczne przewijanie osi X</translation>
         </message>
         <message>
             <source>Points limit:</source>
@@ -68,7 +126,7 @@
         </message>
         <message>
             <source>Smooth Graph</source>
-            <translation>Wygładź Wykres</translation>
+            <translation>Wygładź wykres</translation>
         </message>
         <message>
             <source>Smoothing:</source>
@@ -76,201 +134,269 @@
         </message>
         <message>
             <source>Use Relative Time</source>
-            <translation>Użyj Czasu Względnego</translation>
+            <translation>Użyj czasu względnego</translation>
         </message>
         <message>
-             <source>Series 1</source>
-               <translation>Port szeregowy 1</translation>
+            <source>Show Series 1</source>
+            <translation>Pokaż serię 1</translation>
         </message>
         <message>
-              <source>Series 2</source>
-              <translation>Port szeregowy 2</translation>
-        </message>
-        <message>
-               <source>Start</source>
-               <translation>Start</translation>
-        </message>
-        <message>
-             <source>Stop</source>
-              <translation>Stop</translation>
-        </message>
-        <message>
-              <source>Bluetooth Device</source>
-              <translation>Urządzenie Bluetooth</translation>
+            <source>Show Series 2</source>
+            <translation>Pokaż serię 2</translation>
         </message>
     </context>
     <context>
         <name>MainWindow</name>
         <message>
-            <source>Always on Top</source>
-            <translation>Zawsze na wierzchu</translation>
+            <source>EMPE</source>
+            <translation>EMPE</translation>
         </message>
         <message>
-            <source>Get Raw Data</source>
-            <translation>Pobierz surowe dane</translation>
+            <source>This program was created as part of the Embodying Math&amp;Physics Education project 2023-1-PL01-KA210-SCH-000165829</source>
+            <translation>Ten program został stworzony w ramach projektu Embodying Math&amp;Physics Education 2023-1-PL01-KA210-SCH-000165829</translation>
         </message>
         <message>
-            <source>Distance:</source>
-            <translation>Odległość:</translation>
+            <source>Drop Sensitivity (mm):</source>
+            <translation>Czułość spadku (mm):</translation>
         </message>
         <message>
-            <source>Time:</source>
-            <translation>Czas:</translation>
-        </message>
-    </context>
-    <context>
-        <name>AppMenu</name>
-        <message>
-            <source>☰ Menu</source>
-            <translation>☰ Menu</translation>
+            <source>Reset All</source>
+            <translation>Resetuj wszystko</translation>
         </message>
         <message>
-            <source>Port settings</source>
-            <translation>Ustawienia portu</translation>
+            <source>Sensor 1</source>
+            <translation>Czujnik 1</translation>
         </message>
         <message>
-            <source>Graph</source>
-            <translation>Wykres</translation>
+            <source>Enable Sensor 1</source>
+            <translation>Włącz czujnik 1</translation>
         </message>
         <message>
-            <source>Start measurement</source>
-            <translation>Rozpocznij pomiar</translation>
+            <source>Drops: 0</source>
+            <translation>Krople: 0</translation>
         </message>
         <message>
-            <source>Stop measurement</source>
-            <translation>Zatrzymaj pomiar</translation>
+            <source>Stoper: 00:00.000</source>
+            <translation>Stoper: 00:00.000</translation>
         </message>
         <message>
-            <source>Save data to file</source>
-            <translation>Zapisz dane do pliku</translation>
+            <source>Sensor 2</source>
+            <translation>Czujnik 2</translation>
         </message>
         <message>
-            <source>Language</source>
-            <translation>Język</translation>
+            <source>Enable Sensor 2</source>
+            <translation>Włącz czujnik 2</translation>
         </message>
         <message>
-            <source>About us</source>
-            <translation>O nas</translation>
-        </message>
-    </context>
-    <context>
-        <name>AboutUsDialog</name>
-        <message>
-            <source>About us</source>
-            <translation>O nas</translation>
+            <source>Stop Stoper</source>
+            <translation>Zatrzymaj stoper</translation>
         </message>
         <message>
-            <source>Application Authors</source>
-            <translation>Autorzy aplikacji</translation>
+            <source>Start Stoper</source>
+            <translation>Uruchom stoper</translation>
         </message>
         <message>
-            <source>This application was created by:</source>
-            <translation>Ta aplikacja została stworzona przez:</translation>
+            <source>Stop Stoper (%1)</source>
+            <translation>Zatrzymaj stoper (%1)</translation>
         </message>
         <message>
-            <source>Lead Developer</source>
-            <translation>Główny programista</translation>
+            <source>Stoper</source>
+            <translation>Stoper</translation>
         </message>
         <message>
-            <source>UI/UX Designer</source>
-            <translation>Projektant UI/UX</translation>
+            <source>Time's up!</source>
+            <translation>Czas upłynął!</translation>
         </message>
         <message>
-            <source>Testing Engineer</source>
-            <translation>Inżynier testów</translation>
+            <source>Reset Complete</source>
+            <translation>Reset zakończony</translation>
         </message>
         <message>
-            <source>Close</source>
-            <translation>Zamknij</translation>
+            <source>Drop counters, logs, and stoper have been reset.</source>
+            <translation>Liczniki kropel, dzienniki i stoper zostały zresetowane.</translation>
         </message>
-    </context>
-    <context>
-        <name>QFileDialog</name>
         <message>
-            <source>Save Data</source>
-            <translation>Zapisz dane</translation>
+            <source>No Data</source>
+            <translation>Brak danych</translation>
+        </message>
+        <message>
+            <source>No drop events to save.</source>
+            <translation>Brak zdarzeń spadku do zapisania.</translation>
+        </message>
+        <message>
+            <source>Save Drop Logs</source>
+            <translation>Zapisz dziennik spadków</translation>
         </message>
         <message>
             <source>CSV Files (*.csv)</source>
             <translation>Pliki CSV (*.csv)</translation>
         </message>
         <message>
-            <source>File exists</source>
-            <translation>Plik istnieje</translation>
-        </message>
-        <message>
-            <source>The file %1 already exists.\nDo you want to replace it?</source>
-            <translation>Plik %1 już istnieje.\nCzy chcesz go zastąpić?</translation>
-        </message>
-    </context>
-    <context>
-        <name>QMessageBox</name>
-        <message>
             <source>Error</source>
             <translation>Błąd</translation>
         </message>
         <message>
-            <source>Cannot write file %1:\n%2.</source>
-            <translation>Nie można zapisać pliku %1:\n%2.</translation>
+            <source>Cannot write file %1:
+                %2.</source>
+            <translation>Nie można zapisać pliku %1:
+                %2.</translation>
         </message>
         <message>
             <source>Success</source>
             <translation>Sukces</translation>
         </message>
         <message>
+            <source>Drop logs saved to %1
+                Total events: %2</source>
+            <translation>Dzienniki spadków zapisane do %1
+                Całkowita liczba zdarzeń: %2</translation>
+        </message>
+        <message>
+            <source>[%1] Automatic start of stopwatch 1 after drop detection</source>
+            <translation>[%1] Automatyczne uruchomienie stopera 1 po wykryciu spadku</translation>
+        </message>
+        <message>
+            <source>[%1] Automatic stop of stopwatch 1 after drop detection</source>
+            <translation>[%1] Automatyczne zatrzymanie stopera 1 po wykryciu spadku</translation>
+        </message>
+        <message>
+            <source>[%1] Automatic start of stopwatch 2 after drop detection</source>
+            <translation>[%1] Automatyczne uruchomienie stopera 2 po wykryciu spadku</translation>
+        </message>
+        <message>
+            <source>[%1] Automatic stop of stopwatch 2 after drop detection</source>
+            <translation>[%1] Automatyczne zatrzymanie stopera 2 po wykryciu spadku</translation>
+        </message>
+        <message>
+            <source>Drops: %1</source>
+            <translation>Krople: %1</translation>
+        </message>
+        <message>
+            <source>START</source>
+            <translation>START</translation>
+        </message>
+        <message>
+            <source>STOP</source>
+            <translation>STOP</translation>
+        </message>
+        <message>
+            <source>PORT settings</source>
+            <translation>Ustawienia PORTU</translation>
+        </message>
+        <message>
+            <source>Show GRAPH</source>
+            <translation>Pokaż WYKRES</translation>
+        </message>
+        <message>
+            <source>SAVE data 1</source>
+            <translation>ZAPISZ dane 1</translation>
+        </message>
+        <message>
+            <source>SAVE data 2</source>
+            <translation>ZAPISZ dane 2</translation>
+        </message>
+        <message>
+            <source>Clear GRAPH</source>
+            <translation>Wyczyść WYKRES</translation>
+        </message>
+        <message>
+            <source>Show raw data</source>
+            <translation>Pokaż surowe dane</translation>
+        </message>
+        <message>
+            <source>Hide raw data</source>
+            <translation>Ukryj surowe dane</translation>
+        </message>
+        <message>
+            <source>Distance:</source>
+            <translation>Odległość:</translation>
+        </message>
+        <message>
+            <source>Global Time</source>
+            <translation>Czas globalny</translation>
+        </message>
+        <message>
+            <source>Always on Top</source>
+            <translation>Zawsze na wierzchu</translation>
+        </message>
+        <message>
+            <source>Save Data</source>
+            <translation>Zapisz dane</translation>
+        </message>
+        <message>
+            <source>File exists</source>
+            <translation>Plik istnieje</translation>
+        </message>
+        <message>
+            <source>The file %1 already exists.
+                Do you want to replace it?</source>
+            <translation>Plik %1 już istnieje.
+                Czy chcesz go zastąpić?</translation>
+        </message>
+        <message>
+            <source>Distance,Time (mm:ss),Milliseconds,Raw Time (ms)
+            </source>
+            <translation>Odległość,Czas (mm:ss),Milisekundy,Surowy czas (ms)
+            </translation>
+        </message>
+        <message>
             <source>Data has been saved to %1</source>
             <translation>Dane zostały zapisane do %1</translation>
         </message>
         <message>
-            <source>Inappropriate Device</source>
-            <translation>Nieodpowiednie urządzenie</translation>
+            <source>Stoper: %1:%2.%3</source>
+            <translation>Stoper: %1:%2.%3</translation>
         </message>
         <message>
-            <source>Port Error</source>
-            <translation>Błąd portu</translation>
+            <source>Failed to open port %1: %2</source>
+            <translation>Nie udało się otworzyć portu %1: %2</translation>
         </message>
         <message>
-            <source>Incorrect Device</source>
-            <translation>Nieprawidłowe urządzenie</translation>
+            <source>Stopped reading from port 1</source>
+            <translation>Zatrzymano odczyt z portu 1</translation>
+        </message>
+        <message>
+            <source>Stopped reading from port 2</source>
+            <translation>Zatrzymano odczyt z portu 2</translation>
+        </message>
+        <message>
+            <source>[%1] Drop detected (sensor %2): Previous distance: %3, Current: %4, Difference: %5</source>
+            <translation>[%1] Wykryto spadek (czujnik %2): Poprzednia odległość: %3, Obecna: %4, Różnica: %5</translation>
         </message>
     </context>
     <context>
         <name>PortSettings</name>
         <message>
-            <source>Setup</source>
-            <translation>Ustawienia</translation>
+            <source>Port Settings</source>
+            <translation>Ustawienia portu</translation>
         </message>
         <message>
-            <source>Settings</source>
-            <translation>Ustawienia</translation>
+            <source>Sensor 1 Settings</source>
+            <translation>Ustawienia czujnika 1</translation>
         </message>
         <message>
-            <source>Port</source>
-            <translation>Port</translation>
+            <source>Port:</source>
+            <translation>Port:</translation>
         </message>
         <message>
-            <source>Refresh</source>
-            <translation>Odśwież</translation>
+            <source>Baud Rate:</source>
+            <translation>Prędkość transmisji:</translation>
         </message>
         <message>
-            <source>Baud rate</source>
-            <translation>Prędkość transmisji</translation>
+            <source>Data Bits:</source>
+            <translation>Bity danych:</translation>
         </message>
         <message>
-            <source>Data bits</source>
-            <translation>Bity danych</translation>
+            <source>Stop Bits:</source>
+            <translation>Bity stopu:</translation>
         </message>
         <message>
-            <source>Stop bits</source>
-            <translation>Bity stopu</translation>
+            <source>Parity:</source>
+            <translation>Parzystość:</translation>
         </message>
         <message>
-            <source>Parity</source>
-            <translation>Parzystość</translation>
-        </message>
-        <message>
-            <source>Flow control</source>
-            <translation>Kontrola przepływu</translation>
+            <source>Flow Control:</source>
+            <translation>Kontrola przepływu:</translation>
         </message>
         <message>
             <source>None</source>
@@ -285,28 +411,64 @@
             <translation>Nieparzyste</translation>
         </message>
         <message>
-            <source>Mark</source>
-            <translation>Mark</translation>
-        </message>
-        <message>
             <source>Space</source>
-            <translation>Space</translation>
+            <translation>Spacja</translation>
         </message>
         <message>
-            <source>Software</source>
-            <translation>Programowa</translation>
+            <source>Mark</source>
+            <translation>Znacznik</translation>
         </message>
         <message>
             <source>Hardware</source>
             <translation>Sprzętowa</translation>
         </message>
         <message>
-            <source>OK</source>
-            <translation>OK</translation>
+            <source>Software</source>
+            <translation>Programowa</translation>
         </message>
         <message>
-            <source>Cancel</source>
-            <translation>Anuluj</translation>
+            <source>1</source>
+            <translation>1</translation>
+        </message>
+        <message>
+            <source>1.5</source>
+            <translation>1.5</translation>
+        </message>
+        <message>
+            <source>2</source>
+            <translation>2</translation>
+        </message>
+        <message>
+            <source>Sensor 2 Settings</source>
+            <translation>Ustawienia czujnika 2</translation>
+        </message>
+        <message>
+            <source>Apply</source>
+            <translation>Zastosuj</translation>
+        </message>
+        <message>
+            <source>Close</source>
+            <translation>Zamknij</translation>
+        </message>
+        <message>
+            <source>Refresh</source>
+            <translation>Odśwież</translation>
+        </message>
+        <message>
+            <source>Error</source>
+            <translation>Błąd</translation>
+        </message>
+        <message>
+            <source>Please select different ports for Sensor 1 and Sensor 2.</source>
+            <translation>Wybierz różne porty dla czujnika 1 i czujnika 2.</translation>
+        </message>
+        <message>
+            <source>Settings Saved</source>
+            <translation>Ustawienia zapisane</translation>
+        </message>
+        <message>
+            <source>Port settings have been saved.</source>
+            <translation>Ustawienia portu zostały zapisane.</translation>
         </message>
     </context>
 </TS>
