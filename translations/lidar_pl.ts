@@ -173,7 +173,7 @@
         </message>
         <message>
             <source>Drops: 0</source>
-            <translation>Krople: 0</translation>
+            <translation>Dropy: 0</translation>
         </message>
         <message>
             <source>Stoper: 00:00.000</source>
@@ -269,7 +269,7 @@
         </message>
         <message>
             <source>Drops: %1</source>
-            <translation>Krople: %1</translation>
+            <translation>Dropy: %1</translation>
         </message>
         <message>
             <source>START</source>
