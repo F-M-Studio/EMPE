@@ -25,7 +25,9 @@
  * Powinieneś otrzymać kopię Powszechnej Licencji Publicznej GNU wraz z
  * tym programem. Jeśli nie, zobacz <http://www.gnu.org/licenses/>.
 */
-
+#ifdef Q_OS_WIN
+    #include <windows.h>
+#endif
 #include <QApplication>
 #include <QTranslator>
 #include <QLocale>
@@ -34,16 +36,15 @@
 int main(int argc, char *argv[]) {
     QApplication a(argc, argv);
 
-    // Ustawienie polskiego jako domyślnego języka
-    QLocale::setDefault(QLocale("pl_PL"));
-
     QTranslator translator;
-    QString translationPath = QCoreApplication::applicationDirPath() + "/translations/";
+    QString translationPath = QCoreApplication::applicationDirPath() + "/translations";
+    QString locale = QLocale::system().name();
 
-    // Próba załadowania polskiego tłumaczenia
-    if (translator.load("lidar_pl", translationPath)) {
-        a.installTranslator(&translator);
+    // Load system translation or fallback to English
+    if (!translator.load("lidar_" + locale, translationPath)) {
+        translator.load("lidar_en", translationPath);
     }
+    a.installTranslator(&translator);
 
     QFontDatabase::addApplicationFont(":/fonts/AdwaitaSans-Regular.ttf");
 

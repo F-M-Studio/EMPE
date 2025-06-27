@@ -62,47 +62,55 @@ if(WIN32)
             aboutusdialog.h
             aboutusdialog.cpp
     )
-        if(CI_MODE)
-                message(STATUS "Configuring for GitHub Actions CI")
-                
-                # Use environment variables from GitHub Actions
-                set(QT_PATH $ENV{QT_PATH})
-                set(MINGW_BIN_PATH "$ENV{MINGW_HOME}/bin")
-                
-                # Simplified deployment command
-                add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                    COMMAND "${QT_PATH}/bin/windeployqt.exe"
-                    --verbose 1
-                    --compiler-runtime
-                    --dir \"$<TARGET_FILE_DIR:${PROJECT_NAME}>/../\"
-                        #--no-translations
-                    \"$<TARGET_FILE:${PROJECT_NAME}>\"
-                    COMMENT "CI: Deploying Qt dependencies..."
-                )
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:${PROJECT_NAME}>/../translations"
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_SOURCE_DIR}/translations"
+            "$<TARGET_FILE_DIR:${PROJECT_NAME}>/../translations"
+            COMMENT "Copying translation files..."
+    )
 
-                # Copy translations
-                add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:${PROJECT_NAME}>/../translations"
-                    COMMAND ${CMAKE_COMMAND} -E copy_directory
-                    "${CMAKE_SOURCE_DIR}/translations"
-                    "$<TARGET_FILE_DIR:${PROJECT_NAME}>/../translations"
-                    COMMENT "Copying translation files..."
-                )
+    if(CI_MODE)
+        message(STATUS "Configuring for GitHub Actions CI")
 
-                # Copy MinGW runtime DLLs from CI environment
-                foreach(MINGW_DLL
-                    libgcc_s_seh-1.dll
-                    libstdc++-6.dll
-                    libwinpthread-1.dll)
-                    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                        "${MINGW_BIN_PATH}/${MINGW_DLL}"
-                        "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
-                        COMMENT "CI: Copying ${MINGW_DLL}..."
-                    )
-                endforeach()
-                
-            else()
+        # Use environment variables from GitHub Actions
+        set(QT_PATH $ENV{QT_PATH})
+        set(MINGW_BIN_PATH "$ENV{MINGW_HOME}/bin")
+
+        # Simplified deployment command
+        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+                COMMAND "${QT_PATH}/bin/windeployqt.exe"
+                --verbose 1
+                --compiler-runtime
+                --dir \"$<TARGET_FILE_DIR:${PROJECT_NAME}>/../\"
+                #--no-translations
+                \"$<TARGET_FILE:${PROJECT_NAME}>\"
+                COMMENT "CI: Deploying Qt dependencies..."
+        )
+
+        # Copy translations
+        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:${PROJECT_NAME}>/../translations"
+                COMMAND ${CMAKE_COMMAND} -E copy_directory
+                "${CMAKE_SOURCE_DIR}/translations"
+                "$<TARGET_FILE_DIR:${PROJECT_NAME}>/../translations"
+                COMMENT "Copying translation files..."
+        )
+
+        # Copy MinGW runtime DLLs from CI environment
+        foreach(MINGW_DLL
+                libgcc_s_seh-1.dll
+                libstdc++-6.dll
+                libwinpthread-1.dll)
+            add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    "${MINGW_BIN_PATH}/${MINGW_DLL}"
+                    "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+                    COMMENT "CI: Copying ${MINGW_DLL}..."
+            )
+        endforeach()
+
+    else()
     endif()
 endif ()
 

@@ -6,34 +6,36 @@
     <message>
         <location filename="../aboutusdialog.cpp" line="38"/>
         <source>O nas</source>
-        <translation type="unfinished"></translation>
+        <translation>O nas</translation>
     </message>
     <message>
         <location filename="../aboutusdialog.cpp" line="43"/>
         <source>Program powstał w ramach projektu:</source>
-        <translation type="unfinished"></translation>
+        <translation>Program powstał w ramach projektu:</translation>
     </message>
     <message>
         <location filename="../aboutusdialog.cpp" line="50"/>
         <source>Embodying Math&amp;Physics Education 2023-1-PL01-KA210-SCH-000165829</source>
-        <translation type="unfinished"></translation>
+        <translation>Embodying Math&amp;Physics Education 2023-1-PL01-KA210-SCH-000165829</translation>
     </message>
     <message>
         <location filename="../aboutusdialog.cpp" line="54"/>
         <source>Autorzy:</source>
-        <translation type="unfinished"></translation>
+        <translation>Autorzy:</translation>
     </message>
     <message>
         <location filename="../aboutusdialog.cpp" line="60"/>
         <source>Mateusz Korniak &lt;mkorniak04@gmail.com&gt;
 Mateusz Machowski &lt;machowskimateusz51@gmail.com&gt;
 Filip Leśnik &lt;filip.lesnik170@gmail.com&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>Mateusz Korniak &lt;mkorniak04@gmail.com&gt;
+Mateusz Machowski &lt;machowskimateusz51@gmail.com&gt;
+Filip Leśnik &lt;filip.lesnik170@gmail.com&gt;</translation>
     </message>
     <message>
         <location filename="../aboutusdialog.cpp" line="65"/>
         <source>Close</source>
-        <translation type="unfinished"></translation>
+        <translation>Zamknij</translation>
     </message>
 </context>
 <context>
@@ -42,49 +44,49 @@ Filip Leśnik &lt;filip.lesnik170@gmail.com&gt;</source>
         <location filename="../appmenu.cpp" line="37"/>
         <location filename="../appmenu.cpp" line="105"/>
         <source>English</source>
-        <translation type="unfinished"></translation>
+        <translation>Angielski</translation>
     </message>
     <message>
         <location filename="../appmenu.cpp" line="38"/>
         <location filename="../appmenu.cpp" line="106"/>
         <source>Polish</source>
-        <translation type="unfinished"></translation>
+        <translation>Polski</translation>
     </message>
     <message>
         <location filename="../appmenu.cpp" line="43"/>
         <location filename="../appmenu.cpp" line="96"/>
         <source>☰ Menu</source>
-        <translation type="unfinished"></translation>
+        <translation>☰ Menu</translation>
     </message>
     <message>
         <location filename="../appmenu.cpp" line="47"/>
         <location filename="../appmenu.cpp" line="97"/>
         <source>Port settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Ustawienia portu</translation>
     </message>
     <message>
         <location filename="../appmenu.cpp" line="48"/>
         <location filename="../appmenu.cpp" line="98"/>
         <source>Graph</source>
-        <translation type="unfinished"></translation>
+        <translation>Wykres</translation>
     </message>
     <message>
         <location filename="../appmenu.cpp" line="49"/>
         <location filename="../appmenu.cpp" line="99"/>
         <location filename="../appmenu.cpp" line="118"/>
         <source>Start measurement</source>
-        <translation type="unfinished"></translation>
+        <translation>Rozpocznij pomiar</translation>
     </message>
     <message>
         <location filename="../appmenu.cpp" line="50"/>
         <location filename="../appmenu.cpp" line="100"/>
         <source>Save data to file</source>
-        <translation type="unfinished"></translation>
+        <translation>Zapisz dane do pliku</translation>
     </message>
     <message>
         <location filename="../appmenu.cpp" line="51"/>
         <source>O nas</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">O nas</translation>
     </message>
     <message>
         <location filename="../appmenu.cpp" line="69"/>
@@ -95,12 +97,12 @@ Filip Leśnik &lt;filip.lesnik170@gmail.com&gt;</source>
     <message>
         <location filename="../appmenu.cpp" line="103"/>
         <source>About us</source>
-        <translation type="unfinished"></translation>
+        <translation>O nas</translation>
     </message>
     <message>
         <location filename="../appmenu.cpp" line="118"/>
         <source>Stop measurement</source>
-        <translation type="unfinished"></translation>
+        <translation>Zatrzymaj pomiar</translation>
     </message>
 </context>
 <context>
@@ -110,7 +112,7 @@ Filip Leśnik &lt;filip.lesnik170@gmail.com&gt;</source>
         <location filename="../cmake-build-release/lidar_autogen/include/ui_graphwindow.h" line="58"/>
         <location filename="../ui_graphwindow.h" line="86"/>
         <source>MainWindow</source>
-        <translation type="unfinished"></translation>
+        <translation>Okno główne</translation>
     </message>
     <message>
         <location filename="../graphwindow.cpp" line="61"/>
@@ -132,82 +134,82 @@ Filip Leśnik &lt;filip.lesnik170@gmail.com&gt;</source>
         <location filename="../graphwindow.cpp" line="70"/>
         <location filename="../graphwindow.cpp" line="706"/>
         <source>Clear Graph</source>
-        <translation type="unfinished"></translation>
+        <translation>Wyczyść wykres</translation>
     </message>
     <message>
         <location filename="../graphwindow.cpp" line="85"/>
         <location filename="../graphwindow.cpp" line="708"/>
         <source>Time (min:ms)</source>
-        <translation type="unfinished"></translation>
+        <translation>Czas (min:ms)</translation>
     </message>
     <message>
         <location filename="../graphwindow.cpp" line="86"/>
         <location filename="../graphwindow.cpp" line="709"/>
         <source>Distance</source>
-        <translation type="unfinished"></translation>
+        <translation>Odległość</translation>
     </message>
     <message>
         <location filename="../graphwindow.cpp" line="112"/>
         <location filename="../graphwindow.cpp" line="710"/>
         <source>Recording period [ms]:</source>
-        <translation type="unfinished"></translation>
+        <translation>Okres nagrywania [ms]:</translation>
     </message>
     <message>
         <location filename="../graphwindow.cpp" line="123"/>
         <location filename="../graphwindow.cpp" line="711"/>
         <source>Set Y</source>
-        <translation type="unfinished"></translation>
+        <translation>Ustaw Y</translation>
     </message>
     <message>
         <location filename="../graphwindow.cpp" line="124"/>
         <location filename="../graphwindow.cpp" line="712"/>
         <source>Y axis range:</source>
-        <translation type="unfinished"></translation>
+        <translation>Zakres osi Y:</translation>
     </message>
     <message>
         <location filename="../graphwindow.cpp" line="139"/>
         <location filename="../graphwindow.cpp" line="713"/>
         <source>Auto-scroll X axis</source>
-        <translation type="unfinished"></translation>
+        <translation>Auto-przewijanie osi X</translation>
     </message>
     <message>
         <location filename="../graphwindow.cpp" line="141"/>
         <location filename="../graphwindow.cpp" line="714"/>
         <source>Points limit:</source>
-        <translation type="unfinished"></translation>
+        <translation>Limit punktów:</translation>
     </message>
     <message>
         <location filename="../graphwindow.cpp" line="153"/>
         <location filename="../graphwindow.cpp" line="715"/>
         <source>Smooth Graph</source>
-        <translation type="unfinished"></translation>
+        <translation>Wygładź wykres</translation>
     </message>
     <message>
         <location filename="../graphwindow.cpp" line="155"/>
         <location filename="../graphwindow.cpp" line="716"/>
         <source>Smoothing:</source>
-        <translation type="unfinished"></translation>
+        <translation>Wygładzanie:</translation>
     </message>
     <message>
         <location filename="../graphwindow.cpp" line="363"/>
         <location filename="../graphwindow.cpp" line="717"/>
         <source>Use Relative Time</source>
-        <translation type="unfinished"></translation>
+        <translation>Użyj czasu względnego</translation>
     </message>
     <message>
         <location filename="../graphwindow.cpp" line="389"/>
         <source>Show Series 1</source>
-        <translation type="unfinished"></translation>
+        <translation>Pokaż serię 1</translation>
     </message>
     <message>
         <location filename="../graphwindow.cpp" line="391"/>
         <source>Show Series 2</source>
-        <translation type="unfinished"></translation>
+        <translation>Pokaż serię 2</translation>
     </message>
     <message>
         <location filename="../graphwindow.cpp" line="705"/>
         <source>Graph</source>
-        <translation type="unfinished"></translation>
+        <translation>Wykres</translation>
     </message>
 </context>
 <context>
@@ -246,6 +248,7 @@ Filip Leśnik &lt;filip.lesnik170@gmail.com&gt;</source>
     <message>
         <location filename="../mainwindow.cpp" line="161"/>
         <location filename="../mainwindow.cpp" line="507"/>
+        <location filename="../mainwindow.cpp" line="1102"/>
         <source>Sensor 1</source>
         <translation>Czujnik 1</translation>
     </message>
@@ -257,20 +260,29 @@ Filip Leśnik &lt;filip.lesnik170@gmail.com&gt;</source>
     <message>
         <location filename="../mainwindow.cpp" line="428"/>
         <location filename="../mainwindow.cpp" line="429"/>
+        <location filename="../mainwindow.cpp" line="1095"/>
+        <location filename="../mainwindow.cpp" line="1096"/>
         <source>Drops: %1</source>
         <translation>Krople: %1</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="465"/>
+        <location filename="../mainwindow.cpp" line="1091"/>
+        <source>Enable second lidar</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="581"/>
         <source>The file %1 already exists.
 Do you want to replace it?</source>
-        <translation type="unfinished"></translation>
+        <translation>Czy chcesz go zastąpić?</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="599"/>
         <source>Distance,Time (mm:ss),Milliseconds,Raw Time (ms)
 </source>
-        <translation type="unfinished"></translation>
+        <translation>Odległość,Czas (mm:ss),Milisekundy,Surowy czas (ms)
+</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="645"/>
@@ -281,6 +293,7 @@ Do you want to replace it?</source>
     <message>
         <location filename="../mainwindow.cpp" line="183"/>
         <location filename="../mainwindow.cpp" line="518"/>
+        <location filename="../mainwindow.cpp" line="1104"/>
         <source>Sensor 2</source>
         <translation>Czujnik 2</translation>
     </message>
@@ -351,7 +364,7 @@ Do you want to replace it?</source>
         <location filename="../mainwindow.cpp" line="591"/>
         <location filename="../mainwindow.cpp" line="716"/>
         <location filename="../mainwindow.cpp" line="750"/>
-        <location filename="../mainwindow.cpp" line="971"/>
+        <location filename="../mainwindow.cpp" line="977"/>
         <source>Error</source>
         <translation>Błąd</translation>
     </message>
@@ -379,22 +392,26 @@ Do you want to replace it?</source>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="446"/>
+        <location filename="../mainwindow.cpp" line="1081"/>
         <source>PORT settings</source>
         <translation>Ustawienia PORTU</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="447"/>
+        <location filename="../mainwindow.cpp" line="1082"/>
         <source>Show GRAPH</source>
         <translation>Pokaż WYKRES</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="435"/>
         <location filename="../mainwindow.cpp" line="448"/>
+        <location filename="../mainwindow.cpp" line="1083"/>
         <source>START</source>
         <translation>START</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="115"/>
+        <location filename="../mainwindow.cpp" line="1108"/>
         <source>Program powstał w ramach projektu Embodying Math&amp;Physics Education 2023-1-PL01-KA210-SCH-000165829</source>
         <translation type="unfinished"></translation>
     </message>
@@ -447,39 +464,100 @@ Total events: %2</source>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="438"/>
+        <location filename="../mainwindow.cpp" line="1083"/>
         <source>STOP</source>
         <translation>STOP</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="449"/>
+        <location filename="../mainwindow.cpp" line="1084"/>
         <source>SAVE data 1</source>
         <translation>ZAPISZ dane 1</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="450"/>
+        <location filename="../mainwindow.cpp" line="1085"/>
         <source>SAVE data 2</source>
         <translation>ZAPISZ dane 2</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="451"/>
+        <location filename="../mainwindow.cpp" line="1086"/>
         <source>Clear GRAPH</source>
         <translation>Wyczyść WYKRES</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="452"/>
         <location filename="../mainwindow.cpp" line="493"/>
-        <location filename="../mainwindow.cpp" line="903"/>
+        <location filename="../mainwindow.cpp" line="909"/>
+        <location filename="../mainwindow.cpp" line="1088"/>
         <source>Show raw data</source>
         <translation>Pokaż surowe dane</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="465"/>
-        <source>Włącz drugi lidar</source>
+        <location filename="../mainwindow.cpp" line="1006"/>
+        <source>Plik</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1008"/>
+        <source>Zakończ</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1013"/>
+        <source>Edycja</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1015"/>
+        <source>Kopiuj</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1021"/>
+        <source>Wklej</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1028"/>
+        <source>Widok</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1030"/>
+        <source>Powiększ</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1038"/>
+        <source>Pomniejsz</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1047"/>
+        <source>Język</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1049"/>
+        <source>Polski</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1053"/>
+        <source>English</source>
+        <translation type="unfinished">Angielski</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1078"/>
+        <source>EMPE - Measurement System</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="493"/>
-        <location filename="../mainwindow.cpp" line="903"/>
+        <location filename="../mainwindow.cpp" line="909"/>
+        <location filename="../mainwindow.cpp" line="1088"/>
         <source>Hide raw data</source>
         <translation>Ukryj surowe dane</translation>
     </message>
@@ -496,6 +574,7 @@ Total events: %2</source>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="548"/>
+        <location filename="../mainwindow.cpp" line="1092"/>
         <source>Always on Top</source>
         <translation>Zawsze na wierzchu</translation>
     </message>
@@ -510,12 +589,12 @@ Total events: %2</source>
         <translation>Plik istnieje</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="882"/>
+        <location filename="../mainwindow.cpp" line="888"/>
         <source>Stopped reading from port 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="891"/>
+        <location filename="../mainwindow.cpp" line="897"/>
         <source>Stopped reading from port 2</source>
         <translation type="unfinished"></translation>
     </message>
@@ -535,7 +614,7 @@ Total events: %2</source>
     <message>
         <location filename="../mainwindow.cpp" line="717"/>
         <location filename="../mainwindow.cpp" line="751"/>
-        <location filename="../mainwindow.cpp" line="972"/>
+        <location filename="../mainwindow.cpp" line="978"/>
         <source>Failed to open port %1: %2</source>
         <translation>Nie udało się otworzyć portu %1: %2</translation>
     </message>
@@ -544,7 +623,7 @@ Total events: %2</source>
         <translation type="vanished">Zatrzymano odczyt z portu %1</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="920"/>
+        <location filename="../mainwindow.cpp" line="926"/>
         <source>[%1] Wykryto kroplę (sensor %2): Poprzednia odległość: %3, Aktualna: %4, Różnica: %5</source>
         <translation>[%1] Wykryto kroplę (czujnik %2): Poprzednia odległość: %3, Aktualna: %4, Różnica: %5</translation>
     </message>
@@ -745,39 +824,39 @@ Total events: %2</source>
     <message>
         <location filename="../portsettings.cpp" line="276"/>
         <source>&lt;b style=&apos;color:blue;&apos;&gt;Bluetooth Device&lt;/b&gt;&lt;br&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b style=&apos;color:blue;&apos;&gt;Urządzenie Bluetooth&lt;/b&gt;&lt;br&gt;</translation>
     </message>
     <message>
         <location filename="../portsettings.cpp" line="279"/>
         <source>&lt;b&gt;Port:&lt;/b&gt; %1&lt;br&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Port:&lt;/b&gt; %1&lt;br&gt;</translation>
     </message>
     <message>
         <location filename="../portsettings.cpp" line="280"/>
         <source>&lt;b&gt;Description:&lt;/b&gt; %1&lt;br&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Opis:&lt;/b&gt; %1&lt;br&gt;</translation>
     </message>
     <message>
         <location filename="../portsettings.cpp" line="280"/>
         <location filename="../portsettings.cpp" line="281"/>
         <location filename="../portsettings.cpp" line="282"/>
         <source>N/A</source>
-        <translation type="unfinished"></translation>
+        <translation>Brak danych</translation>
     </message>
     <message>
         <location filename="../portsettings.cpp" line="281"/>
         <source>&lt;b&gt;Manufacturer:&lt;/b&gt; %1&lt;br&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Producent:&lt;/b&gt; %1&lt;br&gt;</translation>
     </message>
     <message>
         <location filename="../portsettings.cpp" line="282"/>
         <source>&lt;b&gt;Serial Number:&lt;/b&gt; %1&lt;br&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Numer seryjny:&lt;/b&gt; %1&lt;br&gt;</translation>
     </message>
     <message>
         <location filename="../portsettings.cpp" line="283"/>
         <source>&lt;b&gt;Location:&lt;/b&gt; %1&lt;br&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Lokalizacja:&lt;/b&gt; %1&lt;br&gt;</translation>
     </message>
 </context>
 </TS>

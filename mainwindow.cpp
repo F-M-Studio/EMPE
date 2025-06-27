@@ -462,7 +462,7 @@ void MainWindow::createControls() {
     mainLayout->addLayout(buttonLayout);
 
     // Dodanie checkboxa do włączania drugiego lidaru
-    enableSecondLidarCheckBox = new QCheckBox(tr("Włącz drugi lidar"));
+    enableSecondLidarCheckBox = new QCheckBox(tr("Enable second lidar"), this);
     enableSecondLidarCheckBox->setChecked(false);
     mainLayout->addWidget(enableSecondLidarCheckBox);
     connect(enableSecondLidarCheckBox, &QCheckBox::toggled, this, &MainWindow::onEnableSecondLidarToggled);
@@ -862,7 +862,12 @@ void MainWindow::parseData2(const QString &data) {
         }
     }
 }
-
+void MainWindow::changeEvent(QEvent *event) {
+    if (event->type() == QEvent::LanguageChange) {
+        retranslateUi();
+    }
+    QMainWindow::changeEvent(event);
+}
 void MainWindow::stopReading() {
     Reading = false;
 
@@ -1060,61 +1065,45 @@ void MainWindow::createMenu() {
 }
 
 void MainWindow::changeLanguage(const QString &language) {
-    QString translationPath = QCoreApplication::applicationDirPath() + "/translations/";
+    QString translationPath = QCoreApplication::applicationDirPath() + "/translations";
 
-    // Usuń poprzednie tłumaczenie jeśli istnieje
     qApp->removeTranslator(&translator);
 
-    // Załaduj nowe tłumaczenie
-    if (translator.load(QString("lidar_%1").arg(language), translationPath)) {
+    if (translator.load("lidar_" + language, translationPath)) {
         qApp->installTranslator(&translator);
     }
-
-    // Odśwież interfejs
-    this->retranslateUi();
 }
 
 void MainWindow::retranslateUi() {
-    // Główne okno
-    setWindowTitle(tr("EMPE - System Pomiarowy"));
+    setWindowTitle(tr("EMPE - Measurement System"));
 
-    // Przyciski
+    // Buttons
     portSettingsBtn->setText(tr("PORT settings"));
     showGraphBtn->setText(tr("Show GRAPH"));
     startStopBtn->setText(isReading ? tr("STOP") : tr("START"));
     saveDataBtn->setText(tr("SAVE data 1"));
     saveData2Btn->setText(tr("SAVE data 2"));
     clearGraphBtn->setText(tr("Clear GRAPH"));
-    showRawDataBtn->setText(dataDisplay->isVisible() ? tr("Hide raw data") : tr("Show raw data"));
+    showRawDataBtn->setText(dataDisplay->isVisible() ?
+        tr("Hide raw data") : tr("Show raw data"));
 
-    // Checkboxy
-    enableSecondLidarCheckBox->setText(tr("Włącz drugi lidar"));
+    // Checkboxes
+    enableSecondLidarCheckBox->setText(tr("Enable second lidar"));
     alwaysOnTopCheckbox->setText(tr("Always on Top"));
 
     // Labels
-    if (dropCounter1Label) dropCounter1Label->setText(tr("Drops: %1").arg(dropCount1));
-    if (dropCounter2Label) dropCounter2Label->setText(tr("Drops: %1").arg(dropCount2));
+    dropCounter1Label->setText(tr("Drops: %1").arg(dropCount1));
+    dropCounter2Label->setText(tr("Drops: %1").arg(dropCount2));
 
-    // Grupy
-    if (stoperGroupBox) {
-        QList<QLabel*> labels = stoperGroupBox->findChildren<QLabel*>();
-        for (QLabel* label : labels) {
-            if (label->text().startsWith("Drop Sensitivity"))
-                label->setText(tr("Drop Sensitivity (mm):"));
-        }
-    }
-
-    // Odśwież etykiety czujników
+    // Group boxes
     QList<QGroupBox*> sensorBoxes = findChildren<QGroupBox*>();
     for (QGroupBox* box : sensorBoxes) {
-        if (box->title() == "Sensor 1" || box->title() == "Czujnik 1")
+        if (box->title() == "Sensor 1")
             box->setTitle(tr("Sensor 1"));
-        else if (box->title() == "Sensor 2" || box->title() == "Czujnik 2")
+        else if (box->title() == "Sensor 2")
             box->setTitle(tr("Sensor 2"));
     }
 
-    // Nota o twórcach
-    if (creatorsNoteLabel) {
-        creatorsNoteLabel->setText(tr("Program powstał w ramach projektu Embodying Math&Physics Education 2023-1-PL01-KA210-SCH-000165829"));
-    }
+    // Footer
+    creatorsNoteLabel->setText(tr("Program powstał w ramach projektu Embodying Math&Physics Education 2023-1-PL01-KA210-SCH-000165829"));
 }

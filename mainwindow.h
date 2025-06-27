@@ -78,6 +78,7 @@ public:
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;
+    void changeEvent(QEvent *) override;
 
 private slots:
     void showAboutUsDialog();
