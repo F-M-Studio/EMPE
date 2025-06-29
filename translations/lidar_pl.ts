@@ -78,6 +78,34 @@
             <translation>O nas</translation>
         </message>
         <message>
+            <source>☰ Menu</source>
+            <translation>☰ Menu</translation>
+        </message>
+        <message>
+            <source>Port settings</source>
+            <translation>Ustawienia portu</translation>
+        </message>
+        <message>
+            <source>Graph</source>
+            <translation>Wykres</translation>
+        </message>
+        <message>
+            <source>Start measurement</source>
+            <translation>Rozpocznij pomiar</translation>
+        </message>
+        <message>
+            <source>Stop measurement</source>
+            <translation>Zatrzymaj pomiar</translation>
+        </message>
+        <message>
+            <source>Save data to file</source>
+            <translation>Zapisz dane do pliku</translation>
+        </message>
+        <message>
+            <source>About us</source>
+            <translation>O nas</translation>
+        </message>
+        <message>
             <source>Language Changed</source>
             <translation>Zmieniono język</translation>
         </message>
@@ -375,36 +403,44 @@
     <context>
         <name>PortSettings</name>
         <message>
-            <source>Port Settings</source>
-            <translation>Ustawienia portu</translation>
+            <source>Setup</source>
+            <translation>Konfiguracja</translation>
         </message>
         <message>
-            <source>Sensor 1 Settings</source>
-            <translation>Ustawienia czujnika 1</translation>
+            <source>Port 1</source>
+            <translation>Port 1</translation>
         </message>
         <message>
-            <source>Port:</source>
-            <translation>Port:</translation>
+            <source>Port 2</source>
+            <translation>Port 2</translation>
         </message>
         <message>
-            <source>Baud Rate:</source>
-            <translation>Prędkość transmisji:</translation>
+            <source>Settings</source>
+            <translation>Ustawienia</translation>
         </message>
         <message>
-            <source>Data Bits:</source>
-            <translation>Bity danych:</translation>
+            <source>Port</source>
+            <translation>Port</translation>
         </message>
         <message>
-            <source>Stop Bits:</source>
-            <translation>Bity stopu:</translation>
+            <source>Baud rate</source>
+            <translation>Prędkość transmisji</translation>
         </message>
         <message>
-            <source>Parity:</source>
-            <translation>Parzystość:</translation>
+            <source>Data bits</source>
+            <translation>Bity danych</translation>
         </message>
         <message>
-            <source>Flow Control:</source>
-            <translation>Kontrola przepływu:</translation>
+            <source>Stop bits</source>
+            <translation>Bity stopu</translation>
+        </message>
+        <message>
+            <source>Parity</source>
+            <translation>Parzystość</translation>
+        </message>
+        <message>
+            <source>Flow control</source>
+            <translation>Kontrola przepływu</translation>
         </message>
         <message>
             <source>None</source>
@@ -419,20 +455,48 @@
             <translation>Nieparzyste</translation>
         </message>
         <message>
+            <source>Mark</source>
+            <translation>Znacznik</translation>
+        </message>
+        <message>
             <source>Space</source>
             <translation>Spacja</translation>
         </message>
         <message>
-            <source>Mark</source>
-            <translation>Znacznik</translation>
+            <source>Software</source>
+            <translation>Programowa</translation>
         </message>
         <message>
             <source>Hardware</source>
             <translation>Sprzętowa</translation>
         </message>
         <message>
-            <source>Software</source>
-            <translation>Programowa</translation>
+            <source>Refresh</source>
+            <translation>Odśwież</translation>
+        </message>
+        <message>
+            <source>OK</source>
+            <translation>OK</translation>
+        </message>
+        <message>
+            <source>Cancel</source>
+            <translation>Anuluj</translation>
+        </message>
+        <message>
+            <source>&lt;b&gt;Connected Serial Ports Information:&lt;/b&gt;</source>
+            <translation>&lt;b&gt;Informacje o podłączonych portach szeregowych:&lt;/b&gt;</translation>
+        </message>
+        <message>
+            <source>6</source>
+            <translation>6</translation>
+        </message>
+        <message>
+            <source>7</source>
+            <translation>7</translation>
+        </message>
+        <message>
+            <source>8</source>
+            <translation>8</translation>
         </message>
         <message>
             <source>1</source>
@@ -440,43 +504,31 @@
         </message>
         <message>
             <source>1.5</source>
-            <translation>1.5</translation>
+            <translation>1,5</translation>
         </message>
         <message>
             <source>2</source>
             <translation>2</translation>
         </message>
         <message>
-            <source>Sensor 2 Settings</source>
-            <translation>Ustawienia czujnika 2</translation>
+            <source>9600</source>
+            <translation>9600</translation>
         </message>
         <message>
-            <source>Apply</source>
-            <translation>Zastosuj</translation>
+            <source>19200</source>
+            <translation>19200</translation>
         </message>
         <message>
-            <source>Close</source>
-            <translation>Zamknij</translation>
+            <source>38400</source>
+            <translation>38400</translation>
         </message>
         <message>
-            <source>Refresh</source>
-            <translation>Odśwież</translation>
+            <source>57600</source>
+            <translation>57600</translation>
         </message>
         <message>
-            <source>Error</source>
-            <translation>Błąd</translation>
-        </message>
-        <message>
-            <source>Please select different ports for Sensor 1 and Sensor 2.</source>
-            <translation>Wybierz różne porty dla czujnika 1 i czujnika 2.</translation>
-        </message>
-        <message>
-            <source>Settings Saved</source>
-            <translation>Ustawienia zapisane</translation>
-        </message>
-        <message>
-            <source>Port settings have been saved.</source>
-            <translation>Ustawienia portu zostały zapisane.</translation>
+            <source>115200</source>
+            <translation>115200</translation>
         </message>
     </context>
 </TS>

@@ -78,6 +78,34 @@
             <translation>About Us</translation>
         </message>
         <message>
+            <source>☰ Menu</source>
+            <translation>☰ Menu</translation>
+        </message>
+        <message>
+            <source>Port settings</source>
+            <translation>Port settings</translation>
+        </message>
+        <message>
+            <source>Graph</source>
+            <translation>Graph</translation>
+        </message>
+        <message>
+            <source>Start measurement</source>
+            <translation>Start measurement</translation>
+        </message>
+        <message>
+            <source>Stop measurement</source>
+            <translation>Stop measurement</translation>
+        </message>
+        <message>
+            <source>Save data to file</source>
+            <translation>Save data to file</translation>
+        </message>
+        <message>
+            <source>About us</source>
+            <translation>About us</translation>
+        </message>
+        <message>
             <source>Language Changed</source>
             <translation>Language Changed</translation>
         </message>
@@ -375,36 +403,44 @@
     <context>
         <name>PortSettings</name>
         <message>
-            <source>Port Settings</source>
-            <translation>Port Settings</translation>
+            <source>Setup</source>
+            <translation>Setup</translation>
         </message>
         <message>
-            <source>Sensor 1 Settings</source>
-            <translation>Sensor 1 Settings</translation>
+            <source>Port 1</source>
+            <translation>Port 1</translation>
         </message>
         <message>
-            <source>Port:</source>
-            <translation>Port:</translation>
+            <source>Port 2</source>
+            <translation>Port 2</translation>
         </message>
         <message>
-            <source>Baud Rate:</source>
-            <translation>Baud Rate:</translation>
+            <source>Settings</source>
+            <translation>Settings</translation>
         </message>
         <message>
-            <source>Data Bits:</source>
-            <translation>Data Bits:</translation>
+            <source>Port</source>
+            <translation>Port</translation>
         </message>
         <message>
-            <source>Stop Bits:</source>
-            <translation>Stop Bits:</translation>
+            <source>Baud rate</source>
+            <translation>Baud rate</translation>
         </message>
         <message>
-            <source>Parity:</source>
-            <translation>Parity:</translation>
+            <source>Data bits</source>
+            <translation>Data bits</translation>
         </message>
         <message>
-            <source>Flow Control:</source>
-            <translation>Flow Control:</translation>
+            <source>Stop bits</source>
+            <translation>Stop bits</translation>
+        </message>
+        <message>
+            <source>Parity</source>
+            <translation>Parity</translation>
+        </message>
+        <message>
+            <source>Flow control</source>
+            <translation>Flow control</translation>
         </message>
         <message>
             <source>None</source>
@@ -419,20 +455,48 @@
             <translation>Odd</translation>
         </message>
         <message>
+            <source>Mark</source>
+            <translation>Mark</translation>
+        </message>
+        <message>
             <source>Space</source>
             <translation>Space</translation>
         </message>
         <message>
-            <source>Mark</source>
-            <translation>Mark</translation>
+            <source>Software</source>
+            <translation>Software</translation>
         </message>
         <message>
             <source>Hardware</source>
             <translation>Hardware</translation>
         </message>
         <message>
-            <source>Software</source>
-            <translation>Software</translation>
+            <source>Refresh</source>
+            <translation>Refresh</translation>
+        </message>
+        <message>
+            <source>OK</source>
+            <translation>OK</translation>
+        </message>
+        <message>
+            <source>Cancel</source>
+            <translation>Cancel</translation>
+        </message>
+        <message>
+            <source>&lt;b&gt;Connected Serial Ports Information:&lt;/b&gt;</source>
+            <translation>&lt;b&gt;Connected Serial Ports Information:&lt;/b&gt;</translation>
+        </message>
+        <message>
+            <source>6</source>
+            <translation>6</translation>
+        </message>
+        <message>
+            <source>7</source>
+            <translation>7</translation>
+        </message>
+        <message>
+            <source>8</source>
+            <translation>8</translation>
         </message>
         <message>
             <source>1</source>
@@ -447,36 +511,24 @@
             <translation>2</translation>
         </message>
         <message>
-            <source>Sensor 2 Settings</source>
-            <translation>Sensor 2 Settings</translation>
+            <source>9600</source>
+            <translation>9600</translation>
         </message>
         <message>
-            <source>Apply</source>
-            <translation>Apply</translation>
+            <source>19200</source>
+            <translation>19200</translation>
         </message>
         <message>
-            <source>Close</source>
-            <translation>Close</translation>
+            <source>38400</source>
+            <translation>38400</translation>
         </message>
         <message>
-            <source>Refresh</source>
-            <translation>Refresh</translation>
+            <source>57600</source>
+            <translation>57600</translation>
         </message>
         <message>
-            <source>Error</source>
-            <translation>Error</translation>
-        </message>
-        <message>
-            <source>Please select different ports for Sensor 1 and Sensor 2.</source>
-            <translation>Please select different ports for Sensor 1 and Sensor 2.</translation>
-        </message>
-        <message>
-            <source>Settings Saved</source>
-            <translation>Settings Saved</translation>
-        </message>
-        <message>
-            <source>Port settings have been saved.</source>
-            <translation>Port settings have been saved.</translation>
+            <source>115200</source>
+            <translation>115200</translation>
         </message>
     </context>
 </TS>
