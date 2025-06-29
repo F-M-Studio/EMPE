@@ -77,6 +77,14 @@
             <source>About Us</source>
             <translation>O nas</translation>
         </message>
+        <message>
+            <source>Language Changed</source>
+            <translation>Zmieniono język</translation>
+        </message>
+        <message>
+            <source>Please restart the application for the language change to take effect.</source>
+            <translation>Proszę uruchomić aplikację ponownie, aby zastosować zmianę języka.</translation>
+        </message>
     </context>
     <context>
         <name>GraphWindow</name>
@@ -281,23 +289,23 @@
         </message>
         <message>
             <source>PORT settings</source>
-            <translation>Ustawienia PORTU</translation>
+            <translation>Ustawienia portu</translation>
         </message>
         <message>
             <source>Show GRAPH</source>
-            <translation>Pokaż WYKRES</translation>
+            <translation>Pokaż wykres</translation>
         </message>
         <message>
             <source>SAVE data 1</source>
-            <translation>ZAPISZ dane 1</translation>
+            <translation>Zapisz dane 1</translation>
         </message>
         <message>
             <source>SAVE data 2</source>
-            <translation>ZAPISZ dane 2</translation>
+            <translation>Zapisz dane 2</translation>
         </message>
         <message>
             <source>Clear GRAPH</source>
-            <translation>Wyczyść WYKRES</translation>
+            <translation>Wyczyść wykres</translation>
         </message>
         <message>
             <source>Show raw data</source>

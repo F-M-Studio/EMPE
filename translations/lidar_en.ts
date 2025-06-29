@@ -77,6 +77,14 @@
             <source>About Us</source>
             <translation>About Us</translation>
         </message>
+        <message>
+            <source>Language Changed</source>
+            <translation>Language Changed</translation>
+        </message>
+        <message>
+            <source>Please restart the application for the language change to take effect.</source>
+            <translation>Please restart the application for the language change to take effect.</translation>
+        </message>
     </context>
     <context>
         <name>GraphWindow</name>
