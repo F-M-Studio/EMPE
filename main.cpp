@@ -29,31 +29,36 @@
 #include <QApplication>
 #include <QTranslator>
 #include <QLocale>
+#include <QSettings>
+#include <QFontDatabase>
 #include "mainwindow.h"
 
 int main(int argc, char *argv[]) {
     QApplication a(argc, argv);
 
+    QSettings settings("EMPE", "LidarApp");
+    QString selectedLanguage = settings.value("language", QString()).toString();
 
     QTranslator translator;
-    for (const QStringList uiLanguages = QLocale::system().uiLanguages(); const QString &locale: uiLanguages) {
-        if (const QString baseName = "lidar_" + QLocale(locale).name().split('_').first(); translator.load(":/translations/" + baseName)) {
+    if (!selectedLanguage.isEmpty()) {
+        // Load user-selected language
+        if (translator.load(":/translations/lidar_" + selectedLanguage)) {
             a.installTranslator(&translator);
-            break;
+        }
+    } else {
+        // Fallback to system locale
+        for (const QString &locale : QLocale::system().uiLanguages()) {
+            QString baseName = "lidar_" + QLocale(locale).name().split('_').first();
+            if (translator.load(":/translations/" + baseName)) {
+                a.installTranslator(&translator);
+                break;
+            }
         }
     }
 
     QFontDatabase::addApplicationFont(":/fonts/AdwaitaSans-Regular.ttf");
 
-    QFont font;
-    font.setFamilies({QString::fromUtf8("Adwaita Sans")});
-    QApplication::setFont(font);
-
-    QApplication::setWindowIcon(QIcon(":/icons/EMPE.png"));
-
     MainWindow w;
-    w.resize(600, 200);
     w.show();
-
-    return QApplication::exec();
+    return a.exec();
 }

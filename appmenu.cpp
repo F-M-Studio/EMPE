@@ -28,73 +28,74 @@
 
 #include "appmenu.h"
 #include "mainwindow.h"
+#include <QMessageBox>
+#include <QSettings>
 
 AppMenu::AppMenu(QMainWindow *window, MainWindow *mainWindow) : QObject(window), window(window),
                                                                 mainWindow(mainWindow) {
-    auto *englishAction = new QAction(tr("English"), window);
-    auto *polishAction = new QAction(tr("Polish"), window);
-    this->englishAction = englishAction;
-    this->polishAction = polishAction;
-
-
     mainMenu = new QMenu(tr("☰ Menu"), window);
     window->menuBar()->addMenu(mainMenu);
 
-
+    // Create actions
     portSettingsAction = new QAction(tr("Port settings"), window);
     graphAction = new QAction(tr("Graph"), window);
     startMeasurementAction = new QAction(tr("Start measurement"), window);
     saveDataAction = new QAction(tr("Save data to file"), window);
     aboutUsAction = new QAction(tr("About us"), window);
 
+    // Connect menu actions to signals
+    connect(portSettingsAction, &QAction::triggered, this, &AppMenu::portSettingsRequested);
+    connect(graphAction, &QAction::triggered, this, &AppMenu::graphWindowRequested);
+    connect(aboutUsAction, &QAction::triggered, this, &AppMenu::aboutUsRequested);
 
+    // Create language menu
+    auto *languageMenu = new QMenu(tr("Language"), mainMenu);
+    englishAction = new QAction(tr("English"), window);
+    polishAction = new QAction(tr("Polish"), window);
+
+    // Connect language actions
+    connect(englishAction, &QAction::triggered, this, &AppMenu::switchToEnglish);
+    connect(polishAction, &QAction::triggered, this, &AppMenu::switchToPolish);
+
+    // Add actions to language menu
+    languageMenu->addAction(englishAction);
+    languageMenu->addAction(polishAction);
+
+    // Add all actions to main menu
     mainMenu->addAction(portSettingsAction);
     mainMenu->addAction(graphAction);
+    mainMenu->addSeparator();
     mainMenu->addAction(startMeasurementAction);
     mainMenu->addAction(saveDataAction);
     mainMenu->addSeparator();
+    mainMenu->addMenu(languageMenu);
+    mainMenu->addSeparator();
     mainMenu->addAction(aboutUsAction);
 
-
-    connect(portSettingsAction, &QAction::triggered, this, &AppMenu::portSettingsRequested);
-    connect(graphAction, &QAction::triggered, this, &AppMenu::graphWindowRequested);
-    connect(startMeasurementAction, &QAction::triggered, this, &AppMenu::startStopRequested);
-    connect(saveDataAction, &QAction::triggered, this, &AppMenu::saveDataRequested);
-    connect(aboutUsAction, &QAction::triggered, this, &AppMenu::aboutUsRequested);
-
-
-    languageAction = new QAction(tr("Language"), window);
-    auto *languageMenu = new QMenu(window);
-    auto *languageGroup = new QActionGroup(window);
-    languageGroup->setExclusive(true);
-
+    // Update language checkmarks based on current settings
+    QSettings settings("EMPE", "LidarApp");
+    QString currentLang = settings.value("language", QString()).toString();
     englishAction->setCheckable(true);
     polishAction->setCheckable(true);
-    englishAction->setChecked(true);
-
-    languageGroup->addAction(englishAction);
-    languageGroup->addAction(polishAction);
-
-    languageMenu->addAction(englishAction);
-    languageMenu->addAction(polishAction);
-    languageAction->setMenu(languageMenu);
-    mainMenu->addAction(languageAction);
-
-    connect(englishAction, &QAction::triggered, this, [this]() {
-        emit languageChanged("en");
-    });
-
-    connect(polishAction, &QAction::triggered, this, [this]() {
-        emit languageChanged("pl");
-    });
+    englishAction->setChecked(currentLang == "en");
+    polishAction->setChecked(currentLang == "pl");
 }
 
-void AppMenu::setLanguage(const QString &language) const {
-    if (language == "en") {
-        englishAction->setChecked(true);
-    } else if (language == "pl") {
-        polishAction->setChecked(true);
-    }
+void AppMenu::switchToEnglish() {
+    QSettings settings("EMPE", "LidarApp");
+    settings.setValue("language", "en");
+    promptRestart();
+}
+
+void AppMenu::switchToPolish() {
+    QSettings settings("EMPE", "LidarApp");
+    settings.setValue("language", "pl");
+    promptRestart();
+}
+
+void AppMenu::promptRestart() {
+    QMessageBox::information(window, tr("Language Changed"),
+                           tr("Please restart the application for the language change to take effect."));
 }
 
 void AppMenu::updateStartStopAction(bool isReading) const {
