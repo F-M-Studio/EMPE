@@ -10,7 +10,7 @@
  * Filip Leśnik <filip.lesnik170@gmail.com>
  *
  * Data Utworzenia: 10 Marca 2025
- * Ostatnia Modyfikacja: 27 Czerwaca 2025
+ * Ostatnia Modyfikacja: 2 Lipca 2025
  *
  * Ten program jest wolnym oprogramowaniem; możesz go rozprowadzać i/lub
  * modyfikować na warunkach Powszechnej Licencji Publicznej GNU,
@@ -33,6 +33,7 @@
 #include <QMenu>
 #include <QAction>
 #include <QTranslator>
+#include <QActionGroup>
 
 class MainWindow;
 
@@ -60,6 +61,7 @@ private:
     QMainWindow* window;
     MainWindow* mainWindow;
     QMenu* mainMenu{};
+    QActionGroup* languageGroup{};
 
     QAction* portSettingsAction{};
     QAction* graphAction{};

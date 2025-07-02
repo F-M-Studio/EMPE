@@ -138,7 +138,7 @@
         </message>
         <message>
             <source>Distance</source>
-            <translation>Odległość</translation>
+            <translation>Dystans:</translation>
         </message>
         <message>
             <source>Recording period [ms]:</source>
@@ -348,8 +348,8 @@
             <translation>Odległość:</translation>
         </message>
         <message>
-            <source>Global Time</source>
-            <translation>Czas globalny</translation>
+            <source>Time</source>
+            <translation>Czas</translation>
         </message>
         <message>
             <source>Always on Top</source>

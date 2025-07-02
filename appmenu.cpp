@@ -53,6 +53,11 @@ AppMenu::AppMenu(QMainWindow *window, MainWindow *mainWindow) : QObject(window),
     englishAction = new QAction(tr("English"), window);
     polishAction = new QAction(tr("Polish"), window);
 
+    languageGroup = new QActionGroup(window);
+    languageGroup->setExclusive(true);
+    languageGroup->addAction(englishAction);
+    languageGroup->addAction(polishAction);
+
     // Connect language actions
     connect(englishAction, &QAction::triggered, this, &AppMenu::switchToEnglish);
     connect(polishAction, &QAction::triggered, this, &AppMenu::switchToPolish);

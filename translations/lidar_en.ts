@@ -348,8 +348,8 @@
             <translation>Distance:</translation>
         </message>
         <message>
-            <source>Global Time</source>
-            <translation>Global Time</translation>
+            <source>Time</source>
+            <translation>Time</translation>
         </message>
         <message>
             <source>Always on Top</source>

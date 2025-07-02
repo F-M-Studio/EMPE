@@ -519,7 +519,7 @@ void MainWindow::createControls() {
     sensor2Layout->addWidget(distanceLabel2);
     sensor2Layout->addWidget(distanceInput2);
 
-    QGroupBox *timeBox = new QGroupBox(tr("Global Time"));
+    QGroupBox *timeBox = new QGroupBox(tr("Time"));
     QVBoxLayout *timeLayout = new QVBoxLayout(timeBox);
 
     globalTimeLabel = new QLabel("00:00.000");
