@@ -87,15 +87,37 @@ AppMenu::AppMenu(QMainWindow *window, MainWindow *mainWindow) : QObject(window),
 }
 
 void AppMenu::switchToEnglish() {
-    QSettings settings("EMPE", "LidarApp");
-    settings.setValue("language", "en");
-    promptRestart();
+    if (mainWindow) {
+        if (mainWindow->switchLanguage("en")) {
+            englishAction->setChecked(true);
+            polishAction->setChecked(false);
+        } else {
+            QSettings settings("EMPE", "LidarApp");
+            settings.setValue("language", "en");
+            promptRestart();
+        }
+    } else {
+        QSettings settings("EMPE", "LidarApp");
+        settings.setValue("language", "en");
+        promptRestart();
+    }
 }
 
 void AppMenu::switchToPolish() {
-    QSettings settings("EMPE", "LidarApp");
-    settings.setValue("language", "pl");
-    promptRestart();
+    if (mainWindow) {
+        if (mainWindow->switchLanguage("pl")) {
+            englishAction->setChecked(false);
+            polishAction->setChecked(true);
+        } else {
+            QSettings settings("EMPE", "LidarApp");
+            settings.setValue("language", "pl");
+            promptRestart();
+        }
+    } else {
+        QSettings settings("EMPE", "LidarApp");
+        settings.setValue("language", "pl");
+        promptRestart();
+    }
 }
 
 void AppMenu::promptRestart() {

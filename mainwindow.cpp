@@ -954,3 +954,80 @@ void MainWindow::updateGlobalTimeDisplay(int time) {
         .arg(secs, 2, 10, QChar('0'))
         .arg(ms, 3, 10, QChar('0')));
 }
+
+bool MainWindow::switchLanguage(const QString &language) {
+    // Tworzenie nowego translatora
+    static QTranslator *newTranslator = nullptr;
+
+    // Usuwamy poprzedni translator jeśli istnieje
+    if (newTranslator) {
+        qApp->removeTranslator(newTranslator);
+        delete newTranslator;
+        newTranslator = nullptr;
+    }
+
+    // Tworzymy nowy translator
+    newTranslator = new QTranslator(this);
+
+    // Próba załadowania pliku translacji
+    bool success = newTranslator->load(":/translations/lidar_" + language);
+
+    if (success) {
+        // Zapisz wybór w ustawieniach
+        QSettings settings("EMPE", "LidarApp");
+        settings.setValue("language", language);
+
+        // Instalacja nowego translatora
+        qApp->installTranslator(newTranslator);
+
+        // Aktualizacja interfejsu
+        QEvent *event = new QEvent(QEvent::LanguageChange);
+        QCoreApplication::sendEvent(qApp, event);
+
+        // Dodatkowe wywołania metod przetłumaczenia interfejsu
+        this->retranslateUi();
+
+        // Aktualizacja interfejsu wszystkich otwartych okien
+        foreach(QWidget *widget, QApplication::allWidgets()) {
+            QEvent languageEvent(QEvent::LanguageChange);
+            QApplication::sendEvent(widget, &languageEvent);
+        }
+
+        return true;
+    } else {
+        delete newTranslator;
+        newTranslator = nullptr;
+        return false;
+    }
+}
+
+void MainWindow::retranslateUi() {
+    setWindowTitle(tr("EMPE"));
+
+    // Aktualizacja tekstów dla przycisków
+    portSettingsBtn->setText(tr("PORT settings"));
+    showGraphBtn->setText(tr("Show GRAPH"));
+    startStopBtn->setText(isReading ? tr("STOP") : tr("START"));
+    saveDataBtn->setText(tr("SAVE data 1"));
+    saveData2Btn->setText(tr("SAVE data 2"));
+    clearGraphBtn->setText(tr("Clear GRAPH"));
+    showRawDataBtn->setText(dataDisplay->isVisible() ? tr("Hide raw data") : tr("Show raw data"));
+
+    // Aktualizacja tekstów dla elementów stoper
+    sensitivitySlider->setToolTip(tr("Adjust drop sensitivity"));
+    resetStoperBtn->setText(tr("Reset All"));
+    enableStoper1CheckBox->setText(tr("Enable Sensor 1"));
+    enableStoper2CheckBox->setText(tr("Enable Sensor 2"));
+    dropCounter1Label->setText(tr("Drops: %1").arg(dropCount1));
+    dropCounter2Label->setText(tr("Drops: %1").arg(dropCount2));
+
+    // Aktualizacja etykiet
+    stoperGroupBox->setTitle(tr("Stoper"));
+    alwaysOnTopCheckbox->setText(tr("Always on Top"));
+    creatorsNoteLabel->setText(tr("This program was created as part of the Embodying Math&Physics Education project 2023-1-PL01-KA210-SCH-000165829"));
+
+    // Poinformowanie AppMenu o aktualizacji tekstów
+    if (appMenu) {
+        appMenu->updateStartStopAction(isReading);
+    }
+}

@@ -76,6 +76,9 @@ public:
         int sensorNumber;
     };
 
+    // Metoda do zmiany języka w czasie rzeczywistym
+    bool switchLanguage(const QString &language);
+
 protected:
     void keyPressEvent(QKeyEvent *event) override;
 
