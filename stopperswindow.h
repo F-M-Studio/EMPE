@@ -11,6 +11,7 @@
 #include <QCheckBox>
 #include <QTimer>
 #include <QDateTime>
+#include <qlineedit.h>
 
 class MainWindow;
 
@@ -52,8 +53,8 @@ private:
     QCheckBox *enableStoper2CheckBox;
     QTimer *stoperTimer1;
     QTimer *stoperTimer2;
-    QLabel *timeLabel;
-    QLabel *timeLabel2;
+    QLineEdit *timeLabel;
+    QLineEdit *timeLabel2;
 
     bool stoper1Running;
     bool stoper2Running;
@@ -68,7 +69,7 @@ private:
     bool stoper2Enabled = true;
     QDateTime lastDropTime1;
     QDateTime lastDropTime2;
-    static const int DROP_COOLDOWN_MS = 800;
+    static const int DROP_COOLDOWN_MS = 200;
 
     struct DropEvent {
         QDateTime timestamp;
