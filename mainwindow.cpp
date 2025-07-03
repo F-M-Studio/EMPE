@@ -32,6 +32,7 @@
 #include "graphwindow.h"
 #include "aboutusdialog.h"
 #include "debugwindow.h"
+#include "stopperswindow.h"
 
 #include <QDebug>
 #include <QTimer>
@@ -50,10 +51,15 @@
 #include <QDateTime>
 #include <QScrollBar>
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), isReading(false),
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent),
+      isReading(false),
       portSettings(new PortSettings(this)),
+      Reading(false),
       distance(0), timeInMilliseconds(0), minutes(0), seconds(0), milliseconds(0),
-      distance2(0), timeInMilliseconds2(0), minutes2(0), seconds2(0), milliseconds2(0) {
+      distance2(0), timeInMilliseconds2(0), minutes2(0), seconds2(0), milliseconds2(0),
+      stoppersWindow(nullptr) {
+
     centralWidget = new QWidget(this);
     setCentralWidget(centralWidget);
     setWindowTitle(tr("EMPE"));
@@ -66,7 +72,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), isReading(false),
 
     appMenu = new AppMenu(this, this);
     createControls();
-    createStoperControls();
 
     QWidget* dataContainer = new QWidget(this);
     QVBoxLayout* dataLayout = new QVBoxLayout(dataContainer);
@@ -133,320 +138,6 @@ MainWindow::~MainWindow() {
     }
 }
 
-void MainWindow::createStoperControls() {
-
-    stoperGroupBox = new QGroupBox(tr("Stoper"), this);
-    QVBoxLayout *stoperLayout = new QVBoxLayout(stoperGroupBox);
-
-    QLabel *sensLabel = new QLabel(tr("Stopwatch toggle sensitivity (mm):"), this);
-    sensitivitySlider = new QSlider(Qt::Horizontal, this);
-    sensitivitySlider->setRange(5, 100);
-    sensitivitySlider->setValue(dropSensitivity);
-    sensitivitySlider->setTickPosition(QSlider::TicksBelow);
-    sensitivitySlider->setTickInterval(5);
-
-    sensitivityLabel = new QLabel(QString::number(dropSensitivity), this);
-    sensitivityLabel->setMinimumWidth(5);
-
-
-    // sensitivity controls in a horizontal layout
-    QHBoxLayout *sensLayout = new QHBoxLayout();
-    sensLayout->addWidget(sensLabel);
-    sensLayout->addWidget(sensitivitySlider);
-    sensLayout->addWidget(sensitivityLabel);
-    sensLayout->setStretch(1, 1);
-    stoperLayout->addLayout(sensLayout);
-
-
-    stoperTimer = new QTimer(this);
-    stoperTimer->setInterval(10);
-    stoperTime = 60000;
-    stoperRunning = false;
-
-
-    QGroupBox *sensor1GroupBox = new QGroupBox(tr("Sensor 1"), this);
-    QVBoxLayout *sensor1Layout = new QVBoxLayout(sensor1GroupBox);
-
-
-    enableStoper1CheckBox = new QCheckBox(tr("Enable Sensor 1"), this);
-    enableStoper1CheckBox->setChecked(stoper1Enabled);
-    sensor1Layout->addWidget(enableStoper1CheckBox);
-
-
-    dropCounter1Label = new QLabel(tr("Drops: 0"), this);
-    dropCounter1Label->setAlignment(Qt::AlignCenter);
-    sensor1Layout->addWidget(dropCounter1Label);
-
-
-    stopwatchLabel1 = new QLabel(tr("Stoper: 00:00.000"));
-    stopwatchLabel1->setAlignment(Qt::AlignCenter);
-    stopwatchTimer1 = new QTimer(this);
-    stopwatchTimer1->setInterval(10);
-    connect(stopwatchTimer1, &QTimer::timeout, this, &MainWindow::updateStopwatch1);
-    sensor1Layout->addWidget(stopwatchLabel1);
-
-
-    QGroupBox *sensor2GroupBox = new QGroupBox(tr("Sensor 2"), this);
-    QVBoxLayout *sensor2Layout = new QVBoxLayout(sensor2GroupBox);
-
-
-    enableStoper2CheckBox = new QCheckBox(tr("Enable Sensor 2"), this);
-    enableStoper2CheckBox->setChecked(stoper2Enabled);
-    sensor2Layout->addWidget(enableStoper2CheckBox);
-
-
-    dropCounter2Label = new QLabel(tr("Drops: 0"), this);
-    dropCounter2Label->setAlignment(Qt::AlignCenter);
-    sensor2Layout->addWidget(dropCounter2Label);
-
-
-    stopwatchLabel2 = new QLabel(tr("Stoper: 00:00.000"));
-    stopwatchLabel2->setAlignment(Qt::AlignCenter);
-    stopwatchTimer2 = new QTimer(this);
-    stopwatchTimer2->setInterval(10);
-    connect(stopwatchTimer2, &QTimer::timeout, this, &MainWindow::updateStopwatch2);
-    sensor2Layout->addWidget(stopwatchLabel2);
-
-
-    // sensors side-by-side with equal stretch
-    QHBoxLayout *sensorsLayout = new QHBoxLayout();
-    sensorsLayout->addWidget(sensor1GroupBox);
-    sensorsLayout->addWidget(sensor2GroupBox);
-    sensorsLayout->setStretch(0, 1);
-    sensorsLayout->setStretch(1, 1);
-    stoperLayout->addLayout(sensorsLayout);
-
-
-    mainLayout->addWidget(stoperGroupBox);
-
-
-    connect(stoperTimer, &QTimer::timeout, this, &MainWindow::updateStoperTime);
-    connect(sensitivitySlider, &QSlider::valueChanged, this, &MainWindow::onSensitivityChanged);
-    connect(enableStoper1CheckBox, &QCheckBox::toggled, this, [this](bool checked) {
-        stoper1Enabled = checked;
-    });
-    connect(enableStoper2CheckBox, &QCheckBox::toggled, this, [this](bool checked) {
-        stoper2Enabled = checked;
-    });
-}
-
-void MainWindow::handleStoperStartStop() {
-    if (!stoperRunning) {
-        stoperRunning = true;
-        startStopStoperBtn->setText(tr("Stop Stoper"));
-        stoperTimer->start();
-    } else {
-        stoperRunning = false;
-        startStopStoperBtn->setText(tr("Start Stoper"));
-        stoperTimer->stop();
-    }
-}
-void MainWindow::updateStoperTime() {
-    if (stoperTime > 0) {
-        stoperTime -= 10;
-        int mins = stoperTime / 60000;
-        int secs = (stoperTime % 60000) / 1000;
-        int ms = (stoperTime % 1000) / 10;
-
-        QString timeStr = QString("%1:%2.%3")
-            .arg(mins, 2, 10, QChar('0'))
-            .arg(secs, 2, 10, QChar('0'))
-            .arg(ms, 2, 10, QChar('0'));
-
-        startStopStoperBtn->setText(tr("Stop Stoper (%1)").arg(timeStr));
-    } else {
-        stoperTimer->stop();
-        stoperRunning = false;
-        startStopStoperBtn->setText(tr("Start Stoper"));
-        QMessageBox::information(this, tr("Stoper"), tr("Time's up!"));
-    }
-}
-void MainWindow::resetStoperCounters() {
-    dropCount1 = 0;
-    dropCount2 = 0;
-    dropEvents.clear();
-    previousDistance1 = 0;
-    previousDistance2 = 0;
-    lastDropTime1 = QDateTime();
-    lastDropTime2 = QDateTime();
-    stoperTime = 60000;
-
-    if (stoperRunning) {
-        stoperTimer->stop();
-        stoperRunning = false;
-    }
-
-
-    resetStopwatch1();
-    resetStopwatch2();
-
-    updateStoperDisplay();
-
-    QMessageBox::information(this, tr("Reset Complete"),
-                           tr("Drop counters, logs, and stoper have been reset."));
-}
-
-void MainWindow::saveStoperLogs() {
-    if (dropEvents.isEmpty()) {
-        QMessageBox::information(this, tr("No Data"),
-                               tr("No drop events to save."));
-        return;
-    }
-
-    QString defaultFileName = QString("EMPE_DropLogs_%1.csv")
-                             .arg(QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss"));
-
-    QString fileName = QFileDialog::getSaveFileName(this,
-                                                  tr("Save Drop Logs"),
-                                                  defaultFileName,
-                                                  tr("CSV Files (*.csv)"));
-
-    if (fileName.isEmpty()) {
-        return;
-    }
-
-    if (!fileName.endsWith(".csv", Qt::CaseInsensitive)) {
-        fileName += ".csv";
-    }
-
-    QFile file(fileName);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        QMessageBox::warning(this, tr("Error"),
-                           tr("Cannot write file %1:\n%2.")
-                           .arg(QDir::toNativeSeparators(fileName),
-                           file.errorString()));
-        return;
-    }
-
-    QTextStream out(&file);
-    out << "Timestamp,Sensor,Previous Value (mm),Current Value (mm),Drop Amount (mm),Sensitivity (mm)\n";
-
-
-    for (const auto &event : dropEvents) {
-        out << QString("%1,%2,%3,%4,%5,%6\n")
-               .arg(event.timestamp.toString("yyyy-MM-dd HH:mm:ss.zzz"))
-               .arg(event.sensorNumber)
-               .arg(event.previousValue)
-               .arg(event.currentValue)
-               .arg(event.dropAmount)
-               .arg(dropSensitivity);
-    }
-
-    file.close();
-
-    QMessageBox::information(this, tr("Success"),
-                           tr("Drop logs saved to %1\nTotal events: %2")
-                           .arg(QDir::toNativeSeparators(fileName))
-                           .arg(dropEvents.size()));
-}
-
-void MainWindow::checkForDrop1(int currentDistance) {
-    if (!stoper1Enabled) return;
-
-
-    int difference = previousDistance1 - currentDistance;
-
-
-    if (difference >= dropSensitivity) {
-        dropCount1++;
-
-
-        logDropEvent(1, previousDistance1, currentDistance, difference);
-
-
-        if (!stopwatchRunning1) {
-
-            stopwatchRunning1 = true;
-            stopwatchTimer1->start(10);
-
-            QDateTime currentTime = QDateTime::currentDateTime();
-            dataDisplay->append(tr("[%1] Automatic start of stopwatch 1 after drop detection")
-                .arg(currentTime.toString("hh:mm:ss.zzz")));
-            qDebug() << "Automatically started stopwatch 1 after drop detection";
-        } else {
-
-            stopwatchRunning1 = false;
-            stopwatchTimer1->stop();
-
-            QDateTime currentTime = QDateTime::currentDateTime();
-            dataDisplay->append(tr("[%1] Automatic stop of stopwatch 1 after drop detection")
-                .arg(currentTime.toString("hh:mm:ss.zzz")));
-            qDebug() << "Automatycznie zatrzymano stoper 1 po wykryciu kropli";
-        }
-
-
-        updateStoperDisplay();
-
-
-        lastDropTime1 = QDateTime::currentDateTime();
-    }
-
-
-    previousDistance1 = currentDistance;
-}
-
-void MainWindow::checkForDrop2(int currentDistance) {
-    if (!stoper2Enabled) return;
-
-
-    int difference = previousDistance2 - currentDistance;
-
-
-    if (difference >= dropSensitivity) {
-
-        dropCount2++;
-
-
-        logDropEvent(2, previousDistance2, currentDistance, difference);
-
-
-        if (!stopwatchRunning2) {
-
-            stopwatchRunning2 = true;
-            stopwatchTimer2->start(10);
-
-            QDateTime currentTime = QDateTime::currentDateTime();
-            dataDisplay2->append(tr("[%1] Automatic start of stopwatch 2 after drop detection")
-                .arg(currentTime.toString("hh:mm:ss.zzz")));
-            qDebug() << "Automatically started stopwatch 2 after drop detection";
-        } else {
-
-            stopwatchRunning2 = false;
-            stopwatchTimer2->stop();
-
-            QDateTime currentTime = QDateTime::currentDateTime();
-            dataDisplay2->append(tr("[%1] Automatic stop of stopwatch 2 after drop detection")
-                .arg(currentTime.toString("hh:mm:ss.zzz")));
-            qDebug() << "Automatically stopped stopwatch 2 after drop detection";
-        }
-
-
-        updateStoperDisplay();
-
-
-        lastDropTime2 = QDateTime::currentDateTime();
-    }
-
-
-    previousDistance2 = currentDistance;
-}
-
-void MainWindow::updateStoperDisplay() {
-    dropCounter1Label->setText(tr("Drops: %1").arg(dropCount1));
-    dropCounter2Label->setText(tr("Drops: %1").arg(dropCount2));
-}
-
-void MainWindow::handleStartStopButton() {
-    if (isReading) {
-        stopReading();
-        startStopBtn->setText(tr("START"));
-    } else {
-        startReading();
-        startStopBtn->setText(tr("STOP"));
-    }
-    isReading = !isReading;
-}
-
 void MainWindow::createControls() {
     QHBoxLayout *buttonLayout = new QHBoxLayout();
 
@@ -458,6 +149,7 @@ void MainWindow::createControls() {
     clearGraphBtn = new QPushButton(tr("Clear GRAPH"));
     showRawDataBtn = new QPushButton(tr("Show raw data"));
     showRawDataBtn->hide();
+    stoppersButton = new QPushButton(tr("Stoppers"));
 
     buttonLayout->addWidget(portSettingsBtn);
     buttonLayout->addWidget(showGraphBtn);
@@ -466,6 +158,7 @@ void MainWindow::createControls() {
     buttonLayout->addWidget(saveData2Btn);
     buttonLayout->addWidget(clearGraphBtn);
     buttonLayout->addWidget(showRawDataBtn);
+    buttonLayout->addWidget(stoppersButton);
 
     mainLayout->addLayout(buttonLayout);
 
@@ -503,6 +196,8 @@ void MainWindow::createControls() {
         }
     });
 
+    connect(stoppersButton, &QPushButton::clicked, this, &MainWindow::openStoppersWindow);
+
     QGridLayout *controlsLayout = new QGridLayout();
 
 
@@ -517,7 +212,6 @@ void MainWindow::createControls() {
     sensor1Layout->addWidget(distanceInput);
 
     QLabel *timeLabel = new QLabel(tr("Time:"));
-    this->timeLabel = timeLabel;
     timeInput = new QLineEdit("00:00.000");
     timeInput->setReadOnly(true);
 
@@ -535,15 +229,15 @@ void MainWindow::createControls() {
     sensor2Layout->addWidget(distanceInput2);
 
     QLabel *timeLabel2 = new QLabel(tr("Time:"));
-    this->timeLabel2 = timeLabel2;
     timeInput2 = new QLineEdit("00:00.000");
     timeInput2->setReadOnly(true);
 
     sensor2Layout->addWidget(timeLabel2);
     sensor2Layout->addWidget(timeInput2);
 
-    // QGroupBox *timeBox = new QGroupBox(tr("Time"));
-    // QVBoxLayout *timeLayout = new QVBoxLayout(timeBox);
+    // Store labels in member variables
+    this->timeLabel = timeLabel;
+    this->timeLabel2 = timeLabel2;
 
     globalTimeLabel = new QLabel("00:00.000");
     globalTimeLabel->setAlignment(Qt::AlignCenter);
@@ -576,6 +270,15 @@ void MainWindow::createControls() {
         setWindowFlags(flags);
         show();
     });
+}
+
+void MainWindow::openStoppersWindow() {
+    if (!stoppersWindow) {
+        stoppersWindow = new StoppersWindow(this);
+    }
+    stoppersWindow->show();
+    stoppersWindow->raise();
+    stoppersWindow->activateWindow();
 }
 
 void MainWindow::saveDataToFile(const QTextEdit *display, const QString &regexPattern) {
@@ -654,291 +357,40 @@ void MainWindow::saveDataToFile(const QTextEdit *display, const QString &regexPa
     }
 }
 
-void MainWindow::updateStopwatch1() {
-    stopwatchTime1 += 10;
-    int mins = stopwatchTime1 / 60000;
-    int secs = (stopwatchTime1 % 60000) / 1000;
-    int ms = stopwatchTime1 % 1000;
-
-    stopwatchLabel1->setText(tr("Stoper: %1:%2.%3")
-        .arg(mins, 2, 10, QChar('0'))
-        .arg(secs, 2, 10, QChar('0'))
-        .arg(ms, 3, 10, QChar('0')));
+void MainWindow::handleStartStopButton() {
+    if (isReading) {
+        stopReading();
+        startStopBtn->setText(tr("START"));
+    } else {
+        startReading();
+        startStopBtn->setText(tr("STOP"));
+    }
+    isReading = !isReading;
 }
 
-void MainWindow::updateStopwatch2() {
-    stopwatchTime2 += 10;
-    int mins = stopwatchTime2 / 60000;
-    int secs = (stopwatchTime2 % 60000) / 1000;
-    int ms = stopwatchTime2 % 1000;
+void MainWindow::retranslateUi() {
+    setWindowTitle(tr("EMPE"));
 
-    stopwatchLabel2->setText(tr("Stoper: %1:%2.%3")
-        .arg(mins, 2, 10, QChar('0'))
-        .arg(secs, 2, 10, QChar('0'))
-        .arg(ms, 3, 10, QChar('0')));
-}
+    // Update button texts
+    portSettingsBtn->setText(tr("PORT settings"));
+    showGraphBtn->setText(tr("Show GRAPH"));
+    startStopBtn->setText(isReading ? tr("STOP") : tr("START"));
+    saveDataBtn->setText(tr("SAVE data 1"));
+    saveData2Btn->setText(tr("SAVE data 2"));
+    clearGraphBtn->setText(tr("Clear GRAPH"));
+    showRawDataBtn->setText(dataDisplay->isVisible() ? tr("Hide raw data") : tr("Show raw data"));
+    stoppersButton->setText(tr("Stoppers"));
 
-void MainWindow::resetStopwatch1() {
-    stopwatchTime1 = 0;
-    stopwatchRunning1 = false;
-    stopwatchTimer1->stop();
-    stopwatchLabel1->setText(tr("Stoper: 00:00.000"));
-}
+    // Update other labels
+    if (timeLabel) timeLabel->setText(tr("Time:"));
+    if (timeLabel2) timeLabel2->setText(tr("Time:"));
+    alwaysOnTopCheckbox->setText(tr("Always on Top"));
+    creatorsNoteLabel->setText(tr("Embodying Math&Physics Education project 2023-1-PL01-KA210-SCH-000165829"));
 
-void MainWindow::resetStopwatch2() {
-    stopwatchTime2 = 0;
-    stopwatchRunning2 = false;
-    stopwatchTimer2->stop();
-    stopwatchLabel2->setText(tr("Stoper: 00:00.000"));
-}
-
-void MainWindow::onSensitivityChanged(int value) {
-    dropSensitivity = value;
-    sensitivityLabel->setText(QString::number(value));
-}
-
-void MainWindow::startReading() {
-    resetStopwatch1();
-    resetStopwatch2();
-    lastDistance1 = 0;
-    lastDistance2 = 0;
-
-    dataBuffer1.clear();
-    dataBuffer2.clear();
-
-    QString portName1 = portSettings->getPortName1();
-    int baudRate1 = portSettings->getBaudRate1();
-    int dataBits1 = portSettings->getDataBits1();
-    int stopBits1 = portSettings->getStopBits1();
-    int parity1 = portSettings->getParity1();
-    int flowControl1 = portSettings->getFlowControl1();
-
-    qDebug() << "Attempting to open port 1:" << portName1
-            << "with settings:"
-            << "BaudRate:" << baudRate1
-            << "DataBits:" << dataBits1
-            << "StopBits:" << stopBits1
-            << "Parity:" << parity1
-            << "FlowControl:" << flowControl1;
-
-    serialPort = new QSerialPort(this);
-    serialPort->setPortName(portName1);
-    serialPort->setBaudRate(baudRate1);
-    serialPort->setDataBits(static_cast<QSerialPort::DataBits>(dataBits1));
-    serialPort->setStopBits(static_cast<QSerialPort::StopBits>(stopBits1));
-    serialPort->setParity(static_cast<QSerialPort::Parity>(parity1));
-    serialPort->setFlowControl(static_cast<QSerialPort::FlowControl>(flowControl1));
-
-    if (!serialPort->open(QIODevice::ReadOnly)) {
-        qDebug() << "Failed to open port" << portName1 << "Error:" << serialPort->errorString();
-        QMessageBox::warning(this, tr("Error"),
-                             tr("Failed to open port %1: %2").arg(portName1, serialPort->errorString()));
-        delete serialPort;
-        serialPort = nullptr;
-        return;
-    }
-
-    QString portName2 = portSettings->getPortName2();
-    int baudRate2 = portSettings->getBaudRate2();
-    int dataBits2 = portSettings->getDataBits2();
-    int stopBits2 = portSettings->getStopBits2();
-    int parity2 = portSettings->getParity2();
-    int flowControl2 = portSettings->getFlowControl2();
-
-    qDebug() << "Attempting to open port 2:" << portName2
-            << "with settings:"
-            << "BaudRate:" << baudRate2
-            << "DataBits:" << dataBits2
-            << "StopBits:" << stopBits2
-            << "Parity:" << parity2
-            << "FlowControl:" << flowControl2;
-
-    serialPort2 = new QSerialPort(this);
-    serialPort2->setPortName(portName2);
-    serialPort2->setBaudRate(baudRate2);
-    serialPort2->setDataBits(static_cast<QSerialPort::DataBits>(dataBits2));
-    serialPort2->setStopBits(static_cast<QSerialPort::StopBits>(stopBits2));
-    serialPort2->setParity(static_cast<QSerialPort::Parity>(parity2));
-    serialPort2->setFlowControl(static_cast<QSerialPort::FlowControl>(flowControl2));
-
-    if (!serialPort2->open(QIODevice::ReadOnly)) {
-        qDebug() << "Failed to open port" << portName2 << "Error:" << serialPort2->errorString();
-        QMessageBox::warning(this, tr("Error"),
-                             tr("Failed to open port %1: %2").arg(portName2, serialPort2->errorString()));
-
-        if (serialPort && serialPort->isOpen()) {
-            serialPort->close();
-            delete serialPort;
-            serialPort = nullptr;
-        }
-
-        delete serialPort2;
-        serialPort2 = nullptr;
-        return;
-    }
-
-    qDebug() << "Started reading from both ports";
-    Reading = true;
-
-    QTimer::singleShot(50, this, [this]() {
-        connect(serialPort, &QSerialPort::readyRead, this, [this]() {
-            QByteArray data = serialPort->readAll();
-            dataBuffer1.append(QString::fromUtf8(data));
-            processBuffer(dataBuffer1, dataDisplay, &MainWindow::parseData);
-        });
-        connect(serialPort2, &QSerialPort::readyRead, this, [this]() {
-            QByteArray data = serialPort2->readAll();
-            dataBuffer2.append(QString::fromUtf8(data));
-            processBuffer(dataBuffer2, dataDisplay2, &MainWindow::parseData2);
-        });
-    });
-}
-
-void MainWindow::processBuffer(QString &buffer, QTextEdit *display, void (MainWindow::*parseFunc)(const QString &)) {
-    static QRegularExpression completePattern("YY\\d+T\\d+E");
-
-    QString processedData;
-    int lastMatchEnd = 0;
-
-    QRegularExpressionMatchIterator matches = completePattern.globalMatch(buffer);
-
-    while (matches.hasNext()) {
-        QRegularExpressionMatch match = matches.next();
-        QString completeMatch = match.captured(0);
-
-        processedData += completeMatch + "\n";
-
-        lastMatchEnd = match.capturedEnd();
-    }
-
-    if (!processedData.isEmpty()) {
-        display->append(processedData);
-
-        (this->*parseFunc)(processedData);
-
-
-        buffer = buffer.mid(lastMatchEnd);
+    if (appMenu) {
+        appMenu->updateStartStopAction(isReading);
     }
 }
-
-void MainWindow::parseData(const QString &data) {
-    static QRegularExpression regex("YY(\\d+)T(\\d+)E");
-    QRegularExpressionMatchIterator matchIterator = regex.globalMatch(data);
-
-    while (matchIterator.hasNext()) {
-        QRegularExpressionMatch match = matchIterator.next();
-
-        int newDistance = match.captured(1).toInt();
-        if (newDistance > 1000) {
-            newDistance = newDistance / 10;
-        }
-        int newTime = match.captured(2).toInt();
-
-        if (newDistance == 0 && distance > 0) {
-            continue;
-        }
-
-
-        distance = newDistance;
-        timeInMilliseconds = newTime;
-
-
-        minutes = timeInMilliseconds / 60000;
-        seconds = (timeInMilliseconds % 60000) / 1000;
-        milliseconds = timeInMilliseconds % 1000;
-
-
-        dataPoints.append({distance, timeInMilliseconds});
-        distanceInput->setText(QString::number(distance));
-
-        updateGlobalTimeDisplay(timeInMilliseconds);
-
-        QString formattedTime = QString("%1:%2.%3")
-                        .arg(minutes, 2, 10, QChar('0'))
-                        .arg(seconds, 2, 10, QChar('0'))
-                        .arg(milliseconds, 3, 10, QChar('0'));
-        timeInput->setText(formattedTime);
-
-
-        if (stoper1Enabled) {
-            checkForDrop1(distance);
-        }
-    }
-}
-
-void MainWindow::parseData2(const QString &data) {
-    static QRegularExpression regex("YY(\\d+)T(\\d+)E");
-    QRegularExpressionMatchIterator matchIterator = regex.globalMatch(data);
-
-    while (matchIterator.hasNext()) {
-        QRegularExpressionMatch match = matchIterator.next();
-
-        int newDistance = match.captured(1).toInt();
-        if (newDistance > 1000) {
-            newDistance = newDistance / 10;
-        }
-        int newTime = match.captured(2).toInt();
-
-
-        if (newDistance == 0 && distance2 > 0) {
-            continue;
-        }
-
-
-        distance2 = newDistance;
-        timeInMilliseconds2 = newTime;
-        minutes2 = timeInMilliseconds2 / 60000;
-        seconds2 = (timeInMilliseconds2 % 60000) / 1000;
-        milliseconds2 = timeInMilliseconds2 % 1000;
-        dataPoints2.append({distance2, timeInMilliseconds2});
-        distanceInput2->setText(QString::number(distance2));
-
-        updateGlobalTimeDisplay(timeInMilliseconds2);
-
-        QString formattedTime = QString("%1:%2.%3")
-                        .arg(minutes2, 2, 10, QChar('0'))
-                        .arg(seconds2, 2, 10, QChar('0'))
-                        .arg(milliseconds2, 3, 10, QChar('0'));
-        timeInput2->setText(formattedTime);
-
-        if (stoper2Enabled) {
-            checkForDrop2(distance2);
-        }
-    }
-}
-
-void MainWindow::stopReading() {
-    Reading = false;
-
-
-    if (stopwatchRunning1) {
-        stopwatchRunning1 = false;
-        stopwatchTimer1->stop();
-    }
-    if (stopwatchRunning2) {
-        stopwatchRunning2 = false;
-        stopwatchTimer2->stop();
-    }
-
-
-    if (serialPort && serialPort->isOpen()) {
-        disconnect(serialPort, &QSerialPort::readyRead, nullptr, nullptr);
-        serialPort->close();
-        qDebug() << tr("Stopped reading from port 1");
-        delete serialPort;
-        serialPort = nullptr;
-    }
-
-
-    if (serialPort2 && serialPort2->isOpen()) {
-        disconnect(serialPort2, &QSerialPort::readyRead, nullptr, nullptr);
-        serialPort2->close();
-        qDebug() << tr("Stopped reading from port 2");
-        delete serialPort2;
-        serialPort2 = nullptr;
-    }
-}
-
 
 void MainWindow::keyPressEvent(QKeyEvent *event) {
     // Ctrl+0 combination to open DEBUG MENU
@@ -951,120 +403,6 @@ void MainWindow::showAboutUsDialog() {
     auto *dialog = new AboutUsDialog(this);
     dialog->setAttribute(Qt::WA_DeleteOnClose);
     dialog->show();
-}
-
-void MainWindow::logDropEvent(int sensorId, int previousDistance, int currentDistance, int difference) {
-    QTextEdit *display = (sensorId == 1) ? dataDisplay : dataDisplay2;
-    QDateTime currentTime = QDateTime::currentDateTime();
-
-
-    display->append(tr("[%1] Drop detected (sensor %2): Previous distance: %3, Current: %4, Difference: %5")
-                   .arg(currentTime.toString("hh:mm:ss.zzz"))
-                   .arg(sensorId)
-                   .arg(previousDistance)
-                   .arg(currentDistance)
-                   .arg(difference));
-
-
-    QScrollBar *scrollBar = display->verticalScrollBar();
-    scrollBar->setValue(scrollBar->maximum());
-
-    qDebug() << "Drop detected on sensor" << sensorId
-             << "- Previous:" << previousDistance
-             << "Current:" << currentDistance
-             << "Difference:" << difference;
-}
-
-void MainWindow::updateGlobalTimeDisplay(int time) {
-
-    int mins = time / 60000;
-    int secs = (time % 60000) / 1000;
-    int ms = time % 1000;
-
-
-    globalTimeLabel->setText(QString("%1:%2.%3")
-        .arg(mins, 2, 10, QChar('0'))
-        .arg(secs, 2, 10, QChar('0'))
-        .arg(ms, 3, 10, QChar('0')));
-}
-
-bool MainWindow::switchLanguage(const QString &language) {
-    // Tworzenie nowego translatora
-    static QTranslator *newTranslator = nullptr;
-
-    // Usuwamy poprzedni translator jeśli istnieje
-    if (newTranslator) {
-        qApp->removeTranslator(newTranslator);
-        delete newTranslator;
-        newTranslator = nullptr;
-    }
-
-    // Tworzymy nowy translator
-    newTranslator = new QTranslator(this);
-
-    // Próba załadowania pliku translacji
-    bool success = newTranslator->load(":/translations/lidar_" + language);
-
-    if (success) {
-        // Zapisz wybór w ustawieniach
-        QSettings settings("EMPE", "LidarApp");
-        settings.setValue("language", language);
-
-        // Instalacja nowego translatora
-        qApp->installTranslator(newTranslator);
-
-        // Aktualizacja interfejsu
-        QEvent *event = new QEvent(QEvent::LanguageChange);
-        QCoreApplication::sendEvent(qApp, event);
-
-        // Dodatkowe wywołania metod przetłumaczenia interfejsu
-        this->retranslateUi();
-
-        // Aktualizacja interfejsu wszystkich otwartych okien
-        foreach(QWidget *widget, QApplication::allWidgets()) {
-            QEvent languageEvent(QEvent::LanguageChange);
-            QApplication::sendEvent(widget, &languageEvent);
-        }
-
-        return true;
-    } else {
-        delete newTranslator;
-        newTranslator = nullptr;
-        return false;
-    }
-}
-
-void MainWindow::retranslateUi() {
-    setWindowTitle(tr("EMPE"));
-
-    // Aktualizacja tekstów dla przycisków
-    portSettingsBtn->setText(tr("PORT settings"));
-    showGraphBtn->setText(tr("Show GRAPH"));
-    startStopBtn->setText(isReading ? tr("STOP") : tr("START"));
-    saveDataBtn->setText(tr("SAVE data 1"));
-    saveData2Btn->setText(tr("SAVE data 2"));
-    clearGraphBtn->setText(tr("Clear GRAPH"));
-    showRawDataBtn->setText(dataDisplay->isVisible() ? tr("Hide raw data") : tr("Show raw data"));
-
-    // Aktualizacja tekstów dla elementów stoper
-    sensitivitySlider->setToolTip(tr("Adjust stopwatch sensitivity"));
-    enableStoper1CheckBox->setText(tr("Enable Sensor 1"));
-    enableStoper2CheckBox->setText(tr("Enable Sensor 2"));
-    dropCounter1Label->setText(tr("Drops: %1").arg(dropCount1));
-    dropCounter2Label->setText(tr("Drops: %1").arg(dropCount2));
-
-    // Aktualizacja etykiet
-    stoperGroupBox->setTitle(tr("Stoper"));
-    alwaysOnTopCheckbox->setText(tr("Always on Top"));
-    creatorsNoteLabel->setText(tr("Embodying Math&Physics Education project 2023-1-PL01-KA210-SCH-000165829"));
-
-    // Poinformowanie AppMenu o aktualizacji tekstów
-    if (appMenu) {
-        appMenu->updateStartStopAction(isReading);
-    }
-
-    if (timeLabel) timeLabel->setText(tr("Time:"));
-    if (timeLabel2) timeLabel2->setText(tr("Time:"));
 }
 
 void MainWindow::openDebugWindow() {
@@ -1081,3 +419,113 @@ void MainWindow::fakeData1(const QString &data) {
 void MainWindow::fakeData2(const QString &data) {
     parseData2(data);
 }
+
+void MainWindow::startReading() {
+    if (!serialPort) {
+        serialPort = new QSerialPort(this);
+    }
+    if (!serialPort2) {
+        serialPort2 = new QSerialPort(this);
+    }
+
+    if (!serialPort->open(QIODevice::ReadOnly) || !serialPort2->open(QIODevice::ReadOnly)) {
+        QMessageBox::warning(this, tr("Error"), tr("Cannot open ports.\nPlease check port settings."));
+        return;
+    }
+
+    Reading = true;
+    if (appMenu) {
+        appMenu->updateStartStopAction(true);
+    }
+}
+
+void MainWindow::stopReading() {
+    if (serialPort && serialPort->isOpen()) {
+        serialPort->close();
+    }
+    if (serialPort2 && serialPort2->isOpen()) {
+        serialPort2->close();
+    }
+
+    Reading = false;
+    if (appMenu) {
+        appMenu->updateStartStopAction(false);
+    }
+}
+
+void MainWindow::parseData(const QString &data) {
+    QRegularExpression regex("YY(\\d+)T(\\d+)E");
+    QRegularExpressionMatch match = regex.match(data);
+
+    if (match.hasMatch()) {
+        distance = match.captured(1).toInt();
+        timeInMilliseconds = match.captured(2).toInt();
+
+        minutes = timeInMilliseconds / 60000;
+        seconds = (timeInMilliseconds % 60000) / 1000;
+        milliseconds = timeInMilliseconds % 1000;
+
+        QString timeStr = QString("%1:%2.%3")
+            .arg(minutes, 2, 10, QChar('0'))
+            .arg(seconds, 2, 10, QChar('0'))
+            .arg(milliseconds, 3, 10, QChar('0'));
+
+        distanceInput->setText(QString::number(distance));
+        timeInput->setText(timeStr);
+
+        dataPoints.append({distance, timeInMilliseconds});
+
+        if (stoppersWindow) {
+            stoppersWindow->checkForDrop1(distance);
+        }
+    }
+}
+
+void MainWindow::parseData2(const QString &data) {
+    QRegularExpression regex("YY(\\d+)T(\\d+)E");
+    QRegularExpressionMatch match = regex.match(data);
+
+    if (match.hasMatch()) {
+        distance2 = match.captured(1).toInt();
+        timeInMilliseconds2 = match.captured(2).toInt();
+
+        minutes2 = timeInMilliseconds2 / 60000;
+        seconds2 = (timeInMilliseconds2 % 60000) / 1000;
+        milliseconds2 = timeInMilliseconds2 % 1000;
+
+        QString timeStr = QString("%1:%2.%3")
+            .arg(minutes2, 2, 10, QChar('0'))
+            .arg(seconds2, 2, 10, QChar('0'))
+            .arg(milliseconds2, 3, 10, QChar('0'));
+
+        distanceInput2->setText(QString::number(distance2));
+        timeInput2->setText(timeStr);
+
+        dataPoints2.append({distance2, timeInMilliseconds2});
+
+        if (stoppersWindow) {
+            stoppersWindow->checkForDrop2(distance2);
+        }
+    }
+}
+
+bool MainWindow::switchLanguage(const QString &language) {
+    static QTranslator *currentTranslator = nullptr;
+
+    if (currentTranslator) {
+        qApp->removeTranslator(currentTranslator);
+        delete currentTranslator;
+    }
+
+    currentTranslator = new QTranslator(this);
+    QString filePath = QString(":/translations/lidar_%1.qm").arg(language);
+
+    if (currentTranslator->load(filePath)) {
+        qApp->installTranslator(currentTranslator);
+        retranslateUi();
+        return true;
+    }
+
+    return false;
+}
+

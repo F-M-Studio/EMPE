@@ -40,6 +40,7 @@
 class PortSettings;
 class AppMenu;
 class MovingAverageFilterParallel;
+class StoppersWindow;
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -59,6 +60,8 @@ public:
 
     QTextEdit *dataDisplay;
     QTextEdit *dataDisplay2;
+    QWidget* centralWidget;
+    QVBoxLayout* mainLayout;
 
     struct DataPoint {
         int distance;
@@ -68,58 +71,22 @@ public:
     QVector<DataPoint> dataPoints;
     QVector<DataPoint> dataPoints2;
 
-    struct DropEvent {
-        QDateTime timestamp;
-        int previousValue;
-        int currentValue;
-        int dropAmount;
-        int sensorNumber;
-    };
-
     // Metoda do zmiany języka w czasie rzeczywistym
     bool switchLanguage(const QString &language);
     // Methods for injecting fake data from DebugWindow
     void fakeData1(const QString &data);
     void fakeData2(const QString &data);
 
-    void resetStoperCounters();
-
 protected:
     void keyPressEvent(QKeyEvent *event) override;
 
 private slots:
     void showAboutUsDialog();
-    void onSensitivityChanged(int value);
-    void saveStoperLogs();
+    void openStoppersWindow();
 
 private:
     void openDebugWindow();
 
-    QLabel *timeLabel;
-    QLabel *timeLabel2;
-
-    QLabel *globalTimeLabel;
-    void updateGlobalTimeDisplay(int time);
-
-    QPushButton *startStopStoperBtn;
-    QTimer *stoperTimer;
-    int stoperTime;
-    bool stoperRunning;
-
-    void handleStoperStartStop();
-    void updateStoperTime();
-    QDateTime lastDropTime1;
-    QDateTime lastDropTime2;
-    const int DROP_COOLDOWN_MS = 800;
-    QWidget *centralWidget;
-    QVBoxLayout *mainLayout;
-    QComboBox *portBox{};
-    QCheckBox *alwaysOnTopCheckbox{};
-
-    QString dataBuffer1;
-    QString dataBuffer2;
-    std::vector<double> distanceBuffer;
-    MovingAverageFilterParallel *filter = nullptr;
 
     void createMenu();
 
@@ -136,6 +103,7 @@ private:
     void processBuffer(QString &buffer, QTextEdit *display, void (MainWindow::*parseFunc)(const QString &));
 
     AppMenu *appMenu;
+    StoppersWindow* stoppersWindow;
 
     QTimer *validationTimer{};
     bool deviceValidated = false;
@@ -162,6 +130,7 @@ private:
     QPushButton *saveData2Btn{};
     QPushButton *clearGraphBtn{};
     QPushButton *showRawDataBtn{};
+    QPushButton *stoppersButton{};
 
     QSlider *yAxisSlider{};
     QLineEdit *maxYInput{};
@@ -185,56 +154,13 @@ private:
     const int SIGNIFICANT_CHANGE_THRESHOLD = 30;
     const int SMALL_CHANGE_THRESHOLD = 10;
 
+    // Add missing member variables
+    QLabel *timeLabel{};
+    QLabel *timeLabel2{};
+    QLabel *globalTimeLabel{};
+    QCheckBox *alwaysOnTopCheckbox{};
 
-    QTimer *stopwatchTimer1;
-    QTimer *stopwatchTimer2;
-    int stopwatchTime1 = 0;
-    int stopwatchTime2 = 0;
-    bool stopwatchRunning1 = false;
-    bool stopwatchRunning2 = false;
-    QLabel *stopwatchLabel1;
-    QLabel *stopwatchLabel2;
-    int lastDistance1 = 0;
-    int lastDistance2 = 0;
-
-
-    void updateStopwatch1();
-    void updateStopwatch2();
-    void resetStopwatch1();
-    void resetStopwatch2();
-
-    QCheckBox *stopwatchCheck1;
-    QCheckBox *stopwatchCheck2;
-
-
-    QGroupBox *stoperGroupBox;
-    QSlider *sensitivitySlider;
-    QLabel *sensitivityLabel;
-    QLabel *dropCounter1Label;
-    QLabel *dropCounter2Label;
-    QPushButton *resetStoperBtn;
-    QPushButton *saveStoperLogsBtn;
-    QCheckBox *enableStoper1CheckBox;
-    QCheckBox *enableStoper2CheckBox;
-
-
-    int dropSensitivity = 50;
-    int dropCount1 = 0;
-    int dropCount2 = 0;
-    int previousDistance1 = 0;
-    int previousDistance2 = 0;
-    bool stoper1Enabled = true;
-    bool stoper2Enabled = true;
-
-
-    QVector<DropEvent> dropEvents;
-
-
-    void createStoperControls();
-    void checkForDrop1(int currentDistance);
-    void checkForDrop2(int currentDistance);
-    void logDropEvent(int sensorId, int previousDistance, int currentDistance, int difference);    void updateStoperDisplay();
+    friend class DebugWindow;  // Add this line to give DebugWindow access
 };
 
 #endif
-

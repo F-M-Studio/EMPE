@@ -38,6 +38,7 @@
 #include <QKeyEvent>
 #include <QResizeEvent>
 #include <QPushButton>
+#include "stopperswindow.h"  // Add this include
 
 class MainWindow;
 class AppMenu;

@@ -31,6 +31,7 @@
 #include "appmenu.h"
 #include "graphwindow.h"
 #include "portsettings.h"
+#include "stopperswindow.h"
 #include <QGroupBox>
 #include <QFont>
 #include <QKeyEvent>
@@ -141,7 +142,9 @@ void DebugWindow::setupUI() {
     // Add reset stopwatches button
     resetStoperBtn = new QPushButton(tr("Reset Stopwatches"), this);
     connect(resetStoperBtn, &QPushButton::clicked, this, [this]() {
-        if (mainWindow) mainWindow->resetStoperCounters();
+        if (mainWindow && mainWindow->stoppersWindow) {
+            mainWindow->stoppersWindow->resetStoperCounters();
+        }
     });
     mainLayout->addWidget(resetStoperBtn);
     // Fake data generator button

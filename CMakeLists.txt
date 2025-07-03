@@ -49,20 +49,21 @@ endif()
 
 if(WIN32)
     add_executable(lidar WIN32 main.cpp
-            mainwindow.h
             mainwindow.cpp
+            mainwindow.h
             portsettings.cpp
             portsettings.h
             graphwindow.cpp
             graphwindow.h
-            graphwindow.ui
-            resources.qrc
-            appmenu.h
             appmenu.cpp
-            aboutusdialog.h
+            appmenu.h
             aboutusdialog.cpp
+            aboutusdialog.h
             debugwindow.cpp
             debugwindow.h
+            stopperswindow.cpp
+            stopperswindow.h
+            resources.qrc
     )
         if(CI_MODE)
                 message(STATUS "Configuring for GitHub Actions CI")
@@ -115,6 +116,8 @@ if (UNIX OR APPLE)
             aboutusdialog.cpp
             debugwindow.cpp
             debugwindow.h
+            stopperswindow.cpp
+            stopperswindow.h
     )
 endif ()
 
