@@ -78,6 +78,9 @@ public:
 
     // Metoda do zmiany języka w czasie rzeczywistym
     bool switchLanguage(const QString &language);
+    // Methods for injecting fake data from DebugWindow
+    void fakeData1(const QString &data);
+    void fakeData2(const QString &data);
 
     void resetStoperCounters();
 
@@ -234,3 +237,4 @@ private:
 };
 
 #endif
+

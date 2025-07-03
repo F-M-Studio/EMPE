@@ -35,12 +35,19 @@
 #include <QFont>
 #include <QKeyEvent>
 #include <QScrollBar>
+#include <QRandomGenerator>
 
 DebugWindow::DebugWindow(MainWindow *mainWindow, QWidget *parent)
     : QMainWindow(parent), mainWindow(mainWindow) {
 
     setupUI();
     retranslateUi();
+
+    // Initialize fake data timer
+    fakeDataTimer = new QTimer(this);
+    fakeDataTimer->setInterval(100);
+    connect(fakeDataTimer, &QTimer::timeout, this, &DebugWindow::onFakeDataTimeout);
+    fakeTime = 0;
 
     // Setup update timer
     updateTimer = new QTimer(this);
@@ -137,6 +144,10 @@ void DebugWindow::setupUI() {
         if (mainWindow) mainWindow->resetStoperCounters();
     });
     mainLayout->addWidget(resetStoperBtn);
+    // Fake data generator button
+    fakeDataBtn = new QPushButton(tr("Start Fake Data"), this);
+    connect(fakeDataBtn, &QPushButton::clicked, this, &DebugWindow::handleFakeDataButton);
+    mainLayout->addWidget(fakeDataBtn);
 }
 
 void DebugWindow::retranslateUi() {
@@ -228,4 +239,35 @@ void DebugWindow::updateRawData2(const QString &data) {
     // Auto-scroll to bottom
     QScrollBar *scrollBar = rawDataDisplay2->verticalScrollBar();
     scrollBar->setValue(scrollBar->maximum());
+}
+
+// Slot: handle fake data start/stop
+void DebugWindow::handleFakeDataButton() {
+    if (!fakeRunning) {
+        fakeRunning = true;
+        fakeTime = 0;
+        fakeDataTimer->start();
+        fakeDataBtn->setText(tr("Stop Fake Data"));
+    } else {
+        fakeRunning = false;
+        fakeDataTimer->stop();
+        fakeDataBtn->setText(tr("Start Fake Data"));
+    }
+}
+
+// Slot: generate fake data on timeout
+void DebugWindow::onFakeDataTimeout() {
+    // increment fake time
+    fakeTime += 100;
+    // random distances
+    int d1 = QRandomGenerator::global()->bounded(0, 500);
+    int d2 = QRandomGenerator::global()->bounded(0, 500);
+    // format messages
+    QString msg1 = QString("YY%1T%2E").arg(d1).arg(fakeTime);
+    QString msg2 = QString("YY%1T%2E").arg(d2).arg(fakeTime);
+    // send to main window parsing
+    if (mainWindow) {
+        mainWindow->fakeData1(msg1 + '\n');
+        mainWindow->fakeData2(msg2 + '\n');
+    }
 }

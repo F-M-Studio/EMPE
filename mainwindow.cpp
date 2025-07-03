@@ -1071,3 +1071,13 @@ void MainWindow::openDebugWindow() {
     DebugWindow *debugWindow = new DebugWindow(this);
     debugWindow->show();
 }
+
+// Methods to accept fake data from DebugWindow
+void MainWindow::fakeData1(const QString &data) {
+    // process single fake data string
+    parseData(data);
+}
+
+void MainWindow::fakeData2(const QString &data) {
+    parseData2(data);
+}

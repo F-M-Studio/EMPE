@@ -60,6 +60,8 @@ protected:
 
 private slots:
     void updateDisplays();
+    void handleFakeDataButton();
+    void onFakeDataTimeout();
 
 private:
     void retranslateUi();
@@ -76,7 +78,11 @@ private:
     QLabel *rawDataLabel1;
     QLabel *rawDataLabel2;
     QPushButton *resetStoperBtn;
+    QPushButton *fakeDataBtn;
 
     // Timer for periodic updates
     QTimer *updateTimer;
+    QTimer *fakeDataTimer;
+    int fakeTime;
+    bool fakeRunning = false;
 };
