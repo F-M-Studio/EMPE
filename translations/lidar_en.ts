@@ -434,4 +434,55 @@
             <translation>Sensor 2 Data Stream</translation>
         </message>
     </context>
+    <context>
+        <name>StoppersWindow</name>
+        <message>
+            <source>Stoppers</source>
+            <translation>Stoppers</translation>
+        </message>
+        <message>
+            <source>Drop Settings</source>
+            <translation>Drop Settings</translation>
+        </message>
+        <message>
+            <source>Drop sensitivity:</source>
+            <translation>Drop sensitivity:</translation>
+        </message>
+        <message>
+            <source>Reset Counters</source>
+            <translation>Reset Counters</translation>
+        </message>
+        <message>
+            <source>Stoper 1</source>
+            <translation>Stopwatch 1</translation>
+        </message>
+        <message>
+            <source>Enable Stoper 1</source>
+            <translation>Enable Stopwatch 1</translation>
+        </message>
+        <message>
+            <source>Drops: %1</source>
+            <translation>Drops: %1</translation>
+        </message>
+        <message>
+            <source>Stoper: %1:%2.%3</source>
+            <translation>Stopwatch: %1:%2.%3</translation>
+        </message>
+        <message>
+            <source>Stoper 2</source>
+            <translation>Stopwatch 2</translation>
+        </message>
+        <message>
+            <source>Enable Stoper 2</source>
+            <translation>Enable Stopwatch 2</translation>
+        </message>
+        <message>
+            <source>Reset Complete</source>
+            <translation>Reset Complete</translation>
+        </message>
+        <message>
+            <source>Drop counters and stopers have been reset.</source>
+            <translation>Drop counters and stopwatches have been reset.</translation>
+        </message>
+    </context>
 </TS>

@@ -406,6 +406,10 @@
             <translation>[%1] Wykryto spadek (czujnik %2): Poprzednia odległość: %3, Obecna: %4, Różnica: %5
             </translation>
         </message>
+        <message>
+            <source>Stoppers</source>
+            <translation>Stopery</translation>
+        </message>
     </context>
     <context>
         <name>DebugWindow</name>
@@ -432,6 +436,57 @@
         <message>
             <source>Sensor 2 Data Stream</source>
             <translation>Strumień Danych Czujnika 2</translation>
+        </message>
+    </context>
+    <context>
+        <name>StoppersWindow</name>
+        <message>
+            <source>Stoppers</source>
+            <translation>Stopery</translation>
+        </message>
+        <message>
+            <source>Drop Settings</source>
+            <translation>Ustawienia spadków</translation>
+        </message>
+        <message>
+            <source>Drop sensitivity:</source>
+            <translation>Czułość wykrywania spadku:</translation>
+        </message>
+        <message>
+            <source>Reset Counters</source>
+            <translation>Resetuj liczniki</translation>
+        </message>
+        <message>
+            <source>Stoper 1</source>
+            <translation>Stoper 1</translation>
+        </message>
+        <message>
+            <source>Enable Stoper 1</source>
+            <translation>Włącz stoper 1</translation>
+        </message>
+        <message>
+            <source>Drops: %1</source>
+            <translation>Spadki: %1</translation>
+        </message>
+        <message>
+            <source>Stoper: %1:%2.%3</source>
+            <translation>Stoper: %1:%2.%3</translation>
+        </message>
+        <message>
+            <source>Stoper 2</source>
+            <translation>Stoper 2</translation>
+        </message>
+        <message>
+            <source>Enable Stoper 2</source>
+            <translation>Włącz stoper 2</translation>
+        </message>
+        <message>
+            <source>Reset Complete</source>
+            <translation>Reset zakończony</translation>
+        </message>
+        <message>
+            <source>Drop counters and stopers have been reset.</source>
+            <translation>Liczniki spadków i stopery zostały zresetowane.</translation>
         </message>
     </context>
 </TS>

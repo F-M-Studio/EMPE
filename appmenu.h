@@ -55,6 +55,7 @@ signals:
 
     void aboutUsRequested();
 
+
 private slots:
     void switchToEnglish();
 
