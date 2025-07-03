@@ -41,7 +41,7 @@ AboutUsDialog::AboutUsDialog(QWidget *parent) : QDialog(parent) {
 
     auto *layout = new QVBoxLayout(this);
 
-    titleLabel = new QLabel(tr("This program was created as part of the project:"), this);
+    /*titleLabel = new QLabel(tr("This program was created as part of the project:"), this);
     QFont titleFont = titleLabel->font();
     titleFont.setBold(true);
     titleFont.setPointSize(titleFont.pointSize() + 1);
@@ -51,7 +51,7 @@ AboutUsDialog::AboutUsDialog(QWidget *parent) : QDialog(parent) {
     authorsLabel = new QLabel(tr("Embodying Math&Physics Education 2023-1-PL01-KA210-SCH-000165829"), this);
     authorsLabel->setAlignment(Qt::AlignCenter);
     authorsLabel->setWordWrap(true);
-
+    */
     QLabel *authorsHeaderLabel = new QLabel(tr("The program was written as part of the Procedural Programming course under the supervision of Dr. Hab. Roman Rosiek and was developed by:"), this);
     QFont authorsFont = authorsHeaderLabel->font();
     authorsFont.setBold(true);
@@ -66,9 +66,9 @@ AboutUsDialog::AboutUsDialog(QWidget *parent) : QDialog(parent) {
     closeButton = new QPushButton(tr("Close"), this);
     connect(closeButton, &QPushButton::clicked, this, &QDialog::accept);
 
-    layout->addWidget(titleLabel);
-    layout->addSpacing(10);
-    layout->addWidget(authorsLabel);
+    //layout->addWidget(titleLabel);
+    //layout->addSpacing(10);
+    //layout->addWidget(authorsLabel);
     layout->addSpacing(15);
     layout->addWidget(authorsHeaderLabel);
     layout->addSpacing(5);
