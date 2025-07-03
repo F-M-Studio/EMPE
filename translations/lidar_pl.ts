@@ -11,7 +11,7 @@
   Filip Leśnik <filip.lesnik170@gmail.com>
 
   Data Utworzenia: 21 Marca 2025
-  Ostatnia Modyfikacja: 27 Czerwaca 2025
+  Ostatnia Modyfikacja: 3 Lipca 2025
 
   Ten program jest wolnym oprogramowaniem; możesz go rozprowadzać i/lub
   modyfikować na warunkach Powszechnej Licencji Publicznej GNU,
@@ -137,7 +137,7 @@
             <translation>Czas (min:ms)</translation>
         </message>
         <message>
-            <source>Distance</source>
+            <source>Distance:</source>
             <translation>Dystans:</translation>
         </message>
         <message>
