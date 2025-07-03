@@ -2,7 +2,14 @@
 #define STOPPERSWINDOW_H
 
 #include <QMainWindow>
-#include <QtWidgets>
+#include <QWidget>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QGroupBox>
+#include <QSlider>
+#include <QLabel>
+#include <QCheckBox>
+#include <QTimer>
 #include <QDateTime>
 
 class MainWindow;
@@ -24,32 +31,34 @@ public:
 
 private slots:
     void onSensitivityChanged(int value);
-    void handleStoperStartStop();
-    void updateStoperTime();
-    void saveStoperLogs();
+    void updateStoper1Time();
+    void updateStoper2Time();
 
 private:
     MainWindow* mainWindow;
     void createStoperControls();
     void logDropEvent(int sensorId, int previousDistance, int currentDistance, int difference);
+    void startStoper1();
+    void stopStoper1();
+    void startStoper2();
+    void stopStoper2();
 
     QGroupBox *stoperGroupBox;
     QSlider *sensitivitySlider;
     QLabel *sensitivityLabel;
     QLabel *dropCounter1Label;
     QLabel *dropCounter2Label;
-    QPushButton *startStopStoperBtn;
-    QPushButton *resetStoperBtn;
-    QPushButton *saveStoperLogsBtn;
     QCheckBox *enableStoper1CheckBox;
     QCheckBox *enableStoper2CheckBox;
-    QTimer *stoperTimer;
+    QTimer *stoperTimer1;
+    QTimer *stoperTimer2;
     QLabel *timeLabel;
     QLabel *timeLabel2;
-    QLabel *globalTimeLabel;
 
-    bool stoperRunning;
-    int stoperTime;
+    bool stoper1Running;
+    bool stoper2Running;
+    int stoper1Time;
+    int stoper2Time;
     int dropSensitivity = 50;
     int dropCount1 = 0;
     int dropCount2 = 0;
