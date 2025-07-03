@@ -423,8 +423,6 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
 
     QTimer::singleShot(0, this, &GraphWindow::updateChartTheme);
     connect(qApp, &QApplication::paletteChanged, this, &GraphWindow::updateChartTheme);
-    updateTimer->start(recordingSlider->value());
-}
 
 /* Barely working auto random gen data*/
 void GraphWindow::keyPressEvent(QKeyEvent *event) {
