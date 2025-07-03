@@ -192,8 +192,8 @@
             <translation>Embodying Math&amp;Physics Education project 2023-1-PL01-KA210-SCH-000165829</translation>
         </message>
         <message>
-            <source>Drop Sensitivity (mm):</source>
-            <translation>Drop Sensitivity (mm):</translation>
+            <source>Stopwatch toggle sensitivity (mm):</source>
+            <translation>Stopwatch toggle sensitivity (mm):</translation>
         </message>
         <message>
             <source>Reset All</source>

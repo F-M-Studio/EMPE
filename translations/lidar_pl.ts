@@ -192,8 +192,8 @@
             <translation>Embodying Math&amp;Physics Education 2023-1-PL01-KA210-SCH-000165829</translation>
         </message>
         <message>
-            <source>Drop Sensitivity (mm):</source>
-            <translation>Czułość spadku (mm):</translation>
+            <source>Stopwatch toggle sensitivity (mm):</source>
+            <translation>Czułość przy której uruchamia się stoper (mm):</translation>
         </message>
         <message>
             <source>Reset All</source>

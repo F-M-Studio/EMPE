@@ -135,10 +135,10 @@ MainWindow::~MainWindow() {
 
 void MainWindow::createStoperControls() {
 
-    stoperGroupBox = new QGroupBox(this);
-    QGridLayout *stoperLayout = new QGridLayout(stoperGroupBox);
+    stoperGroupBox = new QGroupBox(tr("Stoper"), this);
+    QVBoxLayout *stoperLayout = new QVBoxLayout(stoperGroupBox);
 
-    QLabel *sensLabel = new QLabel(tr("Drop Sensitivity (mm):"), this);
+    QLabel *sensLabel = new QLabel(tr("Stopwatch toggle sensitivity (mm):"), this);
     sensitivitySlider = new QSlider(Qt::Horizontal, this);
     sensitivitySlider->setRange(5, 100);
     sensitivitySlider->setValue(dropSensitivity);
@@ -149,15 +149,19 @@ void MainWindow::createStoperControls() {
     sensitivityLabel->setMinimumWidth(5);
 
 
+    // sensitivity controls in a horizontal layout
+    QHBoxLayout *sensLayout = new QHBoxLayout();
+    sensLayout->addWidget(sensLabel);
+    sensLayout->addWidget(sensitivitySlider);
+    sensLayout->addWidget(sensitivityLabel);
+    sensLayout->setStretch(1, 1);
+    stoperLayout->addLayout(sensLayout);
+
+
     stoperTimer = new QTimer(this);
     stoperTimer->setInterval(10);
     stoperTime = 60000;
     stoperRunning = false;
-
-
-    stoperLayout->addWidget(sensLabel, 0, 0);
-    stoperLayout->addWidget(sensitivitySlider, 0, 1, 1, 2);
-    stoperLayout->addWidget(sensitivityLabel, 0, 3);
 
 
     QGroupBox *sensor1GroupBox = new QGroupBox(tr("Sensor 1"), this);
@@ -204,8 +208,13 @@ void MainWindow::createStoperControls() {
     sensor2Layout->addWidget(stopwatchLabel2);
 
 
-    stoperLayout->addWidget(sensor1GroupBox, 1, 0, 1, 2);
-    stoperLayout->addWidget(sensor2GroupBox, 1, 2, 1, 2);
+    // sensors side-by-side with equal stretch
+    QHBoxLayout *sensorsLayout = new QHBoxLayout();
+    sensorsLayout->addWidget(sensor1GroupBox);
+    sensorsLayout->addWidget(sensor2GroupBox);
+    sensorsLayout->setStretch(0, 1);
+    sensorsLayout->setStretch(1, 1);
+    stoperLayout->addLayout(sensorsLayout);
 
 
     mainLayout->addWidget(stoperGroupBox);
@@ -1038,7 +1047,7 @@ void MainWindow::retranslateUi() {
     showRawDataBtn->setText(dataDisplay->isVisible() ? tr("Hide raw data") : tr("Show raw data"));
 
     // Aktualizacja tekstów dla elementów stoper
-    sensitivitySlider->setToolTip(tr("Adjust drop sensitivity"));
+    sensitivitySlider->setToolTip(tr("Adjust stopwatch sensitivity"));
     enableStoper1CheckBox->setText(tr("Enable Sensor 1"));
     enableStoper2CheckBox->setText(tr("Enable Sensor 2"));
     dropCounter1Label->setText(tr("Drops: %1").arg(dropCount1));
