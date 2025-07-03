@@ -35,31 +35,19 @@ class PortSettings : public QDialog {
     Q_OBJECT
 
 public:
+    struct PortConfig {
+        QString portName;
+        int baudRate;
+        int dataBits;
+        int stopBits;
+        int parity;
+        int flowControl;
+    };
+
     explicit PortSettings(QWidget *parent = nullptr);
 
-    QString getPortName1() const;
-
-    int getBaudRate1() const;
-
-    int getDataBits1() const;
-
-    int getStopBits1() const;
-
-    int getParity1() const;
-
-    int getFlowControl1() const;
-
-    QString getPortName2() const;
-
-    int getBaudRate2() const;
-
-    int getDataBits2() const;
-
-    int getStopBits2() const;
-
-    int getParity2() const;
-
-    int getFlowControl2() const;
+    // Zwraca pełną konfigurację dla wybranego portu (1 lub 2)
+    PortConfig getPortConfig(int portNumber) const;
 
 private slots:
     void refreshPorts();
@@ -95,6 +83,11 @@ private:
                            QComboBox * &baudRateBox, QComboBox * &dataBitsBox,
                            QComboBox * &stopBitsBox, QComboBox * &parityBox,
                            QComboBox * &flowControlBox);
+
+    // Metoda pomocnicza do pobierania konfiguracji z widgetów
+    PortConfig getConfigFromWidgets(QComboBox* portBox, QComboBox* baudRateBox,
+                                  QComboBox* dataBitsBox, QComboBox* stopBitsBox,
+                                  QComboBox* parityBox, QComboBox* flowControlBox) const;
 
 protected:
     void changeEvent(QEvent *event) override;

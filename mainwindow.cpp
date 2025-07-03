@@ -420,109 +420,60 @@ void MainWindow::fakeData2(const QString &data) {
 }
 
 void MainWindow::startReading() {
-    dataBuffer1.clear();
+    if (!portSettings) {
+        return;
+    }
 
-    dataBuffer2.clear();
+    // Konfiguracja dla pierwszego portu
+    auto config1 = portSettings->getPortConfig(1);
+    QString portName1 = config1.portName;
+    int baudRate1 = config1.baudRate;
+    int dataBits1 = config1.dataBits;
+    int stopBits1 = config1.stopBits;
+    int parity1 = config1.parity;
+    int flowControl1 = config1.flowControl;
 
-
-    QString portName1 = portSettings->getPortName1();
-
-    int baudRate1 = portSettings->getBaudRate1();
-
-    int dataBits1 = portSettings->getDataBits1();
-
-    int stopBits1 = portSettings->getStopBits1();
-
-    int parity1 = portSettings->getParity1();
-
-    int flowControl1 = portSettings->getFlowControl1();
-
-
-    qDebug() << "Attempting to open port 1:" << portName1
-
-            << "with settings:"
-
-            << "BaudRate:" << baudRate1
-
-            << "DataBits:" << dataBits1
-
-            << "StopBits:" << stopBits1
-
-            << "Parity:" << parity1
-
-            << "FlowControl:" << flowControl1;
+    // Konfiguracja portu szeregowego 1
+    serialPort1 = new QSerialPort(this);
+    serialPort1->setPortName(portName1);
+    serialPort1->setBaudRate(baudRate1);
+    serialPort1->setDataBits(static_cast<QSerialPort::DataBits>(dataBits1));
+    serialPort1->setStopBits(static_cast<QSerialPort::StopBits>(stopBits1));
+    serialPort1->setParity(static_cast<QSerialPort::Parity>(parity1));
+    serialPort1->setFlowControl(static_cast<QSerialPort::FlowControl>(flowControl1));
 
 
-    serialPort = new QSerialPort(this);
-
-    serialPort->setPortName(portName1);
-
-    serialPort->setBaudRate(baudRate1);
-
-    serialPort->setDataBits(static_cast<QSerialPort::DataBits>(dataBits1));
-
-    serialPort->setStopBits(static_cast<QSerialPort::StopBits>(stopBits1));
-
-    serialPort->setParity(static_cast<QSerialPort::Parity>(parity1));
-
-    serialPort->setFlowControl(static_cast<QSerialPort::FlowControl>(flowControl1));
-
-
-    if (!serialPort->open(QIODevice::ReadOnly)) {
-        qDebug() << "Failed to open port" << portName1 << "Error:" << serialPort->errorString();
+    if (!serialPort1->open(QIODevice::ReadOnly)) {
+        qDebug() << "Failed to open port" << portName1 << "Error:" << serialPort1->errorString();
 
         QMessageBox::warning(this, tr("Error"),
 
-                             tr("Failed to open port %1: %2").arg(portName1, serialPort->errorString()));
+                             tr("Failed to open port %1: %2").arg(portName1, serialPort1->errorString()));
 
-        delete serialPort;
+        delete serialPort1;
 
-        serialPort = nullptr;
+        serialPort1 = nullptr;
 
         return;
     }
 
 
-    QString portName2 = portSettings->getPortName2();
+    // Konfiguracja dla drugiego portu
+    auto config2 = portSettings->getPortConfig(2);
+    QString portName2 = config2.portName;
+    int baudRate2 = config2.baudRate;
+    int dataBits2 = config2.dataBits;
+    int stopBits2 = config2.stopBits;
+    int parity2 = config2.parity;
+    int flowControl2 = config2.flowControl;
 
-    int baudRate2 = portSettings->getBaudRate2();
-
-    int dataBits2 = portSettings->getDataBits2();
-
-    int stopBits2 = portSettings->getStopBits2();
-
-    int parity2 = portSettings->getParity2();
-
-    int flowControl2 = portSettings->getFlowControl2();
-
-
-    qDebug() << "Attempting to open port 2:" << portName2
-
-            << "with settings:"
-
-            << "BaudRate:" << baudRate2
-
-            << "DataBits:" << dataBits2
-
-            << "StopBits:" << stopBits2
-
-            << "Parity:" << parity2
-
-            << "FlowControl:" << flowControl2;
-
-
+    // Konfiguracja portu szeregowego 2
     serialPort2 = new QSerialPort(this);
-
     serialPort2->setPortName(portName2);
-
     serialPort2->setBaudRate(baudRate2);
-
     serialPort2->setDataBits(static_cast<QSerialPort::DataBits>(dataBits2));
-
     serialPort2->setStopBits(static_cast<QSerialPort::StopBits>(stopBits2));
-
     serialPort2->setParity(static_cast<QSerialPort::Parity>(parity2));
-
     serialPort2->setFlowControl(static_cast<QSerialPort::FlowControl>(flowControl2));
 
 
@@ -534,12 +485,12 @@ void MainWindow::startReading() {
                              tr("Failed to open port %1: %2").arg(portName2, serialPort2->errorString()));
 
 
-        if (serialPort && serialPort->isOpen()) {
-            serialPort->close();
+        if (serialPort1 && serialPort1->isOpen()) {
+            serialPort1->close();
 
-            delete serialPort;
+            delete serialPort1;
 
-            serialPort = nullptr;
+            serialPort1 = nullptr;
         }
 
 
@@ -555,29 +506,26 @@ void MainWindow::startReading() {
 
     Reading = true;
 
-
+    // Używamy lokalnych wskaźników dla lambda wyrażeń
     QTimer::singleShot(50, this, [this]() {
-        connect(serialPort, &QSerialPort::readyRead, this, [this]() {
-            QByteArray data = serialPort->readAll();
-
+        // Używamy wskaźników do portów poprzez this
+        connect(this->serialPort1, &QSerialPort::readyRead, this, [this]() {
+            QByteArray data = this->serialPort1->readAll();
             dataBuffer1.append(QString::fromUtf8(data));
-
             processBuffer(dataBuffer1, dataDisplay, &MainWindow::parseData);
         });
 
-        connect(serialPort2, &QSerialPort::readyRead, this, [this]() {
-            QByteArray data = serialPort2->readAll();
-
+        connect(this->serialPort2, &QSerialPort::readyRead, this, [this]() {
+            QByteArray data = this->serialPort2->readAll();
             dataBuffer2.append(QString::fromUtf8(data));
-
             processBuffer(dataBuffer2, dataDisplay2, &MainWindow::parseData2);
         });
     });
 }
 
 void MainWindow::stopReading() {
-    if (serialPort && serialPort->isOpen()) {
-        serialPort->close();
+    if (serialPort1 && serialPort1->isOpen()) {
+        serialPort1->close();
     }
     if (serialPort2 && serialPort2->isOpen()) {
         serialPort2->close();

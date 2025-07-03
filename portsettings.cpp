@@ -204,52 +204,28 @@ void PortSettings::refreshPorts() {
     updatePortInfo();
 }
 
-QString PortSettings::getPortName1() const {
-    return portBox1->currentText();
+PortSettings::PortConfig PortSettings::getConfigFromWidgets(QComboBox* portBox, QComboBox* baudRateBox,
+                                                          QComboBox* dataBitsBox, QComboBox* stopBitsBox,
+                                                          QComboBox* parityBox, QComboBox* flowControlBox) const {
+    PortConfig config;
+    config.portName = portBox->currentText();
+    config.baudRate = baudRateBox->currentText().toInt();
+    config.dataBits = dataBitsBox->currentText().toInt();
+    config.stopBits = stopBitsBox->currentText().toInt();
+    config.parity = parityBox->currentIndex();
+    config.flowControl = flowControlBox->currentIndex();
+    return config;
 }
 
-int PortSettings::getBaudRate1() const {
-    return baudRateBox1->currentText().toInt();
-}
-
-int PortSettings::getDataBits1() const {
-    return dataBitsBox1->currentText().toInt();
-}
-
-int PortSettings::getStopBits1() const {
-    return stopBitsBox1->currentText().toInt();
-}
-
-int PortSettings::getParity1() const {
-    return parityBox1->currentIndex();
-}
-
-int PortSettings::getFlowControl1() const {
-    return flowControlBox1->currentIndex();
-}
-
-QString PortSettings::getPortName2() const {
-    return portBox2->currentText();
-}
-
-int PortSettings::getBaudRate2() const {
-    return baudRateBox2->currentText().toInt();
-}
-
-int PortSettings::getDataBits2() const {
-    return dataBitsBox2->currentText().toInt();
-}
-
-int PortSettings::getStopBits2() const {
-    return stopBitsBox2->currentText().toInt();
-}
-
-int PortSettings::getParity2() const {
-    return parityBox2->currentIndex();
-}
-
-int PortSettings::getFlowControl2() const {
-    return flowControlBox2->currentIndex();
+PortSettings::PortConfig PortSettings::getPortConfig(int portNumber) const {
+    if (portNumber == 1) {
+        return getConfigFromWidgets(portBox1, baudRateBox1, dataBitsBox1,
+                                  stopBitsBox1, parityBox1, flowControlBox1);
+    } else if (portNumber == 2) {
+        return getConfigFromWidgets(portBox2, baudRateBox2, dataBitsBox2,
+                                  stopBitsBox2, parityBox2, flowControlBox2);
+    }
+    throw std::invalid_argument("Port number must be 1 or 2");
 }
 
 void PortSettings::updatePortInfo() {

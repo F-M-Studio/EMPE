@@ -149,6 +149,7 @@ private:
     QLabel *yAxisValueLabel{};
 
     QSerialPort *serialPort{};
+    QSerialPort *serialPort1{};
     QSerialPort *serialPort2{};
 
     bool isReading;
