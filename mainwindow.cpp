@@ -771,16 +771,17 @@ void MainWindow::startReading() {
     qDebug() << "Started reading from both ports";
     Reading = true;
 
-    connect(serialPort, &QSerialPort::readyRead, this, [this]() {
-        QByteArray data = serialPort->readAll();
-        dataBuffer1.append(QString::fromUtf8(data));
-        processBuffer(dataBuffer1, dataDisplay, &MainWindow::parseData);
-    });
-
-    connect(serialPort2, &QSerialPort::readyRead, this, [this]() {
-        QByteArray data = serialPort2->readAll();
-        dataBuffer2.append(QString::fromUtf8(data));
-        processBuffer(dataBuffer2, dataDisplay2, &MainWindow::parseData2);
+    QTimer::singleShot(50, this, [this]() {
+        connect(serialPort, &QSerialPort::readyRead, this, [this]() {
+            QByteArray data = serialPort->readAll();
+            dataBuffer1.append(QString::fromUtf8(data));
+            processBuffer(dataBuffer1, dataDisplay, &MainWindow::parseData);
+        });
+        connect(serialPort2, &QSerialPort::readyRead, this, [this]() {
+            QByteArray data = serialPort2->readAll();
+            dataBuffer2.append(QString::fromUtf8(data));
+            processBuffer(dataBuffer2, dataDisplay2, &MainWindow::parseData2);
+        });
     });
 }
 
@@ -1054,7 +1055,7 @@ void MainWindow::retranslateUi() {
     }
 
     if (timeLabel) timeLabel->setText(tr("Time:"));
-    if (timeLabel2) timeLabel->setText(tr("Time:"));
+    if (timeLabel2) timeLabel2->setText(tr("Time:"));
 }
 
 void MainWindow::openDebugWindow() {
