@@ -376,7 +376,6 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     connect(timeAxisToggle, &QCheckBox::toggled, this, [this, mainWindow](bool checked) {
         useAbsoluteTime = !checked;
 
-        useAbsoluteTime = !timeAxisToggle->isChecked();
         if (!useAbsoluteTime && mainWindow->Reading) {
             initialTime = mainWindow->timeInMilliseconds;
         }
@@ -423,6 +422,8 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
 
     QTimer::singleShot(0, this, &GraphWindow::updateChartTheme);
     connect(qApp, &QApplication::paletteChanged, this, &GraphWindow::updateChartTheme);
+    updateTimer->start(recordingSlider->value());
+}
 
 /* Barely working auto random gen data*/
 void GraphWindow::keyPressEvent(QKeyEvent *event) {
@@ -432,7 +433,7 @@ void GraphWindow::keyPressEvent(QKeyEvent *event) {
         if (Gen) {
             mainWindow->Reading = true;
 
-            auto *genTimer = new QTimer(this);
+            auto genTimer = new QTimer(this);
             connect(genTimer, &QTimer::timeout, this, [this, genTimer]() {
                 if (!Gen) {
                     genTimer->stop();
@@ -448,20 +449,16 @@ void GraphWindow::keyPressEvent(QKeyEvent *event) {
 
 
                 updateGraph();
-                qDebug() << "GraphWindow::keyPressEvent";
-                qDebug() << "timeValue: " << mainWindow->timeInMilliseconds;
-                qDebug() << "distance: " << mainWindow->distance;
             });
             genTimer->start(100);
         }
     } else {
-        mainWindow->Reading = false;
         QMainWindow::keyPressEvent(event);
     }
 }
 
 void GraphWindow::changeEvent(QEvent *event) {
-    if (event->type() == QEvent::PaletteChange) {
+    if (event->type() == QEvent::ApplicationPaletteChange) {
         updateChartTheme();
     }
     QMainWindow::changeEvent(event);
