@@ -72,7 +72,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     appMenu = new AppMenu(this, this);
     createControls();
-    createMenu();
 
     QWidget* dataContainer = new QWidget(this);
     QVBoxLayout* dataLayout = new QVBoxLayout(dataContainer);
@@ -270,28 +269,6 @@ void MainWindow::createControls() {
         }
         setWindowFlags(flags);
         show();
-    });
-}
-
-void MainWindow::createMenu() {
-    menuBar = new QMenuBar(this);
-    setMenuBar(menuBar);
-
-    mainMenu = new QMenu(tr("Menu"), this);
-    menuBar->addMenu(mainMenu);
-
-    portSettingsAction = mainMenu->addAction(tr("Port Settings"), this, [this]() {
-        portSettings->exec();
-    });
-
-    graphAction = mainMenu->addAction(tr("Graph"), this, [this]() {
-        GraphWindow *graphWindow = new GraphWindow(this);
-        graphWindow->show();
-    });
-
-    startMeasurementAction = mainMenu->addAction(tr("Start"), this, &MainWindow::handleStartStopButton);
-    saveDataAction = mainMenu->addAction(tr("Save Data"), this, [this]() {
-        saveDataToFile(dataDisplay, "YY(\\d+)T(\\d+)E");
     });
 }
 
