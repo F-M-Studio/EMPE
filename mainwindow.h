@@ -10,7 +10,7 @@
  * Filip Leśnik <filip.lesnik170@gmail.com>
  *
  * Data Utworzenia: 4 Marca 2025
- * Ostatnia Modyfikacja: 3 Lipca 2025
+ * Ostatnia Modyfikacja: 4 Lipca 2025
  *
  * Ten program jest wolnym oprogramowaniem; możesz go rozprowadzać i/lub
  * modyfikować na warunkach Powszechnej Licencji Publicznej GNU,
@@ -38,6 +38,9 @@
 #include <QVBoxLayout>
 #include <QTranslator>
 #include <QSlider>
+#include <QRadioButton>
+#include <QButtonGroup>
+#include <QGroupBox> // Dodanie brakującego nagłówka
 
 class PortSettings;
 class AppMenu;
@@ -92,13 +95,19 @@ private slots:
 
     void openStoppersWindow();
 
+    // Slot do obsługi zmiany liczby portów COM
+    void onComModeChanged(int id);
+
 private:
     void openDebugWindow();
-
 
     void createMenu();
 
     void createControls();
+
+    // Nowe metody do obsługi trybów COM
+    void createComModeSelector();
+    void updateUIForComMode(bool useOneCom);
 
     void startReading();
 
@@ -131,6 +140,12 @@ private:
     QAction *startMeasurementAction{};
     QAction *saveDataAction{};
 
+    // Selektory trybu COM
+    QRadioButton *oneComRadio{};
+    QRadioButton *twoComRadio{};
+    QButtonGroup *comModeGroup{};
+    QGroupBox *comModeBox{};
+
     QPushButton *portSettingsBtn{};
     QPushButton *showGraphBtn{};
     QPushButton *startStopBtn{};
@@ -159,6 +174,8 @@ private:
     int lastValidDistance = 0;
     QLabel *creatorsNoteLabel{};
 
+    // Wskaźnik na grupę dla drugiego sensora
+    QGroupBox *sensor2Box{};
 
     const int SIGNIFICANT_CHANGE_THRESHOLD = 30;
     const int SMALL_CHANGE_THRESHOLD = 10;

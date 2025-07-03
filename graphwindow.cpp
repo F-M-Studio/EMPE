@@ -647,14 +647,20 @@ void GraphWindow::updateGraph() {
         }
 
         series->append(xValue, mainWindow->distance);
-        series2->append(xValue, mainWindow->distance2);
+
+        // Tylko dodaj dane do drugiej serii, jeśli nie używamy trybu jednego COMa
+        if (!PortConfig::useOneCOM()) {
+            series2->append(xValue, mainWindow->distance2);
+        }
 
         if (autoRemovePoints) {
             while (series->count() > pointsLimit) {
                 series->remove(0);
             }
-            while (series2->count() > pointsLimit) {
-                series2->remove(0);
+            if (!PortConfig::useOneCOM()) {
+                while (series2->count() > pointsLimit) {
+                    series2->remove(0);
+                }
             }
         }
 
@@ -669,12 +675,18 @@ void GraphWindow::updateGraph() {
                                              ? static_cast<QXYSeries *>(splineSeries2)
                                              : static_cast<QXYSeries *>(series2);
 
-        if (activeSeries->count() > 0 || activeSeries2->count() > 0) {
+        if (activeSeries->count() > 0 || (activeSeries2->count() > 0 && !PortConfig::useOneCOM())) {
             const double xMin = activeSeries->count() > 0 ? activeSeries->at(0).x() : xValue;
             const double xMax = xValue;
 
-            double yMin = qMin(mainWindow->distance, mainWindow->distance2);
-            double yMax = qMax(mainWindow->distance, mainWindow->distance2);
+            double yMin = double(mainWindow->distance);
+            double yMax = double(mainWindow->distance);
+
+            // Uwzględnij dane z drugiego COMa tylko jeśli nie używamy trybu jednego COMa
+            if (!PortConfig::useOneCOM()) {
+                yMin = qMin(yMin, double(mainWindow->distance2));
+                yMax = qMax(yMax, double(mainWindow->distance2));
+            }
 
             for (int i = 0; i < activeSeries->count(); ++i) {
                 yMin = qMin(yMin, activeSeries->at(i).y());

@@ -55,6 +55,9 @@ DebugWindow::DebugWindow(MainWindow *mainWindow, QWidget *parent)
 
     // Setup app menu like GraphWindow
     appMenu = new AppMenu(this, mainWindow);
+
+    // Ustaw widoczność elementów zgodnie z aktualnym trybem COM
+    updateUIForComMode(PortConfig::useOneCOM());
 }
 
 void DebugWindow::setupUI() {
@@ -118,7 +121,7 @@ void DebugWindow::setupUI() {
     rawData1Layout->addWidget(rawDataDisplay1);
 
     // Raw data 2
-    QGroupBox *rawData2GroupBox = new QGroupBox(this);
+    rawData2GroupBox = new QGroupBox(this);
     QVBoxLayout *rawData2Layout = new QVBoxLayout(rawData2GroupBox);
 
     rawDataLabel2 = new QLabel(this);
@@ -242,6 +245,13 @@ void DebugWindow::updateRawData2(const QString &data) {
     scrollBar->setValue(scrollBar->maximum());
 }
 
+// Nowa implementacja metody do aktualizacji interfejsu po zmianie trybu COM
+void DebugWindow::updateUIForComMode(bool useOneCom) {
+    if (rawData2GroupBox) {
+        rawData2GroupBox->setVisible(!useOneCom);
+    }
+}
+
 // Slot: handle fake data start/stop
 void DebugWindow::handleFakeDataButton() {
     if (!fakeRunning) {
@@ -269,6 +279,9 @@ void DebugWindow::onFakeDataTimeout() {
     // send to main window parsing
     if (mainWindow) {
         mainWindow->fakeData1(msg1 + '\n');
-        mainWindow->fakeData2(msg2 + '\n');
+        // Wysyłaj dane do drugiego COM-a tylko jeśli nie używamy trybu jednego COMa
+        if (!PortConfig::useOneCOM()) {
+            mainWindow->fakeData2(msg2 + '\n');
+        }
     }
 }

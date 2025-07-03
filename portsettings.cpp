@@ -270,3 +270,17 @@ void PortSettings::updatePortInfo() {
 
     portInfoText->setHtml(info);
 }
+
+// Implementacja metody do ukrywania/pokazywania zakładki dla drugiego portu
+void PortSettings::setPort2Visible(bool visible) {
+    if (tabWidget && tabWidget->count() >= 2) {
+        if (!visible) {
+            tabWidget->setTabEnabled(1, false);
+            tabWidget->setTabVisible(1, false);
+            tabWidget->setCurrentIndex(0);
+        } else {
+            tabWidget->setTabEnabled(1, true);
+            tabWidget->setTabVisible(1, true);
+        }
+    }
+}

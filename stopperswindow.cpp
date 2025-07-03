@@ -48,6 +48,9 @@ StoppersWindow::StoppersWindow(MainWindow *mainWindow, QWidget *parent)
     stoperTimer2 = new QTimer(this);
     stoperTimer2->setInterval(10);
     connect(stoperTimer2, &QTimer::timeout, this, &StoppersWindow::updateStoper2Time);
+
+    // Aktualizacja interfejsu dla aktualnego trybu COM
+    updateUIForComMode(PortConfig::useOneCOM());
 }
 
 void StoppersWindow::createStoperControls() {
@@ -97,7 +100,7 @@ void StoppersWindow::createStoperControls() {
     sensor1Layout->addWidget(timeLabel);
 
     // Sensor 2 Section
-    auto *sensor2GroupBox = new QGroupBox(tr("Sensor 2"), this);
+    sensor2GroupBox = new QGroupBox(tr("Sensor 2"), this);
     auto *sensor2Layout = new QVBoxLayout(sensor2GroupBox);
     sensor2Layout->setSpacing(10);
 
@@ -241,6 +244,12 @@ void StoppersWindow::logDropEvent(int sensorId, int previousDistance, int curren
             << "- Previous:" << previousDistance
             << "Current:" << currentDistance
             << "Difference:" << difference;
+}
+
+void StoppersWindow::updateUIForComMode(bool useOneCom) {
+    if (sensor2GroupBox) {
+        sensor2GroupBox->setVisible(!useOneCom);
+    }
 }
 
 void StoppersWindow::checkForDrop1(int currentDistance) {

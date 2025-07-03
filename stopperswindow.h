@@ -12,6 +12,7 @@
 #include <QTimer>
 #include <QDateTime>
 #include <qlineedit.h>
+#include "portconfig.h"
 
 class MainWindow;
 
@@ -30,6 +31,9 @@ public:
     void resetStoperCounters();
 
     void updateStoperDisplay();
+
+    // Metoda do aktualizacji interfejsu w zależności od trybu COM
+    void updateUIForComMode(bool useOneCom);
 
     friend class DebugWindow;
     friend class MainWindow;
@@ -67,6 +71,9 @@ private:
     QTimer *stoperTimer2;
     QLineEdit *timeLabel;
     QLineEdit *timeLabel2;
+
+    // Wskaźnik na box zawierający kontrolki drugiego sensora
+    QGroupBox *sensor2GroupBox;
 
     bool stoper1Running;
     bool stoper2Running;

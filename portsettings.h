@@ -49,6 +49,9 @@ public:
     // Zwraca pełną konfigurację dla wybranego portu (1 lub 2)
     PortConfig getPortConfig(int portNumber) const;
 
+    // Ustawienie widoczności zakładki dla drugiego portu
+    void setPort2Visible(bool visible);
+
 private slots:
     void refreshPorts();
 

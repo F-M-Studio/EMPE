@@ -31,7 +31,8 @@
 #include <QTextEdit>
 #include <QResizeEvent>
 #include <QPushButton>
-#include "stopperswindow.h"  // Add this include
+#include "stopperswindow.h"
+#include "portconfig.h"  // Dodanie importu dla PortConfig
 
 class MainWindow;
 class AppMenu;
@@ -64,6 +65,9 @@ private slots:
 
     void onFakeDataTimeout();
 
+    // Nowa metoda do aktualizacji interfejsu po zmianie trybu COM
+    void updateUIForComMode(bool useOneCom);
+
 private:
     void retranslateUi();
 
@@ -81,6 +85,9 @@ private:
     QLabel *rawDataLabel2;
     QPushButton *resetStoperBtn;
     QPushButton *fakeDataBtn;
+
+    // Wskaźnik do grupującego boxa dla drugiego sensora
+    QGroupBox *rawData2GroupBox;
 
     // Timer for periodic updates
     QTimer *updateTimer;

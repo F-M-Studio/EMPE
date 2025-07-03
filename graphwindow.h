@@ -29,6 +29,8 @@
 #pragma once
 
 #include "mainwindow.h"
+#include "portconfig.h"
+
 #ifndef GRAPHWINDOW_H
 #define GRAPHWINDOW_H
 

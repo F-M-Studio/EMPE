@@ -33,6 +33,7 @@
 #include "aboutusdialog.h"
 #include "debugwindow.h"
 #include "stopperswindow.h"
+#include "portconfig.h"
 
 #include <QDebug>
 #include <QTimer>
@@ -67,6 +68,8 @@ MainWindow::MainWindow(QWidget *parent)
     mainLayout->setContentsMargins(10, 10, 10, 10);
     mainLayout->setSpacing(5);
 
+    // Dodanie selektora trybu COM na samej górze interfejsu
+    createComModeSelector();
 
     appMenu = new AppMenu(this, this);
     createControls();
@@ -133,6 +136,67 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow() {
     if (isReading) {
         stopReading();
+    }
+}
+
+void MainWindow::createComModeSelector() {
+    comModeBox = new QGroupBox(tr("COM Mode"), this);
+    QHBoxLayout* comModeLayout = new QHBoxLayout(comModeBox);
+
+    oneComRadio = new QRadioButton(tr("Single COM"), comModeBox);
+    twoComRadio = new QRadioButton(tr("Dual COM"), comModeBox);
+
+    comModeGroup = new QButtonGroup(this);
+    comModeGroup->addButton(oneComRadio, 1);
+    comModeGroup->addButton(twoComRadio, 2);
+
+    comModeLayout->addWidget(oneComRadio);
+    comModeLayout->addWidget(twoComRadio);
+
+    // Domyślnie wybieramy jeden COM
+    oneComRadio->setChecked(PortConfig::useOneCOM());
+    twoComRadio->setChecked(!PortConfig::useOneCOM());
+
+    // Podłączenie sygnału - poprawiona składnia dla Qt 6
+    connect(comModeGroup, &QButtonGroup::idClicked,
+            this, &MainWindow::onComModeChanged);
+
+    mainLayout->addWidget(comModeBox);
+
+    // Aktualizacja interfejsu zgodnie z aktualnym trybem
+    updateUIForComMode(PortConfig::useOneCOM());
+}
+
+void MainWindow::onComModeChanged(int id) {
+    bool useOneCom = (id == 1);
+
+    // Zapisanie ustawienia
+    PortConfig::setUseOneCOM(useOneCom);
+
+    // Jeśli pomiar jest uruchomiony, zatrzymaj go
+    if (Reading) {
+        stopReading();
+        startStopBtn->setText(tr("Start"));
+        isReading = false;
+    }
+
+    // Aktualizacja interfejsu
+    updateUIForComMode(useOneCom);
+}
+
+void MainWindow::updateUIForComMode(bool useOneCom) {
+    // Aktualizacja widoczności elementów interfejsu związanych z drugim portem
+    if (sensor2Box) {
+        sensor2Box->setVisible(!useOneCom);
+    }
+
+    if (saveData2Btn) {
+        saveData2Btn->setVisible(!useOneCom);
+    }
+
+    // Jeśli używamy PortSettings, ukryj drugą zakładkę gdy w trybie jednego portu
+    if (portSettings) {
+        portSettings->setPort2Visible(!useOneCom);
     }
 }
 
@@ -216,7 +280,7 @@ void MainWindow::createControls() {
     sensor1Layout->addWidget(timeLabel);
     sensor1Layout->addWidget(timeInput);
 
-    QGroupBox *sensor2Box = new QGroupBox(tr("Sensor 2"));
+    sensor2Box = new QGroupBox(tr("Sensor 2"));
     QVBoxLayout *sensor2Layout = new QVBoxLayout(sensor2Box);
 
     QLabel *distanceLabel2 = new QLabel(tr("Distance:"));
@@ -249,9 +313,6 @@ void MainWindow::createControls() {
     controlsLayout->addWidget(sensor1Box, 0, 0);
     controlsLayout->addWidget(sensor2Box, 0, 1);
     // controlsLayout->addWidget(timeBox, 1, 0, 1, 2);
-
-    controlsLayout->addWidget(sensor1Box, 0, 0);
-    controlsLayout->addWidget(sensor2Box, 0, 1);
 
     mainLayout->addLayout(controlsLayout);
 
@@ -442,84 +503,77 @@ void MainWindow::startReading() {
     serialPort1->setParity(static_cast<QSerialPort::Parity>(parity1));
     serialPort1->setFlowControl(static_cast<QSerialPort::FlowControl>(flowControl1));
 
-
     if (!serialPort1->open(QIODevice::ReadOnly)) {
         qDebug() << "Failed to open port" << portName1 << "Error:" << serialPort1->errorString();
-
         QMessageBox::warning(this, tr("Error"),
-
-                             tr("Failed to open port %1: %2").arg(portName1, serialPort1->errorString()));
-
+                            tr("Failed to open port %1: %2").arg(portName1, serialPort1->errorString()));
         delete serialPort1;
-
         serialPort1 = nullptr;
-
         return;
     }
 
+    // Sprawdź, czy używamy jednego czy dwóch portów COM
+    bool useOneCOM = PortConfig::useOneCOM();
 
-    // Konfiguracja dla drugiego portu
-    auto config2 = portSettings->getPortConfig(2);
-    QString portName2 = config2.portName;
-    int baudRate2 = config2.baudRate;
-    int dataBits2 = config2.dataBits;
-    int stopBits2 = config2.stopBits;
-    int parity2 = config2.parity;
-    int flowControl2 = config2.flowControl;
+    // Konfiguracja dla drugiego portu tylko jeśli używamy dwóch portów
+    if (!useOneCOM) {
+        auto config2 = portSettings->getPortConfig(2);
+        QString portName2 = config2.portName;
+        int baudRate2 = config2.baudRate;
+        int dataBits2 = config2.dataBits;
+        int stopBits2 = config2.stopBits;
+        int parity2 = config2.parity;
+        int flowControl2 = config2.flowControl;
 
-    // Konfiguracja portu szeregowego 2
-    serialPort2 = new QSerialPort(this);
-    serialPort2->setPortName(portName2);
-    serialPort2->setBaudRate(baudRate2);
-    serialPort2->setDataBits(static_cast<QSerialPort::DataBits>(dataBits2));
-    serialPort2->setStopBits(static_cast<QSerialPort::StopBits>(stopBits2));
-    serialPort2->setParity(static_cast<QSerialPort::Parity>(parity2));
-    serialPort2->setFlowControl(static_cast<QSerialPort::FlowControl>(flowControl2));
+        // Konfiguracja portu szeregowego 2
+        serialPort2 = new QSerialPort(this);
+        serialPort2->setPortName(portName2);
+        serialPort2->setBaudRate(baudRate2);
+        serialPort2->setDataBits(static_cast<QSerialPort::DataBits>(dataBits2));
+        serialPort2->setStopBits(static_cast<QSerialPort::StopBits>(stopBits2));
+        serialPort2->setParity(static_cast<QSerialPort::Parity>(parity2));
+        serialPort2->setFlowControl(static_cast<QSerialPort::FlowControl>(flowControl2));
 
+        if (!serialPort2->open(QIODevice::ReadOnly)) {
+            qDebug() << "Failed to open port" << portName2 << "Error:" << serialPort2->errorString();
+            QMessageBox::warning(this, tr("Error"),
+                                tr("Failed to open port %1: %2").arg(portName2, serialPort2->errorString()));
 
-    if (!serialPort2->open(QIODevice::ReadOnly)) {
-        qDebug() << "Failed to open port" << portName2 << "Error:" << serialPort2->errorString();
+            if (serialPort1 && serialPort1->isOpen()) {
+                serialPort1->close();
+                delete serialPort1;
+                serialPort1 = nullptr;
+            }
 
-        QMessageBox::warning(this, tr("Error"),
-
-                             tr("Failed to open port %1: %2").arg(portName2, serialPort2->errorString()));
-
-
-        if (serialPort1 && serialPort1->isOpen()) {
-            serialPort1->close();
-
-            delete serialPort1;
-
-            serialPort1 = nullptr;
+            delete serialPort2;
+            serialPort2 = nullptr;
+            return;
         }
 
-
-        delete serialPort2;
-
-        serialPort2 = nullptr;
-
-        return;
+        qDebug() << "Started reading from both ports";
+    } else {
+        qDebug() << "Started reading from port 1 only";
     }
-
-
-    qDebug() << "Started reading from both ports";
 
     Reading = true;
 
     // Używamy lokalnych wskaźników dla lambda wyrażeń
-    QTimer::singleShot(50, this, [this]() {
-        // Używamy wskaźników do portów poprzez this
+    QTimer::singleShot(50, this, [this, useOneCOM]() {
+        // Podłącz pierwszy port
         connect(this->serialPort1, &QSerialPort::readyRead, this, [this]() {
             QByteArray data = this->serialPort1->readAll();
             dataBuffer1.append(QString::fromUtf8(data));
             processBuffer(dataBuffer1, dataDisplay, &MainWindow::parseData);
         });
 
-        connect(this->serialPort2, &QSerialPort::readyRead, this, [this]() {
-            QByteArray data = this->serialPort2->readAll();
-            dataBuffer2.append(QString::fromUtf8(data));
-            processBuffer(dataBuffer2, dataDisplay2, &MainWindow::parseData2);
-        });
+        // Podłącz drugi port tylko jeśli używamy dwóch portów
+        if (!useOneCOM && this->serialPort2) {
+            connect(this->serialPort2, &QSerialPort::readyRead, this, [this]() {
+                QByteArray data = this->serialPort2->readAll();
+                dataBuffer2.append(QString::fromUtf8(data));
+                processBuffer(dataBuffer2, dataDisplay2, &MainWindow::parseData2);
+            });
+        }
     });
 }
 
