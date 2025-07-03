@@ -33,6 +33,7 @@
 #include <QLabel>
 #include <QPixmap>
 #include <QHBoxLayout>
+#include <QPushButton>
 
 AboutUsDialog::AboutUsDialog(QWidget *parent) : QDialog(parent) {
     setWindowTitle(tr("About Us"));

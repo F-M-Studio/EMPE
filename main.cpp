@@ -27,7 +27,6 @@
 */
 
 #include <QApplication>
-#include <QTranslator>
 #include <QLocale>
 #include <QSettings>
 #include <QFontDatabase>

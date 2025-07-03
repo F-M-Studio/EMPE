@@ -29,7 +29,6 @@
 #include "debugwindow.h"
 #include "mainwindow.h"
 #include "appmenu.h"
-#include "graphwindow.h"
 #include "portsettings.h"
 #include "stopperswindow.h"
 #include <QGroupBox>

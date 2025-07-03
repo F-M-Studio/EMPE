@@ -2,7 +2,6 @@
 #include "mainwindow.h"
 #include <QWidget>
 #include <QVBoxLayout>
-#include <QHBoxLayout>
 #include <QGroupBox>
 #include <QSlider>
 #include <QLabel>
@@ -29,14 +28,7 @@ StoppersWindow::StoppersWindow(MainWindow *mainWindow, QWidget *parent)
       stoper1Running(false),
       stoper2Running(false),
       stoper1Time(0),
-      stoper2Time(0),
-      dropCount1(0),
-      dropCount2(0),
-      previousDistance1(0),
-      previousDistance2(0),
-      stoper1Enabled(true),
-      stoper2Enabled(true),
-      dropSensitivity(50) {
+      stoper2Time(0) {
     setWindowTitle(tr("Drop Timers"));
     setMinimumSize(500, 200);
 

@@ -28,14 +28,7 @@
 
 #pragma once
 
-#include <QMainWindow>
-#include <QLabel>
 #include <QTextEdit>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QTimer>
-#include <QEvent>
-#include <QKeyEvent>
 #include <QResizeEvent>
 #include <QPushButton>
 #include "stopperswindow.h"  // Add this include

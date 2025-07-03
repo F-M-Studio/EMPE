@@ -32,7 +32,6 @@
 #include <QDialog>
 #include <QVBoxLayout>
 #include <QLabel>
-#include <QPushButton>
 
 class AboutUsDialog : public QDialog {
     Q_OBJECT

@@ -27,6 +27,7 @@
 */
 
 #include "appmenu.h"
+#include <QActionGroup>
 #include "mainwindow.h"
 #include <QMessageBox>
 #include <QSettings>

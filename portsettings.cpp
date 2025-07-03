@@ -29,7 +29,6 @@
 #include "portsettings.h"
 #include <QtSerialPort/QSerialPortInfo>
 #include <QEvent>
-#include <QDebug>
 
 PortSettings::PortSettings(QWidget *parent) : QDialog(parent) {
     setupUI();

@@ -33,7 +33,6 @@
 #include <QMenu>
 #include <QAction>
 #include <QTranslator>
-#include <QActionGroup>
 
 class MainWindow;
 

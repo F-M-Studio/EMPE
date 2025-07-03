@@ -49,7 +49,6 @@
 #include <QGroupBox>
 #include <QGridLayout>
 #include <QDateTime>
-#include <QScrollBar>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
