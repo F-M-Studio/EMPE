@@ -61,6 +61,8 @@ if(WIN32)
             appmenu.cpp
             aboutusdialog.h
             aboutusdialog.cpp
+            debugwindow.cpp
+            debugwindow.h
     )
         if(CI_MODE)
                 message(STATUS "Configuring for GitHub Actions CI")
@@ -111,6 +113,8 @@ if (UNIX OR APPLE)
             appmenu.cpp
             aboutusdialog.h
             aboutusdialog.cpp
+            debugwindow.cpp
+            debugwindow.h
     )
 endif ()
 

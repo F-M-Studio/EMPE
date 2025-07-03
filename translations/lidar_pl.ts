@@ -188,8 +188,8 @@
             <translation>EMPE</translation>
         </message>
         <message>
-            <source>This program was created as part of the Embodying Math&amp;Physics Education project 2023-1-PL01-KA210-SCH-000165829</source>
-            <translation>Ten program został stworzony w ramach projektu Embodying Math&amp;Physics Education 2023-1-PL01-KA210-SCH-000165829</translation>
+            <source>Embodying Math&amp;Physics Education project 2023-1-PL01-KA210-SCH-000165829</source>
+            <translation>Embodying Math&amp;Physics Education 2023-1-PL01-KA210-SCH-000165829</translation>
         </message>
         <message>
             <source>Drop Sensitivity (mm):</source>
@@ -401,134 +401,30 @@
         </message>
     </context>
     <context>
-        <name>PortSettings</name>
+        <name>DebugWindow</name>
         <message>
-            <source>Setup</source>
-            <translation>Konfiguracja</translation>
+            <source>DEBUG MENU</source>
+            <translation>MENU DEBUGOWANIA</translation>
         </message>
         <message>
-            <source>Port 1</source>
-            <translation>Port 1</translation>
+            <source>Global Time</source>
+            <translation>Globalny Czas</translation>
         </message>
         <message>
-            <source>Port 2</source>
-            <translation>Port 2</translation>
+            <source>Raw Data - Sensor 1</source>
+            <translation>Surowe Dane - Czujnik 1</translation>
         </message>
         <message>
-            <source>Settings</source>
-            <translation>Ustawienia</translation>
+            <source>Raw Data - Sensor 2</source>
+            <translation>Surowe Dane - Czujnik 2</translation>
         </message>
         <message>
-            <source>Port</source>
-            <translation>Port</translation>
+            <source>Sensor 1 Data Stream</source>
+            <translation>Strumień Danych Czujnika 1</translation>
         </message>
         <message>
-            <source>Baud rate</source>
-            <translation>Prędkość transmisji</translation>
-        </message>
-        <message>
-            <source>Data bits</source>
-            <translation>Bity danych</translation>
-        </message>
-        <message>
-            <source>Stop bits</source>
-            <translation>Bity stopu</translation>
-        </message>
-        <message>
-            <source>Parity</source>
-            <translation>Parzystość</translation>
-        </message>
-        <message>
-            <source>Flow control</source>
-            <translation>Kontrola przepływu</translation>
-        </message>
-        <message>
-            <source>None</source>
-            <translation>Brak</translation>
-        </message>
-        <message>
-            <source>Even</source>
-            <translation>Parzyste</translation>
-        </message>
-        <message>
-            <source>Odd</source>
-            <translation>Nieparzyste</translation>
-        </message>
-        <message>
-            <source>Mark</source>
-            <translation>Znacznik</translation>
-        </message>
-        <message>
-            <source>Space</source>
-            <translation>Spacja</translation>
-        </message>
-        <message>
-            <source>Software</source>
-            <translation>Programowa</translation>
-        </message>
-        <message>
-            <source>Hardware</source>
-            <translation>Sprzętowa</translation>
-        </message>
-        <message>
-            <source>Refresh</source>
-            <translation>Odśwież</translation>
-        </message>
-        <message>
-            <source>OK</source>
-            <translation>OK</translation>
-        </message>
-        <message>
-            <source>Cancel</source>
-            <translation>Anuluj</translation>
-        </message>
-        <message>
-            <source>&lt;b&gt;Connected Serial Ports Information:&lt;/b&gt;</source>
-            <translation>&lt;b&gt;Informacje o podłączonych portach szeregowych:&lt;/b&gt;</translation>
-        </message>
-        <message>
-            <source>6</source>
-            <translation>6</translation>
-        </message>
-        <message>
-            <source>7</source>
-            <translation>7</translation>
-        </message>
-        <message>
-            <source>8</source>
-            <translation>8</translation>
-        </message>
-        <message>
-            <source>1</source>
-            <translation>1</translation>
-        </message>
-        <message>
-            <source>1.5</source>
-            <translation>1,5</translation>
-        </message>
-        <message>
-            <source>2</source>
-            <translation>2</translation>
-        </message>
-        <message>
-            <source>9600</source>
-            <translation>9600</translation>
-        </message>
-        <message>
-            <source>19200</source>
-            <translation>19200</translation>
-        </message>
-        <message>
-            <source>38400</source>
-            <translation>38400</translation>
-        </message>
-        <message>
-            <source>57600</source>
-            <translation>57600</translation>
-        </message>
-        <message>
-            <source>115200</source>
-            <translation>115200</translation>
+            <source>Sensor 2 Data Stream</source>
+            <translation>Strumień Danych Czujnika 2</translation>
         </message>
     </context>
 </TS>

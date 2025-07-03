@@ -188,8 +188,8 @@
             <translation>EMPE</translation>
         </message>
         <message>
-            <source>This program was created as part of the Embodying Math&amp;Physics Education project 2023-1-PL01-KA210-SCH-000165829</source>
-            <translation>This program was created as part of the Embodying Math&amp;Physics Education project 2023-1-PL01-KA210-SCH-000165829</translation>
+            <source>Embodying Math&amp;Physics Education project 2023-1-PL01-KA210-SCH-000165829</source>
+            <translation>Embodying Math&amp;Physics Education project 2023-1-PL01-KA210-SCH-000165829</translation>
         </message>
         <message>
             <source>Drop Sensitivity (mm):</source>
@@ -401,134 +401,30 @@
         </message>
     </context>
     <context>
-        <name>PortSettings</name>
+        <name>DebugWindow</name>
         <message>
-            <source>Setup</source>
-            <translation>Setup</translation>
+            <source>DEBUG MENU</source>
+            <translation>DEBUG MENU</translation>
         </message>
         <message>
-            <source>Port 1</source>
-            <translation>Port 1</translation>
+            <source>Global Time</source>
+            <translation>Global Time</translation>
         </message>
         <message>
-            <source>Port 2</source>
-            <translation>Port 2</translation>
+            <source>Raw Data - Sensor 1</source>
+            <translation>Raw Data - Sensor 1</translation>
         </message>
         <message>
-            <source>Settings</source>
-            <translation>Settings</translation>
+            <source>Raw Data - Sensor 2</source>
+            <translation>Raw Data - Sensor 2</translation>
         </message>
         <message>
-            <source>Port</source>
-            <translation>Port</translation>
+            <source>Sensor 1 Data Stream</source>
+            <translation>Sensor 1 Data Stream</translation>
         </message>
         <message>
-            <source>Baud rate</source>
-            <translation>Baud rate</translation>
-        </message>
-        <message>
-            <source>Data bits</source>
-            <translation>Data bits</translation>
-        </message>
-        <message>
-            <source>Stop bits</source>
-            <translation>Stop bits</translation>
-        </message>
-        <message>
-            <source>Parity</source>
-            <translation>Parity</translation>
-        </message>
-        <message>
-            <source>Flow control</source>
-            <translation>Flow control</translation>
-        </message>
-        <message>
-            <source>None</source>
-            <translation>None</translation>
-        </message>
-        <message>
-            <source>Even</source>
-            <translation>Even</translation>
-        </message>
-        <message>
-            <source>Odd</source>
-            <translation>Odd</translation>
-        </message>
-        <message>
-            <source>Mark</source>
-            <translation>Mark</translation>
-        </message>
-        <message>
-            <source>Space</source>
-            <translation>Space</translation>
-        </message>
-        <message>
-            <source>Software</source>
-            <translation>Software</translation>
-        </message>
-        <message>
-            <source>Hardware</source>
-            <translation>Hardware</translation>
-        </message>
-        <message>
-            <source>Refresh</source>
-            <translation>Refresh</translation>
-        </message>
-        <message>
-            <source>OK</source>
-            <translation>OK</translation>
-        </message>
-        <message>
-            <source>Cancel</source>
-            <translation>Cancel</translation>
-        </message>
-        <message>
-            <source>&lt;b&gt;Connected Serial Ports Information:&lt;/b&gt;</source>
-            <translation>&lt;b&gt;Connected Serial Ports Information:&lt;/b&gt;</translation>
-        </message>
-        <message>
-            <source>6</source>
-            <translation>6</translation>
-        </message>
-        <message>
-            <source>7</source>
-            <translation>7</translation>
-        </message>
-        <message>
-            <source>8</source>
-            <translation>8</translation>
-        </message>
-        <message>
-            <source>1</source>
-            <translation>1</translation>
-        </message>
-        <message>
-            <source>1.5</source>
-            <translation>1.5</translation>
-        </message>
-        <message>
-            <source>2</source>
-            <translation>2</translation>
-        </message>
-        <message>
-            <source>9600</source>
-            <translation>9600</translation>
-        </message>
-        <message>
-            <source>19200</source>
-            <translation>19200</translation>
-        </message>
-        <message>
-            <source>38400</source>
-            <translation>38400</translation>
-        </message>
-        <message>
-            <source>57600</source>
-            <translation>57600</translation>
-        </message>
-        <message>
-            <source>115200</source>
-            <translation>115200</translation>
+            <source>Sensor 2 Data Stream</source>
+            <translation>Sensor 2 Data Stream</translation>
         </message>
     </context>
 </TS>

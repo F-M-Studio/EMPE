@@ -10,7 +10,7 @@
  * Filip Leśnik <filip.lesnik170@gmail.com>
  *
  * Data Utworzenia: 4 Marca 2025
- * Ostatnia Modyfikacja: 18 Czerwaca 2025
+ * Ostatnia Modyfikacja: 3 Lipca 2025
  *
  * Ten program jest wolnym oprogramowaniem; możesz go rozprowadzać i/lub
  * modyfikować na warunkach Powszechnej Licencji Publicznej GNU,
@@ -79,16 +79,22 @@ public:
     // Metoda do zmiany języka w czasie rzeczywistym
     bool switchLanguage(const QString &language);
 
+    void resetStoperCounters();
+
 protected:
     void keyPressEvent(QKeyEvent *event) override;
 
 private slots:
     void showAboutUsDialog();
     void onSensitivityChanged(int value);
-    void resetStoperCounters();
     void saveStoperLogs();
 
 private:
+    void openDebugWindow();
+
+    QLabel *timeLabel;
+    QLabel *timeLabel2;
+
     QLabel *globalTimeLabel;
     void updateGlobalTimeDisplay(int time);
 
@@ -158,8 +164,8 @@ private:
     QLineEdit *maxYInput{};
     QLineEdit *distanceInput{};
     QLineEdit *distanceInput2{};
-    QTimeEdit *timeInput{};
-    QTimeEdit *timeInput2{};
+    QLineEdit *timeInput{};
+    QLineEdit *timeInput2{};
     QLabel *yAxisValueLabel{};
 
     QSerialPort *serialPort{};

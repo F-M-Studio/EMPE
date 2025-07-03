@@ -10,7 +10,7 @@
  * Filip Leśnik <filip.lesnik170@gmail.com>
  *
  * Data Utworzenia: 4 Marca 2025
- * Ostatnia Modyfikacja: 18 Czerwaca 2025
+ * Ostatnia Modyfikacja: 3 Lipca 2025
  *
  * Ten program jest wolnym oprogramowaniem; możesz go rozprowadzać i/lub
  * modyfikować na warunkach Powszechnej Licencji Publicznej GNU,
@@ -31,6 +31,7 @@
 #include "appmenu.h"
 #include "graphwindow.h"
 #include "aboutusdialog.h"
+#include "debugwindow.h"
 
 #include <QDebug>
 #include <QTimer>
@@ -50,7 +51,9 @@
 #include <QScrollBar>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), isReading(false),
-      portSettings(new PortSettings(this)) {
+      portSettings(new PortSettings(this)),
+      distance(0), timeInMilliseconds(0), minutes(0), seconds(0), milliseconds(0),
+      distance2(0), timeInMilliseconds2(0), minutes2(0), seconds2(0), milliseconds2(0) {
     centralWidget = new QWidget(this);
     setCentralWidget(centralWidget);
     setWindowTitle(tr("EMPE"));
@@ -112,7 +115,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), isReading(false),
     separator->setFrameShadow(QFrame::Sunken);
     mainLayout->addWidget(separator);
 
-    creatorsNoteLabel = new QLabel(tr("This program was created as part of the Embodying Math&Physics Education project 2023-1-PL01-KA210-SCH-000165829"),
+    creatorsNoteLabel = new QLabel(tr("Embodying Math&Physics Education project 2023-1-PL01-KA210-SCH-000165829"),
                                   this);
     creatorsNoteLabel->setAlignment(Qt::AlignCenter);
     QFont noteFont = creatorsNoteLabel->font();
@@ -144,7 +147,6 @@ void MainWindow::createStoperControls() {
 
     sensitivityLabel = new QLabel(QString::number(dropSensitivity), this);
     sensitivityLabel->setMinimumWidth(5);
-    resetStoperBtn = new QPushButton(tr("Reset All"), this);
 
 
     stoperTimer = new QTimer(this);
@@ -206,15 +208,11 @@ void MainWindow::createStoperControls() {
     stoperLayout->addWidget(sensor2GroupBox, 1, 2, 1, 2);
 
 
-    stoperLayout->addWidget(resetStoperBtn, 2, 0, 1, 4);
-
-
     mainLayout->addWidget(stoperGroupBox);
 
 
     connect(stoperTimer, &QTimer::timeout, this, &MainWindow::updateStoperTime);
     connect(sensitivitySlider, &QSlider::valueChanged, this, &MainWindow::onSensitivityChanged);
-    connect(resetStoperBtn, &QPushButton::clicked, this, &MainWindow::resetStoperCounters);
     connect(enableStoper1CheckBox, &QCheckBox::toggled, this, [this](bool checked) {
         stoper1Enabled = checked;
     });
@@ -450,6 +448,7 @@ void MainWindow::createControls() {
     saveData2Btn = new QPushButton(tr("SAVE data 2"));
     clearGraphBtn = new QPushButton(tr("Clear GRAPH"));
     showRawDataBtn = new QPushButton(tr("Show raw data"));
+    showRawDataBtn->hide();
 
     buttonLayout->addWidget(portSettingsBtn);
     buttonLayout->addWidget(showGraphBtn);
@@ -508,6 +507,13 @@ void MainWindow::createControls() {
     sensor1Layout->addWidget(distanceLabel);
     sensor1Layout->addWidget(distanceInput);
 
+    QLabel *timeLabel = new QLabel(tr("Time:"));
+    this->timeLabel = timeLabel;
+    timeInput = new QLineEdit("00:00.000");
+    timeInput->setReadOnly(true);
+
+    sensor1Layout->addWidget(timeLabel);
+    sensor1Layout->addWidget(timeInput);
 
     QGroupBox *sensor2Box = new QGroupBox(tr("Sensor 2"));
     QVBoxLayout *sensor2Layout = new QVBoxLayout(sensor2Box);
@@ -519,11 +525,20 @@ void MainWindow::createControls() {
     sensor2Layout->addWidget(distanceLabel2);
     sensor2Layout->addWidget(distanceInput2);
 
+    QLabel *timeLabel2 = new QLabel(tr("Time:"));
+    this->timeLabel2 = timeLabel2;
+    timeInput2 = new QLineEdit("00:00.000");
+    timeInput2->setReadOnly(true);
+
+    sensor2Layout->addWidget(timeLabel2);
+    sensor2Layout->addWidget(timeInput2);
+
     QGroupBox *timeBox = new QGroupBox(tr("Time"));
     QVBoxLayout *timeLayout = new QVBoxLayout(timeBox);
 
     globalTimeLabel = new QLabel("00:00.000");
     globalTimeLabel->setAlignment(Qt::AlignCenter);
+    globalTimeLabel->hide(); // Hide global time label
     QFont timeFont = globalTimeLabel->font();
     timeFont.setPointSize(timeFont.pointSize() + 2);
     globalTimeLabel->setFont(timeFont);
@@ -828,6 +843,12 @@ void MainWindow::parseData(const QString &data) {
 
         updateGlobalTimeDisplay(timeInMilliseconds);
 
+        QString formattedTime = QString("%1:%2.%3")
+                        .arg(minutes, 2, 10, QChar('0'))
+                        .arg(seconds, 2, 10, QChar('0'))
+                        .arg(milliseconds, 3, 10, QChar('0'));
+        timeInput->setText(formattedTime);
+
 
         if (stoper1Enabled) {
             checkForDrop1(distance);
@@ -863,6 +884,12 @@ void MainWindow::parseData2(const QString &data) {
         distanceInput2->setText(QString::number(distance2));
 
         updateGlobalTimeDisplay(timeInMilliseconds2);
+
+        QString formattedTime = QString("%1:%2.%3")
+                        .arg(minutes2, 2, 10, QChar('0'))
+                        .arg(seconds2, 2, 10, QChar('0'))
+                        .arg(milliseconds2, 3, 10, QChar('0'));
+        timeInput2->setText(formattedTime);
 
         if (stoper2Enabled) {
             checkForDrop2(distance2);
@@ -904,13 +931,9 @@ void MainWindow::stopReading() {
 
 
 void MainWindow::keyPressEvent(QKeyEvent *event) {
-    if (event->key() == Qt::Key_F7) {
-        bool visible = !dataDisplay->isVisible();
-        dataDisplay->setVisible(visible);
-        dataDisplay2->setVisible(visible);
-        showRawDataBtn->setText(visible ? tr("Hide raw data") : tr("Show raw data"));
-    } else {
-        QMainWindow::keyPressEvent(event);
+    // Ctrl+0 combination to open DEBUG MENU
+    if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_0) {
+        openDebugWindow();
     }
 }
 
@@ -1015,7 +1038,6 @@ void MainWindow::retranslateUi() {
 
     // Aktualizacja tekstów dla elementów stoper
     sensitivitySlider->setToolTip(tr("Adjust drop sensitivity"));
-    resetStoperBtn->setText(tr("Reset All"));
     enableStoper1CheckBox->setText(tr("Enable Sensor 1"));
     enableStoper2CheckBox->setText(tr("Enable Sensor 2"));
     dropCounter1Label->setText(tr("Drops: %1").arg(dropCount1));
@@ -1024,10 +1046,18 @@ void MainWindow::retranslateUi() {
     // Aktualizacja etykiet
     stoperGroupBox->setTitle(tr("Stoper"));
     alwaysOnTopCheckbox->setText(tr("Always on Top"));
-    creatorsNoteLabel->setText(tr("This program was created as part of the Embodying Math&Physics Education project 2023-1-PL01-KA210-SCH-000165829"));
+    creatorsNoteLabel->setText(tr("Embodying Math&Physics Education project 2023-1-PL01-KA210-SCH-000165829"));
 
     // Poinformowanie AppMenu o aktualizacji tekstów
     if (appMenu) {
         appMenu->updateStartStopAction(isReading);
     }
+
+    if (timeLabel) timeLabel->setText(tr("Time:"));
+    if (timeLabel2) timeLabel->setText(tr("Time:"));
+}
+
+void MainWindow::openDebugWindow() {
+    DebugWindow *debugWindow = new DebugWindow(this);
+    debugWindow->show();
 }
