@@ -122,7 +122,7 @@ void AppMenu::switchToPolish() {
 
 void AppMenu::promptRestart() {
     QMessageBox::information(window, tr("Language Changed"),
-                           tr("Please restart the application for the language change to take effect."));
+                             tr("Please restart the application for the language change to take effect."));
 }
 
 void AppMenu::updateStartStopAction(bool isReading) const {

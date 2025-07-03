@@ -38,25 +38,37 @@ public:
     explicit PortSettings(QWidget *parent = nullptr);
 
     QString getPortName1() const;
+
     int getBaudRate1() const;
+
     int getDataBits1() const;
+
     int getStopBits1() const;
+
     int getParity1() const;
+
     int getFlowControl1() const;
 
     QString getPortName2() const;
+
     int getBaudRate2() const;
+
     int getDataBits2() const;
+
     int getStopBits2() const;
+
     int getParity2() const;
+
     int getFlowControl2() const;
 
-    private slots:
-        void refreshPorts();
+private slots:
+    void refreshPorts();
+
     void retranslateUi();
 
 private:
     void updatePortInfo();
+
     QComboBox *portBox1;
     QComboBox *baudRateBox1;
     QComboBox *dataBitsBox1;
@@ -78,10 +90,11 @@ private:
     QTabWidget *tabWidget;
 
     void setupUI();
-    QWidget* createPortTab(const QString& tabName, QComboBox* &portBox,
-                          QComboBox* &baudRateBox, QComboBox* &dataBitsBox,
-                          QComboBox* &stopBitsBox, QComboBox* &parityBox,
-                          QComboBox* &flowControlBox);
+
+    QWidget *createPortTab(const QString &tabName, QComboBox * &portBox,
+                           QComboBox * &baudRateBox, QComboBox * &dataBitsBox,
+                           QComboBox * &stopBitsBox, QComboBox * &parityBox,
+                           QComboBox * &flowControlBox);
 
 protected:
     void changeEvent(QEvent *event) override;

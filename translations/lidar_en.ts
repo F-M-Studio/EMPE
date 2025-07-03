@@ -273,9 +273,11 @@
         </message>
         <message>
             <source>Cannot write file %1:
-                %2.</source>
+                %2.
+            </source>
             <translation>Cannot write file %1:
-                %2.</translation>
+                %2.
+            </translation>
         </message>
         <message>
             <source>Success</source>
@@ -283,9 +285,11 @@
         </message>
         <message>
             <source>Drop logs saved to %1
-                Total events: %2</source>
+                Total events: %2
+            </source>
             <translation>Drop logs saved to %1
-                Total events: %2</translation>
+                Total events: %2
+            </translation>
         </message>
         <message>
             <source>[%1] Automatic start of stopwatch 1 after drop detection</source>
@@ -365,9 +369,11 @@
         </message>
         <message>
             <source>The file %1 already exists.
-                Do you want to replace it?</source>
+                Do you want to replace it?
+            </source>
             <translation>The file %1 already exists.
-                Do you want to replace it?</translation>
+                Do you want to replace it?
+            </translation>
         </message>
         <message>
             <source>Distance,Time (mm:ss),Milliseconds,Raw Time (ms)
@@ -397,7 +403,8 @@
         </message>
         <message>
             <source>[%1] Drop detected (sensor %2): Previous distance: %3, Current: %4, Difference: %5</source>
-            <translation>[%1] Drop detected (sensor %2): Previous distance: %3, Current: %4, Difference: %5</translation>
+            <translation>[%1] Drop detected (sensor %2): Previous distance: %3, Current: %4, Difference: %5
+            </translation>
         </message>
     </context>
     <context>

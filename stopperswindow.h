@@ -19,12 +19,16 @@ class StoppersWindow : public QMainWindow {
     Q_OBJECT
 
 public:
-    explicit StoppersWindow(MainWindow* mainWindow, QWidget *parent = nullptr);
+    explicit StoppersWindow(MainWindow *mainWindow, QWidget *parent = nullptr);
+
     ~StoppersWindow() override = default;
 
     void checkForDrop1(int currentDistance);
+
     void checkForDrop2(int currentDistance);
+
     void resetStoperCounters();
+
     void updateStoperDisplay();
 
     friend class DebugWindow;
@@ -32,16 +36,24 @@ public:
 
 private slots:
     void onSensitivityChanged(int value);
+
     void updateStoper1Time();
+
     void updateStoper2Time();
 
 private:
-    MainWindow* mainWindow;
+    MainWindow *mainWindow;
+
     void createStoperControls();
+
     void logDropEvent(int sensorId, int previousDistance, int currentDistance, int difference);
+
     void startStoper1();
+
     void stopStoper1();
+
     void startStoper2();
+
     void stopStoper2();
 
     QGroupBox *stoperGroupBox;
@@ -78,6 +90,7 @@ private:
         int dropAmount;
         int sensorNumber;
     };
+
     QVector<DropEvent> dropEvents;
 };
 

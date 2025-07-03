@@ -40,7 +40,6 @@
 
 DebugWindow::DebugWindow(MainWindow *mainWindow, QWidget *parent)
     : QMainWindow(parent), mainWindow(mainWindow) {
-
     setupUI();
     retranslateUi();
 
@@ -158,7 +157,7 @@ void DebugWindow::retranslateUi() {
     titleLabel->setText(tr("DEBUG MENU"));
 
     // Find the group boxes and set their titles
-    QList<QGroupBox*> groupBoxes = findChildren<QGroupBox*>();
+    QList<QGroupBox *> groupBoxes = findChildren<QGroupBox *>();
     if (groupBoxes.size() >= 3) {
         groupBoxes[0]->setTitle(tr("Global Time"));
         groupBoxes[1]->setTitle(tr("Raw Data - Sensor 1"));

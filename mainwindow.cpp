@@ -59,7 +59,6 @@ MainWindow::MainWindow(QWidget *parent)
       distance(0), timeInMilliseconds(0), minutes(0), seconds(0), milliseconds(0),
       distance2(0), timeInMilliseconds2(0), minutes2(0), seconds2(0), milliseconds2(0),
       stoppersWindow(nullptr) {
-
     centralWidget = new QWidget(this);
     setCentralWidget(centralWidget);
     setWindowTitle(tr("EMPE"));
@@ -73,8 +72,8 @@ MainWindow::MainWindow(QWidget *parent)
     appMenu = new AppMenu(this, this);
     createControls();
 
-    QWidget* dataContainer = new QWidget(this);
-    QVBoxLayout* dataLayout = new QVBoxLayout(dataContainer);
+    QWidget *dataContainer = new QWidget(this);
+    QVBoxLayout *dataLayout = new QVBoxLayout(dataContainer);
     dataLayout->setContentsMargins(0, 0, 0, 0);
     dataLayout->setSpacing(0);
 
@@ -121,7 +120,7 @@ MainWindow::MainWindow(QWidget *parent)
     mainLayout->addWidget(separator);
 
     creatorsNoteLabel = new QLabel(tr("Embodying Math&Physics Education project 2023-1-PL01-KA210-SCH-000165829"),
-                                  this);
+                                   this);
     creatorsNoteLabel->setAlignment(Qt::AlignCenter);
     QFont noteFont = creatorsNoteLabel->font();
     noteFont.setPointSize(noteFont.pointSize() - 1);
@@ -191,7 +190,7 @@ void MainWindow::createControls() {
             setMinimumSize(0, 0);
             resize(600, 200);
             setMinimumSize(minimumSizeHint());
-        }else {
+        } else {
             adjustSize();
         }
     });
@@ -299,7 +298,8 @@ void MainWindow::saveDataToFile(const QTextEdit *display, const QString &regexPa
     if (file.exists()) {
         QMessageBox::StandardButton reply = QMessageBox::question(this,
                                                                   tr("File exists"),
-                                                                  tr("The file %1 already exists.\nDo you want to replace it?")
+                                                                  tr(
+                                                                      "The file %1 already exists.\nDo you want to replace it?")
                                                                   .arg(QDir::toNativeSeparators(fileName)),
                                                                   QMessageBox::Yes | QMessageBox::No);
 
@@ -360,10 +360,10 @@ void MainWindow::saveDataToFile(const QTextEdit *display, const QString &regexPa
 void MainWindow::handleStartStopButton() {
     if (isReading) {
         stopReading();
-        startStopBtn->setText(tr("START"));
+        startStopBtn->setText(tr("Start"));
     } else {
         startReading();
-        startStopBtn->setText(tr("STOP"));
+        startStopBtn->setText(tr("Stop"));
     }
     isReading = !isReading;
 }
@@ -372,12 +372,12 @@ void MainWindow::retranslateUi() {
     setWindowTitle(tr("EMPE"));
 
     // Update button texts
-    portSettingsBtn->setText(tr("PORT settings"));
-    showGraphBtn->setText(tr("Show GRAPH"));
-    startStopBtn->setText(isReading ? tr("STOP") : tr("START"));
-    saveDataBtn->setText(tr("SAVE data 1"));
-    saveData2Btn->setText(tr("SAVE data 2"));
-    clearGraphBtn->setText(tr("Clear GRAPH"));
+    portSettingsBtn->setText(tr("Port settings"));
+    showGraphBtn->setText(tr("Show Graph"));
+    startStopBtn->setText(isReading ? tr("Stop") : tr("Start"));
+    saveDataBtn->setText(tr("Save data 1"));
+    saveData2Btn->setText(tr("Save data 2"));
+    clearGraphBtn->setText(tr("Clear Graph"));
     showRawDataBtn->setText(dataDisplay->isVisible() ? tr("Hide raw data") : tr("Show raw data"));
     stoppersButton->setText(tr("Stoppers"));
 
@@ -419,11 +419,11 @@ void MainWindow::fakeData1(const QString &data) {
 void MainWindow::fakeData2(const QString &data) {
     parseData2(data);
 }
+
 void MainWindow::startReading() {
     dataBuffer1.clear();
 
     dataBuffer2.clear();
-
 
 
     QString portName1 = portSettings->getPortName1();
@@ -437,7 +437,6 @@ void MainWindow::startReading() {
     int parity1 = portSettings->getParity1();
 
     int flowControl1 = portSettings->getFlowControl1();
-
 
 
     qDebug() << "Attempting to open port 1:" << portName1
@@ -455,7 +454,6 @@ void MainWindow::startReading() {
             << "FlowControl:" << flowControl1;
 
 
-
     serialPort = new QSerialPort(this);
 
     serialPort->setPortName(portName1);
@@ -471,9 +469,7 @@ void MainWindow::startReading() {
     serialPort->setFlowControl(static_cast<QSerialPort::FlowControl>(flowControl1));
 
 
-
     if (!serialPort->open(QIODevice::ReadOnly)) {
-
         qDebug() << "Failed to open port" << portName1 << "Error:" << serialPort->errorString();
 
         QMessageBox::warning(this, tr("Error"),
@@ -485,9 +481,7 @@ void MainWindow::startReading() {
         serialPort = nullptr;
 
         return;
-
     }
-
 
 
     QString portName2 = portSettings->getPortName2();
@@ -501,7 +495,6 @@ void MainWindow::startReading() {
     int parity2 = portSettings->getParity2();
 
     int flowControl2 = portSettings->getFlowControl2();
-
 
 
     qDebug() << "Attempting to open port 2:" << portName2
@@ -519,7 +512,6 @@ void MainWindow::startReading() {
             << "FlowControl:" << flowControl2;
 
 
-
     serialPort2 = new QSerialPort(this);
 
     serialPort2->setPortName(portName2);
@@ -535,9 +527,7 @@ void MainWindow::startReading() {
     serialPort2->setFlowControl(static_cast<QSerialPort::FlowControl>(flowControl2));
 
 
-
     if (!serialPort2->open(QIODevice::ReadOnly)) {
-
         qDebug() << "Failed to open port" << portName2 << "Error:" << serialPort2->errorString();
 
         QMessageBox::warning(this, tr("Error"),
@@ -545,17 +535,13 @@ void MainWindow::startReading() {
                              tr("Failed to open port %1: %2").arg(portName2, serialPort2->errorString()));
 
 
-
         if (serialPort && serialPort->isOpen()) {
-
             serialPort->close();
 
             delete serialPort;
 
             serialPort = nullptr;
-
         }
-
 
 
         delete serialPort2;
@@ -563,9 +549,7 @@ void MainWindow::startReading() {
         serialPort2 = nullptr;
 
         return;
-
     }
-
 
 
     qDebug() << "Started reading from both ports";
@@ -573,31 +557,23 @@ void MainWindow::startReading() {
     Reading = true;
 
 
-
     QTimer::singleShot(50, this, [this]() {
-
         connect(serialPort, &QSerialPort::readyRead, this, [this]() {
-
             QByteArray data = serialPort->readAll();
 
             dataBuffer1.append(QString::fromUtf8(data));
 
             processBuffer(dataBuffer1, dataDisplay, &MainWindow::parseData);
-
         });
 
         connect(serialPort2, &QSerialPort::readyRead, this, [this]() {
-
             QByteArray data = serialPort2->readAll();
 
             dataBuffer2.append(QString::fromUtf8(data));
 
             processBuffer(dataBuffer2, dataDisplay2, &MainWindow::parseData2);
-
         });
-
     });
-
 }
 
 void MainWindow::stopReading() {
@@ -627,9 +603,9 @@ void MainWindow::parseData(const QString &data) {
         milliseconds = timeInMilliseconds % 1000;
 
         QString timeStr = QString("%1:%2.%3")
-            .arg(minutes, 2, 10, QChar('0'))
-            .arg(seconds, 2, 10, QChar('0'))
-            .arg(milliseconds, 3, 10, QChar('0'));
+                .arg(minutes, 2, 10, QChar('0'))
+                .arg(seconds, 2, 10, QChar('0'))
+                .arg(milliseconds, 3, 10, QChar('0'));
 
         distanceInput->setText(QString::number(distance));
         timeInput->setText(timeStr);
@@ -655,9 +631,9 @@ void MainWindow::parseData2(const QString &data) {
         milliseconds2 = timeInMilliseconds2 % 1000;
 
         QString timeStr = QString("%1:%2.%3")
-            .arg(minutes2, 2, 10, QChar('0'))
-            .arg(seconds2, 2, 10, QChar('0'))
-            .arg(milliseconds2, 3, 10, QChar('0'));
+                .arg(minutes2, 2, 10, QChar('0'))
+                .arg(seconds2, 2, 10, QChar('0'))
+                .arg(milliseconds2, 3, 10, QChar('0'));
 
         distanceInput2->setText(QString::number(distance2));
         timeInput2->setText(timeStr);
@@ -693,16 +669,15 @@ void MainWindow::processBuffer(QString &buffer, QTextEdit *display, void (MainWi
 }
 
 
-
 void MainWindow::updateGlobalTimeDisplay(int timeMs) {
     int minutes = timeMs / 60000;
     int seconds = (timeMs % 60000) / 1000;
     int milliseconds = timeMs % 1000;
 
     QString formattedTime = QString("%1:%2.%3")
-        .arg(minutes, 2, 10, QChar('0'))
-        .arg(seconds, 2, 10, QChar('0'))
-        .arg(milliseconds, 3, 10, QChar('0'));
+            .arg(minutes, 2, 10, QChar('0'))
+            .arg(seconds, 2, 10, QChar('0'))
+            .arg(milliseconds, 3, 10, QChar('0'));
 
     if (globalTimeLabel) {
         globalTimeLabel->setText(formattedTime);

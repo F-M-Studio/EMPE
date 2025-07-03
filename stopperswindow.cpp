@@ -13,38 +13,37 @@
 #include <QLineEdit>
 #include <QFrame>
 
-StoppersWindow::StoppersWindow(MainWindow* mainWindow, QWidget *parent)
+StoppersWindow::StoppersWindow(MainWindow *mainWindow, QWidget *parent)
     : QMainWindow(parent), mainWindow(mainWindow),
-    stoperGroupBox(nullptr),
-    sensitivitySlider(nullptr),
-    sensitivityLabel(nullptr),
-    dropCounter1Label(nullptr),
-    dropCounter2Label(nullptr),
-    enableStoper1CheckBox(nullptr),
-    enableStoper2CheckBox(nullptr),
-    stoperTimer1(nullptr),
-    stoperTimer2(nullptr),
-    timeLabel(nullptr),
-    timeLabel2(nullptr),
-    stoper1Running(false),
-    stoper2Running(false),
-    stoper1Time(0),
-    stoper2Time(0),
-    dropCount1(0),
-    dropCount2(0),
-    previousDistance1(0),
-    previousDistance2(0),
-    stoper1Enabled(true),
-    stoper2Enabled(true),
-    dropSensitivity(50) {
-
+      stoperGroupBox(nullptr),
+      sensitivitySlider(nullptr),
+      sensitivityLabel(nullptr),
+      dropCounter1Label(nullptr),
+      dropCounter2Label(nullptr),
+      enableStoper1CheckBox(nullptr),
+      enableStoper2CheckBox(nullptr),
+      stoperTimer1(nullptr),
+      stoperTimer2(nullptr),
+      timeLabel(nullptr),
+      timeLabel2(nullptr),
+      stoper1Running(false),
+      stoper2Running(false),
+      stoper1Time(0),
+      stoper2Time(0),
+      dropCount1(0),
+      dropCount2(0),
+      previousDistance1(0),
+      previousDistance2(0),
+      stoper1Enabled(true),
+      stoper2Enabled(true),
+      dropSensitivity(50) {
     setWindowTitle(tr("Drop Timers"));
     setMinimumSize(500, 200);
 
-    auto* centralWidget = new QWidget(this);
+    auto *centralWidget = new QWidget(this);
     setCentralWidget(centralWidget);
 
-    auto* mainLayout = new QVBoxLayout(centralWidget);
+    auto *mainLayout = new QVBoxLayout(centralWidget);
     mainLayout->setSpacing(15);
     mainLayout->setContentsMargins(20, 20, 20, 20);
 
@@ -61,11 +60,11 @@ StoppersWindow::StoppersWindow(MainWindow* mainWindow, QWidget *parent)
 
 void StoppersWindow::createStoperControls() {
     // Main container
-    auto* mainLayout = qobject_cast<QVBoxLayout*>(centralWidget()->layout());
+    auto *mainLayout = qobject_cast<QVBoxLayout *>(centralWidget()->layout());
 
     // Sensitivity Section
-    auto* sensitivityGroupBox = new QGroupBox(tr("Drop Sensitivity"), this);
-    auto* sensitivityLayout = new QVBoxLayout(sensitivityGroupBox);
+    auto *sensitivityGroupBox = new QGroupBox(tr("Drop Sensitivity"), this);
+    auto *sensitivityLayout = new QVBoxLayout(sensitivityGroupBox);
     sensitivityLayout->setSpacing(10);
 
     sensitivityLabel = new QLabel(tr("Sensitivity: 50 mm"), this);
@@ -83,8 +82,8 @@ void StoppersWindow::createStoperControls() {
     sensitivityLayout->addWidget(sensitivitySlider);
 
     // Sensor 1 Section
-    auto* sensor1GroupBox = new QGroupBox(tr("Sensor 1"), this);
-    auto* sensor1Layout = new QVBoxLayout(sensor1GroupBox);
+    auto *sensor1GroupBox = new QGroupBox(tr("Sensor 1"), this);
+    auto *sensor1Layout = new QVBoxLayout(sensor1GroupBox);
     sensor1Layout->setSpacing(10);
 
     enableStoper1CheckBox = new QCheckBox(tr("Enable Sensor 1"), this);
@@ -106,8 +105,8 @@ void StoppersWindow::createStoperControls() {
     sensor1Layout->addWidget(timeLabel);
 
     // Sensor 2 Section
-    auto* sensor2GroupBox = new QGroupBox(tr("Sensor 2"), this);
-    auto* sensor2Layout = new QVBoxLayout(sensor2GroupBox);
+    auto *sensor2GroupBox = new QGroupBox(tr("Sensor 2"), this);
+    auto *sensor2Layout = new QVBoxLayout(sensor2GroupBox);
     sensor2Layout->setSpacing(10);
 
     enableStoper2CheckBox = new QCheckBox(tr("Enable Sensor 2"), this);
@@ -128,8 +127,8 @@ void StoppersWindow::createStoperControls() {
     sensor2Layout->addWidget(timeLabel2);
 
     // Sensors in horizontal layout
-    auto* sensorsFrame = new QFrame(this);
-    auto* sensorsLayout = new QHBoxLayout(sensorsFrame);
+    auto *sensorsFrame = new QFrame(this);
+    auto *sensorsLayout = new QHBoxLayout(sensorsFrame);
     sensorsLayout->addWidget(sensor1GroupBox);
     sensorsLayout->addWidget(sensor2GroupBox);
 
@@ -195,10 +194,10 @@ void StoppersWindow::updateStoperDisplay() {
     int milliseconds1 = stoper1Time % 1000;
 
     QString timeString1 = QString("%1:%2:%3.%4")
-        .arg(hours1, 2, 10, QChar('0'))
-        .arg(minutes1, 2, 10, QChar('0'))
-        .arg(seconds1, 2, 10, QChar('0'))
-        .arg(milliseconds1 / 10, 2, 10, QChar('0'));
+            .arg(hours1, 2, 10, QChar('0'))
+            .arg(minutes1, 2, 10, QChar('0'))
+            .arg(seconds1, 2, 10, QChar('0'))
+            .arg(milliseconds1 / 10, 2, 10, QChar('0'));
 
     // Update Sensor 2 time
     int hours2 = stoper2Time / 3600000;
@@ -207,10 +206,10 @@ void StoppersWindow::updateStoperDisplay() {
     int milliseconds2 = stoper2Time % 1000;
 
     QString timeString2 = QString("%1:%2:%3.%4")
-        .arg(hours2, 2, 10, QChar('0'))
-        .arg(minutes2, 2, 10, QChar('0'))
-        .arg(seconds2, 2, 10, QChar('0'))
-        .arg(milliseconds2 / 10, 2, 10, QChar('0'));
+            .arg(hours2, 2, 10, QChar('0'))
+            .arg(minutes2, 2, 10, QChar('0'))
+            .arg(seconds2, 2, 10, QChar('0'))
+            .arg(milliseconds2 / 10, 2, 10, QChar('0'));
 
     timeLabel->setText(timeString1);
     timeLabel2->setText(timeString2);
@@ -247,9 +246,9 @@ void StoppersWindow::logDropEvent(int sensorId, int previousDistance, int curren
     dropEvents.append(event);
 
     qDebug() << "Drop detected on sensor" << sensorId
-             << "- Previous:" << previousDistance
-             << "Current:" << currentDistance
-             << "Difference:" << difference;
+            << "- Previous:" << previousDistance
+            << "Current:" << currentDistance
+            << "Difference:" << difference;
 }
 
 void StoppersWindow::checkForDrop1(int currentDistance) {

@@ -514,13 +514,11 @@ void GraphWindow::updateChartTheme() {
     QColor secondaryColor2;
 
     if (isDarkMode) {
-
         primaryColor = QColor(0, 230, 118);
         secondaryColor = QColor(255, 128, 0);
         primaryColor2 = QColor(0, 180, 255);
         secondaryColor2 = QColor(255, 0, 128);
     } else {
-
         primaryColor = QColor(0, 100, 255);
         secondaryColor = QColor(220, 0, 80);
         primaryColor2 = QColor(0, 150, 0);

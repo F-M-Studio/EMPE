@@ -52,6 +52,7 @@ class MainWindow : public QMainWindow {
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
+
     ~MainWindow() override;
 
     bool Reading;
@@ -64,8 +65,8 @@ public:
 
     QTextEdit *dataDisplay;
     QTextEdit *dataDisplay2;
-    QWidget* centralWidget;
-    QVBoxLayout* mainLayout;
+    QWidget *centralWidget;
+    QVBoxLayout *mainLayout;
 
     struct DataPoint {
         int distance;
@@ -77,8 +78,10 @@ public:
 
     // Metoda do zmiany języka w czasie rzeczywistym
     bool switchLanguage(const QString &language);
+
     // Methods for injecting fake data from DebugWindow
     void fakeData1(const QString &data);
+
     void fakeData2(const QString &data);
 
 protected:
@@ -86,6 +89,7 @@ protected:
 
 private slots:
     void showAboutUsDialog();
+
     void openStoppersWindow();
 
 private:
@@ -107,7 +111,7 @@ private:
     void processBuffer(QString &buffer, QTextEdit *display, void (MainWindow::*parseFunc)(const QString &));
 
     AppMenu *appMenu;
-    StoppersWindow* stoppersWindow;
+    StoppersWindow *stoppersWindow;
 
     QTimer *validationTimer{};
     bool deviceValidated = false;
@@ -169,7 +173,7 @@ private:
 
     void updateGlobalTimeDisplay(int timeMs);
 
-    friend class DebugWindow;  // Add this line to give DebugWindow access
+    friend class DebugWindow; // Add this line to give DebugWindow access
 };
 
 #endif

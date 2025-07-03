@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
         }
     } else {
         // Fallback to system locale
-        for (const QString &locale : QLocale::system().uiLanguages()) {
+        for (const QString &locale: QLocale::system().uiLanguages()) {
             QString baseName = "lidar_" + QLocale(locale).name().split('_').first();
             if (translator.load(":/translations/" + baseName)) {
                 a.installTranslator(&translator);

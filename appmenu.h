@@ -41,33 +41,39 @@ class AppMenu : public QObject {
     Q_OBJECT
 
 public:
-    explicit AppMenu(QMainWindow* window, MainWindow* mainWindow = nullptr);
+    explicit AppMenu(QMainWindow *window, MainWindow *mainWindow = nullptr);
+
     ~AppMenu() override = default;
 
-    [[nodiscard]] QMenu* getMainMenu() const { return mainMenu; }
+    [[nodiscard]] QMenu *getMainMenu() const { return mainMenu; }
+
     void updateStartStopAction(bool isReading) const;
 
 signals:
     void graphWindowRequested();
+
     void portSettingsRequested();
+
     void aboutUsRequested();
 
 private slots:
     void switchToEnglish();
+
     void switchToPolish();
+
     void promptRestart();
 
 private:
-    QMainWindow* window;
-    MainWindow* mainWindow;
-    QMenu* mainMenu{};
-    QActionGroup* languageGroup{};
+    QMainWindow *window;
+    MainWindow *mainWindow;
+    QMenu *mainMenu{};
+    QActionGroup *languageGroup{};
 
-    QAction* portSettingsAction{};
-    QAction* graphAction{};
-    QAction* startMeasurementAction{};
-    QAction* saveDataAction{};
-    QAction* aboutUsAction{};
-    QAction* englishAction{};
-    QAction* polishAction{};
+    QAction *portSettingsAction{};
+    QAction *graphAction{};
+    QAction *startMeasurementAction{};
+    QAction *saveDataAction{};
+    QAction *aboutUsAction{};
+    QAction *englishAction{};
+    QAction *polishAction{};
 };

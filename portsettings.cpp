@@ -264,7 +264,6 @@ void PortSettings::updatePortInfo() {
 
     QString info;
     for (const QSerialPortInfo &port: ports) {
-
         bool isBluetooth = port.description().contains("Bluetooth", Qt::CaseInsensitive) ||
                            port.manufacturer().contains("Bluetooth", Qt::CaseInsensitive) ||
                            port.portName().contains("BT", Qt::CaseInsensitive) ||

@@ -273,9 +273,11 @@
         </message>
         <message>
             <source>Cannot write file %1:
-                %2.</source>
+                %2.
+            </source>
             <translation>Nie można zapisać pliku %1:
-                %2.</translation>
+                %2.
+            </translation>
         </message>
         <message>
             <source>Success</source>
@@ -283,9 +285,11 @@
         </message>
         <message>
             <source>Drop logs saved to %1
-                Total events: %2</source>
+                Total events: %2
+            </source>
             <translation>Dzienniki spadków zapisane do %1
-                Całkowita liczba zdarzeń: %2</translation>
+                Całkowita liczba zdarzeń: %2
+            </translation>
         </message>
         <message>
             <source>[%1] Automatic start of stopwatch 1 after drop detection</source>
@@ -365,9 +369,11 @@
         </message>
         <message>
             <source>The file %1 already exists.
-                Do you want to replace it?</source>
+                Do you want to replace it?
+            </source>
             <translation>Plik %1 już istnieje.
-                Czy chcesz go zastąpić?</translation>
+                Czy chcesz go zastąpić?
+            </translation>
         </message>
         <message>
             <source>Distance,Time (mm:ss),Milliseconds,Raw Time (ms)
@@ -397,7 +403,8 @@
         </message>
         <message>
             <source>[%1] Drop detected (sensor %2): Previous distance: %3, Current: %4, Difference: %5</source>
-            <translation>[%1] Wykryto spadek (czujnik %2): Poprzednia odległość: %3, Obecna: %4, Różnica: %5</translation>
+            <translation>[%1] Wykryto spadek (czujnik %2): Poprzednia odległość: %3, Obecna: %4, Różnica: %5
+            </translation>
         </message>
     </context>
     <context>

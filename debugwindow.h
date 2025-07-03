@@ -48,24 +48,32 @@ class DebugWindow : public QMainWindow {
 
 public:
     explicit DebugWindow(MainWindow *mainWindow, QWidget *parent = nullptr);
+
     ~DebugWindow() override = default;
 
     void updateGlobalTime(int timeInMilliseconds);
+
     void updateRawData1(const QString &data);
+
     void updateRawData2(const QString &data);
 
 protected:
     void changeEvent(QEvent *event) override;
+
     void keyPressEvent(QKeyEvent *event) override;
+
     void resizeEvent(QResizeEvent *event) override;
 
 private slots:
     void updateDisplays();
+
     void handleFakeDataButton();
+
     void onFakeDataTimeout();
 
 private:
     void retranslateUi();
+
     void setupUI();
 
     MainWindow *mainWindow;

@@ -39,6 +39,7 @@ class AboutUsDialog : public QDialog {
 
 public:
     explicit AboutUsDialog(QWidget *parent = nullptr);
+
     ~AboutUsDialog() override = default;
 
     void retranslateUi();
