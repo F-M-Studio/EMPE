@@ -533,21 +533,21 @@ void MainWindow::createControls() {
     sensor2Layout->addWidget(timeLabel2);
     sensor2Layout->addWidget(timeInput2);
 
-    QGroupBox *timeBox = new QGroupBox(tr("Time"));
-    QVBoxLayout *timeLayout = new QVBoxLayout(timeBox);
+    // QGroupBox *timeBox = new QGroupBox(tr("Time"));
+    // QVBoxLayout *timeLayout = new QVBoxLayout(timeBox);
 
     globalTimeLabel = new QLabel("00:00.000");
     globalTimeLabel->setAlignment(Qt::AlignCenter);
-    globalTimeLabel->hide(); // Hide global time label
+    globalTimeLabel->hide();
     QFont timeFont = globalTimeLabel->font();
     timeFont.setPointSize(timeFont.pointSize() + 2);
     globalTimeLabel->setFont(timeFont);
 
-    timeLayout->addWidget(globalTimeLabel);
+    // timeLayout->addWidget(globalTimeLabel);
 
     controlsLayout->addWidget(sensor1Box, 0, 0);
     controlsLayout->addWidget(sensor2Box, 0, 1);
-    controlsLayout->addWidget(timeBox, 1, 0, 1, 2);
+    // controlsLayout->addWidget(timeBox, 1, 0, 1, 2);
 
     controlsLayout->addWidget(sensor1Box, 0, 0);
     controlsLayout->addWidget(sensor2Box, 0, 1);
