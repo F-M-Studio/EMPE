@@ -39,8 +39,7 @@ StoppersWindow::StoppersWindow(MainWindow* mainWindow, QWidget *parent)
     dropSensitivity(50) {
 
     setWindowTitle(tr("Drop Timers"));
-    setMinimumSize(500, 400);
-    resize(650, 500);
+    setMinimumSize(500, 200);
 
     auto* centralWidget = new QWidget(this);
     setCentralWidget(centralWidget);
@@ -101,7 +100,6 @@ void StoppersWindow::createStoperControls() {
     timeLabel->setAlignment(Qt::AlignCenter);
     QFont timeFont = timeLabel->font();
     timeFont.setPointSize(14);
-    timeLabel->setMaximumHeight(35);
 
     sensor1Layout->addWidget(enableStoper1CheckBox);
     sensor1Layout->addWidget(dropCounter1Label);
