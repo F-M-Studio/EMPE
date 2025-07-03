@@ -72,6 +72,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     appMenu = new AppMenu(this, this);
     createControls();
+    createMenu();
 
     QWidget* dataContainer = new QWidget(this);
     QVBoxLayout* dataLayout = new QVBoxLayout(dataContainer);
@@ -272,6 +273,28 @@ void MainWindow::createControls() {
     });
 }
 
+void MainWindow::createMenu() {
+    menuBar = new QMenuBar(this);
+    setMenuBar(menuBar);
+
+    mainMenu = new QMenu(tr("Menu"), this);
+    menuBar->addMenu(mainMenu);
+
+    portSettingsAction = mainMenu->addAction(tr("Port Settings"), this, [this]() {
+        portSettings->exec();
+    });
+
+    graphAction = mainMenu->addAction(tr("Graph"), this, [this]() {
+        GraphWindow *graphWindow = new GraphWindow(this);
+        graphWindow->show();
+    });
+
+    startMeasurementAction = mainMenu->addAction(tr("Start"), this, &MainWindow::handleStartStopButton);
+    saveDataAction = mainMenu->addAction(tr("Save Data"), this, [this]() {
+        saveDataToFile(dataDisplay, "YY(\\d+)T(\\d+)E");
+    });
+}
+
 void MainWindow::openStoppersWindow() {
     if (!stoppersWindow) {
         stoppersWindow = new StoppersWindow(this);
@@ -419,24 +442,185 @@ void MainWindow::fakeData1(const QString &data) {
 void MainWindow::fakeData2(const QString &data) {
     parseData2(data);
 }
-
 void MainWindow::startReading() {
-    if (!serialPort) {
-        serialPort = new QSerialPort(this);
-    }
-    if (!serialPort2) {
-        serialPort2 = new QSerialPort(this);
+    dataBuffer1.clear();
+
+    dataBuffer2.clear();
+
+
+
+    QString portName1 = portSettings->getPortName1();
+
+    int baudRate1 = portSettings->getBaudRate1();
+
+    int dataBits1 = portSettings->getDataBits1();
+
+    int stopBits1 = portSettings->getStopBits1();
+
+    int parity1 = portSettings->getParity1();
+
+    int flowControl1 = portSettings->getFlowControl1();
+
+
+
+    qDebug() << "Attempting to open port 1:" << portName1
+
+            << "with settings:"
+
+            << "BaudRate:" << baudRate1
+
+            << "DataBits:" << dataBits1
+
+            << "StopBits:" << stopBits1
+
+            << "Parity:" << parity1
+
+            << "FlowControl:" << flowControl1;
+
+
+
+    serialPort = new QSerialPort(this);
+
+    serialPort->setPortName(portName1);
+
+    serialPort->setBaudRate(baudRate1);
+
+    serialPort->setDataBits(static_cast<QSerialPort::DataBits>(dataBits1));
+
+    serialPort->setStopBits(static_cast<QSerialPort::StopBits>(stopBits1));
+
+    serialPort->setParity(static_cast<QSerialPort::Parity>(parity1));
+
+    serialPort->setFlowControl(static_cast<QSerialPort::FlowControl>(flowControl1));
+
+
+
+    if (!serialPort->open(QIODevice::ReadOnly)) {
+
+        qDebug() << "Failed to open port" << portName1 << "Error:" << serialPort->errorString();
+
+        QMessageBox::warning(this, tr("Error"),
+
+                             tr("Failed to open port %1: %2").arg(portName1, serialPort->errorString()));
+
+        delete serialPort;
+
+        serialPort = nullptr;
+
+        return;
+
     }
 
-    if (!serialPort->open(QIODevice::ReadOnly) || !serialPort2->open(QIODevice::ReadOnly)) {
-        QMessageBox::warning(this, tr("Error"), tr("Cannot open ports.\nPlease check port settings."));
+
+
+    QString portName2 = portSettings->getPortName2();
+
+    int baudRate2 = portSettings->getBaudRate2();
+
+    int dataBits2 = portSettings->getDataBits2();
+
+    int stopBits2 = portSettings->getStopBits2();
+
+    int parity2 = portSettings->getParity2();
+
+    int flowControl2 = portSettings->getFlowControl2();
+
+
+
+    qDebug() << "Attempting to open port 2:" << portName2
+
+            << "with settings:"
+
+            << "BaudRate:" << baudRate2
+
+            << "DataBits:" << dataBits2
+
+            << "StopBits:" << stopBits2
+
+            << "Parity:" << parity2
+
+            << "FlowControl:" << flowControl2;
+
+
+
+    serialPort2 = new QSerialPort(this);
+
+    serialPort2->setPortName(portName2);
+
+    serialPort2->setBaudRate(baudRate2);
+
+    serialPort2->setDataBits(static_cast<QSerialPort::DataBits>(dataBits2));
+
+    serialPort2->setStopBits(static_cast<QSerialPort::StopBits>(stopBits2));
+
+    serialPort2->setParity(static_cast<QSerialPort::Parity>(parity2));
+
+    serialPort2->setFlowControl(static_cast<QSerialPort::FlowControl>(flowControl2));
+
+
+
+    if (!serialPort2->open(QIODevice::ReadOnly)) {
+
+        qDebug() << "Failed to open port" << portName2 << "Error:" << serialPort2->errorString();
+
+        QMessageBox::warning(this, tr("Error"),
+
+                             tr("Failed to open port %1: %2").arg(portName2, serialPort2->errorString()));
+
+
+
+        if (serialPort && serialPort->isOpen()) {
+
+            serialPort->close();
+
+            delete serialPort;
+
+            serialPort = nullptr;
+
+        }
+
+
+
+        delete serialPort2;
+
+        serialPort2 = nullptr;
+
         return;
+
     }
+
+
+
+    qDebug() << "Started reading from both ports";
 
     Reading = true;
-    if (appMenu) {
-        appMenu->updateStartStopAction(true);
-    }
+
+
+
+    QTimer::singleShot(50, this, [this]() {
+
+        connect(serialPort, &QSerialPort::readyRead, this, [this]() {
+
+            QByteArray data = serialPort->readAll();
+
+            dataBuffer1.append(QString::fromUtf8(data));
+
+            processBuffer(dataBuffer1, dataDisplay, &MainWindow::parseData);
+
+        });
+
+        connect(serialPort2, &QSerialPort::readyRead, this, [this]() {
+
+            QByteArray data = serialPort2->readAll();
+
+            dataBuffer2.append(QString::fromUtf8(data));
+
+            processBuffer(dataBuffer2, dataDisplay2, &MainWindow::parseData2);
+
+        });
+
+    });
+
 }
 
 void MainWindow::stopReading() {
@@ -509,23 +693,87 @@ void MainWindow::parseData2(const QString &data) {
     }
 }
 
-bool MainWindow::switchLanguage(const QString &language) {
-    static QTranslator *currentTranslator = nullptr;
 
-    if (currentTranslator) {
-        qApp->removeTranslator(currentTranslator);
-        delete currentTranslator;
+void MainWindow::processBuffer(QString &buffer, QTextEdit *display, void (MainWindow::*parseFunc)(const QString &)) {
+    static QRegularExpression completePattern("YY\\d+T\\d+E");
+    QString processedData;
+    int lastMatchEnd = 0;
+
+    QRegularExpressionMatchIterator matches = completePattern.globalMatch(buffer);
+
+    while (matches.hasNext()) {
+        QRegularExpressionMatch match = matches.next();
+        QString completeMatch = match.captured(0);
+        processedData += completeMatch + "\n";
+        lastMatchEnd = match.capturedEnd();
     }
 
-    currentTranslator = new QTranslator(this);
-    QString filePath = QString(":/translations/lidar_%1.qm").arg(language);
-
-    if (currentTranslator->load(filePath)) {
-        qApp->installTranslator(currentTranslator);
-        retranslateUi();
-        return true;
+    if (!processedData.isEmpty()) {
+        display->append(processedData);
+        (this->*parseFunc)(processedData);
+        buffer = buffer.mid(lastMatchEnd);
     }
-
-    return false;
 }
 
+
+
+void MainWindow::updateGlobalTimeDisplay(int timeMs) {
+    int minutes = timeMs / 60000;
+    int seconds = (timeMs % 60000) / 1000;
+    int milliseconds = timeMs % 1000;
+
+    QString formattedTime = QString("%1:%2.%3")
+        .arg(minutes, 2, 10, QChar('0'))
+        .arg(seconds, 2, 10, QChar('0'))
+        .arg(milliseconds, 3, 10, QChar('0'));
+
+    if (globalTimeLabel) {
+        globalTimeLabel->setText(formattedTime);
+    }
+}
+
+bool MainWindow::switchLanguage(const QString &language) {
+    // Tworzenie nowego translatora
+    static QTranslator *newTranslator = nullptr;
+
+    // Usuwamy poprzedni translator jeśli istnieje
+    if (newTranslator) {
+        qApp->removeTranslator(newTranslator);
+        delete newTranslator;
+        newTranslator = nullptr;
+    }
+
+    // Tworzymy nowy translator
+    newTranslator = new QTranslator(this);
+
+    // Próba załadowania pliku translacji
+    bool success = newTranslator->load(":/translations/lidar_" + language);
+
+    if (success) {
+        // Zapisz wybór w ustawieniach
+        QSettings settings("EMPE", "LidarApp");
+        settings.setValue("language", language);
+
+        // Instalacja nowego translatora
+        qApp->installTranslator(newTranslator);
+
+        // Aktualizacja interfejsu
+        QEvent *event = new QEvent(QEvent::LanguageChange);
+        QCoreApplication::sendEvent(qApp, event);
+
+        // Dodatkowe wywołania metod przetłumaczenia interfejsu
+        this->retranslateUi();
+
+        // Aktualizacja interfejsu wszystkich otwartych okien
+        foreach(QWidget *widget, QApplication::allWidgets()) {
+            QEvent languageEvent(QEvent::LanguageChange);
+            QApplication::sendEvent(widget, &languageEvent);
+        }
+
+        return true;
+    } else {
+        delete newTranslator;
+        newTranslator = nullptr;
+        return false;
+    }
+}

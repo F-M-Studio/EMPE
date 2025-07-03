@@ -29,26 +29,30 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QMenu>
-#include <QAction>
-#include <QSerialPort>
-#include <QtWidgets>
-#include <QDateTime>
-
-#include "portsettings.h"
+#include <QMainWindow>
+#include <QPushButton>
+#include <QLineEdit>
+#include <QLabel>
+#include <QCheckBox>
+#include <QTextEdit>
+#include <QVBoxLayout>
+#include <QTranslator>
+#include <QSlider>
 
 class PortSettings;
 class AppMenu;
 class MovingAverageFilterParallel;
 class StoppersWindow;
+class QSerialPort;
+class QMenu;
+class QTimer;
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
-
-    ~MainWindow();
+    explicit MainWindow(QWidget *parent = nullptr);
+    ~MainWindow() override;
 
     bool Reading;
     int distance, timeInMilliseconds, minutes, seconds, milliseconds;
@@ -159,6 +163,11 @@ private:
     QLabel *timeLabel2{};
     QLabel *globalTimeLabel{};
     QCheckBox *alwaysOnTopCheckbox{};
+
+    QString dataBuffer1;
+    QString dataBuffer2;
+
+    void updateGlobalTimeDisplay(int timeMs);
 
     friend class DebugWindow;  // Add this line to give DebugWindow access
 };
