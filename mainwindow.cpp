@@ -62,8 +62,6 @@ MainWindow::MainWindow(QWidget *parent)
     centralWidget = new QWidget(this);
     setCentralWidget(centralWidget);
     setWindowTitle(tr("EMPE"));
-
-
     mainLayout = new QVBoxLayout(centralWidget);
     mainLayout->setContentsMargins(10, 10, 10, 10);
     mainLayout->setSpacing(5);
@@ -90,8 +88,6 @@ MainWindow::MainWindow(QWidget *parent)
     dataDisplay2->hide();
     dataDisplay2->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     dataLayout->addWidget(dataDisplay2);
-
-
     dataContainer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     mainLayout->addWidget(dataContainer, 1);
 
@@ -115,6 +111,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     bottomLayout->addWidget(imageLabel);
     mainLayout->addLayout(bottomLayout);
+    updateUIForComMode(PortConfig::useOneCOM());
 
     QFrame *separator = new QFrame(this);
     separator->setFrameShape(QFrame::HLine);
@@ -145,7 +142,6 @@ void MainWindow::createComModeSelector() {
 
     oneComRadio = new QRadioButton(tr("Single COM"), comModeBox);
     twoComRadio = new QRadioButton(tr("Dual COM"), comModeBox);
-
     comModeGroup = new QButtonGroup(this);
     comModeGroup->addButton(oneComRadio, 1);
     comModeGroup->addButton(twoComRadio, 2);
