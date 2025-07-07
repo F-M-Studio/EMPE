@@ -199,12 +199,12 @@ void MainWindow::updateUIForComMode(bool useOneCom) {
 void MainWindow::createControls() {
     QHBoxLayout *buttonLayout = new QHBoxLayout();
 
-    portSettingsBtn = new QPushButton(tr("PORT settings"));
-    showGraphBtn = new QPushButton(tr("Show GRAPH"));
-    startStopBtn = new QPushButton(tr("START"));
-    saveDataBtn = new QPushButton(tr("SAVE data 1"));
-    saveData2Btn = new QPushButton(tr("SAVE data 2"));
-    clearGraphBtn = new QPushButton(tr("Clear GRAPH"));
+    portSettingsBtn = new QPushButton(tr("Port settings"));
+    showGraphBtn = new QPushButton(tr("Show Graph"));
+    startStopBtn = new QPushButton(tr("Start"));
+    saveDataBtn = new QPushButton(tr("Save data 1"));
+    saveData2Btn = new QPushButton(tr("Save data 2"));
+    clearGraphBtn = new QPushButton(tr("Clear Graph"));
     showRawDataBtn = new QPushButton(tr("Show raw data"));
     showRawDataBtn->hide();
     stoppersButton = new QPushButton(tr("Stoppers"));
