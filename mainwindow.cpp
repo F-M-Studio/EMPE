@@ -426,6 +426,11 @@ void MainWindow::handleStartStopButton() {
 void MainWindow::retranslateUi() {
     setWindowTitle(tr("EMPE"));
 
+    // Update COM mode selector texts
+    if (comModeBox) comModeBox->setTitle(tr("COM Mode"));
+    if (oneComRadio) oneComRadio->setText(tr("Single COM"));
+    if (twoComRadio) twoComRadio->setText(tr("Dual COM"));
+
     // Update button texts
     portSettingsBtn->setText(tr("Port settings"));
     showGraphBtn->setText(tr("Show Graph"));
