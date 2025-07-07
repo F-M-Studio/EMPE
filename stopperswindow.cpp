@@ -12,6 +12,7 @@
 #include <QDebug>
 #include <QLineEdit>
 #include <QFrame>
+#include <QEvent>
 
 StoppersWindow::StoppersWindow(MainWindow *mainWindow, QWidget *parent)
     : QMainWindow(parent), mainWindow(mainWindow),
@@ -333,4 +334,24 @@ void StoppersWindow::checkForDrop2(int currentDistance) {
     }
 
     previousDistance2 = currentDistance;
+}
+
+void StoppersWindow::changeEvent(QEvent *event) {
+    if (event->type() == QEvent::LanguageChange) {
+        // Przetłumacz wszystkie etykiety dynamiczne
+        setWindowTitle(tr("Drop Timers"));
+        if (sensitivityLabel) sensitivityLabel->setText(tr("Sensitivity: %1 mm").arg(sensitivitySlider ? sensitivitySlider->value() : 50));
+        if (sensitivitySlider && sensitivitySlider->parentWidget()) sensitivitySlider->parentWidget()->setWindowTitle(tr("Drop Sensitivity"));
+        if (enableStoper1CheckBox) enableStoper1CheckBox->setText(tr("Enable Sensor 1"));
+        if (enableStoper2CheckBox) enableStoper2CheckBox->setText(tr("Enable Sensor 2"));
+        if (dropCounter1Label) dropCounter1Label->setText(tr("Drops: %1").arg(dropCount1));
+        if (dropCounter2Label) dropCounter2Label->setText(tr("Drops: %1").arg(dropCount2));
+        if (sensor2GroupBox) sensor2GroupBox->setTitle(tr("Sensor 2"));
+        // Sensor 1 groupbox
+        QList<QGroupBox*> groupBoxes = this->findChildren<QGroupBox*>();
+        for (QGroupBox* box : groupBoxes) {
+            if (box->title().contains("Sensor 1")) box->setTitle(tr("Sensor 1"));
+        }
+    }
+    QMainWindow::changeEvent(event);
 }

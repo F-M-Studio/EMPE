@@ -615,5 +615,95 @@
             <source>Drop counters and stopers have been reset.</source>
             <translation>Drop counters and stopwatches have been reset.</translation>
         </message>
+        <message>
+            <source>Drop event log</source>
+            <translation>Drop event log</translation>
+        </message>
+        <message>
+            <source>Save log</source>
+            <translation>Save log</translation>
+        </message>
+        <message>
+            <source>Clear log</source>
+            <translation>Clear log</translation>
+        </message>
+        <message>
+            <source>Drop detected on sensor 1</source>
+            <translation>Drop detected on sensor 1</translation>
+        </message>
+        <message>
+            <source>Drop detected on sensor 2</source>
+            <translation>Drop detected on sensor 2</translation>
+        </message>
+        <message>
+            <source>Drop log saved to %1</source>
+            <translation>Drop log saved to %1</translation>
+        </message>
+        <message>
+            <source>No drop events to save.</source>
+            <translation>No drop events to save.</translation>
+        </message>
+        <message>
+            <source>Are you sure you want to clear the log?</source>
+            <translation>Are you sure you want to clear the log?</translation>
+        </message>
+        <message>
+            <source>Yes</source>
+            <translation>Yes</translation>
+        </message>
+        <message>
+            <source>No</source>
+            <translation>No</translation>
+        </message>
+        <message>
+            <source>Drop event</source>
+            <translation>Drop event</translation>
+        </message>
+        <message>
+            <source>Time</source>
+            <translation>Time</translation>
+        </message>
+        <message>
+            <source>Sensor</source>
+            <translation>Sensor</translation>
+        </message>
+        <message>
+            <source>Previous distance</source>
+            <translation>Previous distance</translation>
+        </message>
+        <message>
+            <source>Current distance</source>
+            <translation>Current distance</translation>
+        </message>
+        <message>
+            <source>Difference</source>
+            <translation>Difference</translation>
+        </message>
+        <message>
+            <source>Export CSV</source>
+            <translation>Export CSV</translation>
+        </message>
+        <message>
+            <source>CSV Files (*.csv)</source>
+            <translation>CSV Files (*.csv)</translation>
+        </message>
+        <message>
+            <source>Error</source>
+            <translation>Error</translation>
+        </message>
+        <message>
+            <source>Cannot write file %1:
+%2.</source>
+            <translation>Cannot write file %1:
+%2.</translation>
+        </message>
+        <message>
+            <source>Success</source>
+            <translation>Success</translation>
+        </message>
+        <message>
+            <source>Drop log has been saved to %1</source>
+            <translation>Drop log has been saved to %1</translation>
+        </message>
     </context>
 </TS>

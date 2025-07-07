@@ -620,5 +620,119 @@
             <source>Drop counters and stopers have been reset.</source>
             <translation>Liczniki spadków i stopery zostały zresetowane.</translation>
         </message>
+        <message>
+            <source>Drop event log</source>
+            <translation>Dziennik zdarzeń spadku</translation>
+        </message>
+        <message>
+            <source>Save log</source>
+            <translation>Zapisz dziennik</translation>
+        </message>
+        <message>
+            <source>Clear log</source>
+            <translation>Wyczyść dziennik</translation>
+        </message>
+        <message>
+            <source>Drop detected on sensor 1</source>
+            <translation>Wykryto spadek na czujniku 1</translation>
+        </message>
+        <message>
+            <source>Drop detected on sensor 2</source>
+            <translation>Wykryto spadek na czujniku 2</translation>
+        </message>
+        <message>
+            <source>Drop log saved to %1</source>
+            <translation>Dziennik spadków zapisany do %1</translation>
+        </message>
+        <message>
+            <source>No drop events to save.</source>
+            <translation>Brak zdarzeń spadku do zapisania.</translation>
+        </message>
+        <message>
+            <source>Are you sure you want to clear the log?</source>
+            <translation>Czy na pewno chcesz wyczyścić dziennik?</translation>
+        </message>
+        <message>
+            <source>Yes</source>
+            <translation>Tak</translation>
+        </message>
+        <message>
+            <source>No</source>
+            <translation>Nie</translation>
+        </message>
+        <message>
+            <source>Drop event</source>
+            <translation>Zdarzenie spadku</translation>
+        </message>
+        <message>
+            <source>Time</source>
+            <translation>Czas</translation>
+        </message>
+        <message>
+            <source>Sensor</source>
+            <translation>Czujnik</translation>
+        </message>
+        <message>
+            <source>Previous distance</source>
+            <translation>Poprzednia odległość</translation>
+        </message>
+        <message>
+            <source>Current distance</source>
+            <translation>Obecna odległość</translation>
+        </message>
+        <message>
+            <source>Difference</source>
+            <translation>Różnica</translation>
+        </message>
+        <message>
+            <source>Export CSV</source>
+            <translation>Eksportuj CSV</translation>
+        </message>
+        <message>
+            <source>CSV Files (*.csv)</source>
+            <translation>Pliki CSV (*.csv)</translation>
+        </message>
+        <message>
+            <source>Error</source>
+            <translation>Błąd</translation>
+        </message>
+        <message>
+            <source>Cannot write file %1:
+%2.</source>
+            <translation>Nie można zapisać pliku %1:
+%2.</translation>
+        </message>
+        <message>
+            <source>Success</source>
+            <translation>Sukces</translation>
+        </message>
+        <message>
+            <source>Drop log has been saved to %1</source>
+            <translation>Dziennik spadków został zapisany do %1</translation>
+        </message>
+        <message>
+            <source>Drop Sensitivity</source>
+            <translation>Czułość spadku</translation>
+        </message>
+        <message>
+            <source>Sensitivity: %1 mm</source>
+            <translation>Czułość: %1 mm</translation>
+        </message>
+        <message>
+            <source>Enable Sensor 1</source>
+            <translation>Włącz czujnik 1</translation>
+        </message>
+        <message>
+            <source>Enable Sensor 2</source>
+            <translation>Włącz czujnik 2</translation>
+        </message>
+        <message>
+            <source>Sensor 1</source>
+            <translation>Czujnik 1</translation>
+        </message>
+        <message>
+            <source>Sensor 2</source>
+            <translation>Czujnik 2</translation>
+        </message>
     </context>
 </TS>
