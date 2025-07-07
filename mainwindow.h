@@ -49,6 +49,8 @@ class StoppersWindow;
 class QSerialPort;
 class QMenu;
 class QTimer;
+class DebugWindow;
+class GraphWindow;
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -89,6 +91,7 @@ public:
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;
+    void closeEvent(QCloseEvent *event) override;
 
 private slots:
     void showAboutUsDialog();
@@ -99,8 +102,10 @@ private slots:
     void onComModeChanged(int id);
 
 private:
+    DebugWindow *debugWindow = nullptr;
+    GraphWindow *graphWindow = nullptr;
     void openDebugWindow();
-
+    void openGraphWindow();
     void createMenu();
 
     void createControls();

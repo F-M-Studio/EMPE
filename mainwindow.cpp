@@ -92,11 +92,11 @@ MainWindow::MainWindow(QWidget *parent)
     mainLayout->addWidget(dataContainer, 1);
 
     connect(appMenu, &AppMenu::graphWindowRequested, this, [this]() {
-        GraphWindow *graphWindow = new GraphWindow(this);
-        graphWindow->show();
+        openGraphWindow();
     });
     connect(appMenu, &AppMenu::portSettingsRequested, this, [this]() {
         PortSettings *portSettings = new PortSettings(this);
+        portSettings->setAttribute(Qt::WA_DeleteOnClose);
         portSettings->show();
     });
     connect(appMenu, &AppMenu::aboutUsRequested, this, &MainWindow::showAboutUsDialog);
@@ -227,8 +227,7 @@ void MainWindow::createControls() {
     });
 
     connect(showGraphBtn, &QPushButton::clicked, this, [this]() {
-        GraphWindow *graphWindow = new GraphWindow(this);
-        graphWindow->show();
+        openGraphWindow();
     });
 
     connect(startStopBtn, &QPushButton::clicked, this, &MainWindow::handleStartStopButton);
@@ -464,10 +463,25 @@ void MainWindow::showAboutUsDialog() {
 }
 
 void MainWindow::openDebugWindow() {
-    DebugWindow *debugWindow = new DebugWindow(this);
+    if (!debugWindow) {
+        debugWindow = new DebugWindow(this);
+        debugWindow->setAttribute(Qt::WA_DeleteOnClose);
+        connect(debugWindow, &QObject::destroyed, this, [this]() { debugWindow = nullptr; });
+    }
     debugWindow->show();
+    debugWindow->raise();
+    debugWindow->activateWindow();
 }
-
+void MainWindow::openGraphWindow() {
+    if (!graphWindow) {
+        graphWindow = new GraphWindow(this);
+        graphWindow->setAttribute(Qt::WA_DeleteOnClose);
+        connect(graphWindow, &QObject::destroyed, this, [this]() { graphWindow = nullptr; });
+    }
+    graphWindow->show();
+    graphWindow->raise();
+    graphWindow->activateWindow();
+}
 // Methods to accept fake data from DebugWindow
 void MainWindow::fakeData1(const QString &data) {
     // process single fake data string
@@ -579,9 +593,14 @@ void MainWindow::stopReading() {
     if (serialPort1 && serialPort1->isOpen()) {
         serialPort1->close();
     }
+    delete serialPort1;
+    serialPort1 = nullptr;
+
     if (serialPort2 && serialPort2->isOpen()) {
         serialPort2->close();
     }
+    delete serialPort2;
+    serialPort2 = nullptr;
 
     Reading = false;
     if (appMenu) {
@@ -682,7 +701,25 @@ void MainWindow::updateGlobalTimeDisplay(int timeMs) {
         globalTimeLabel->setText(formattedTime);
     }
 }
+void MainWindow::closeEvent(QCloseEvent *event) {
+    // Zatrzymanie odczytu przed zamknięciem
+    if (isReading) {
+        stopReading();
+        startStopBtn->setText(tr("Start"));
+        isReading = false;
+    }
+    if (debugWindow) debugWindow->close();
+    if (stoppersWindow) {
+        stoppersWindow->close();
+        stoppersWindow = nullptr;
+    }
+    if (graphWindow) {
+        graphWindow->close();
+        graphWindow = nullptr;
+    }
 
+    QMainWindow::closeEvent(event);
+}
 bool MainWindow::switchLanguage(const QString &language) {
     // Tworzenie nowego translatora
     static QTranslator *newTranslator = nullptr;
