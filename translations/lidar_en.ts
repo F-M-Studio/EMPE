@@ -188,6 +188,18 @@
             <translation>EMPE</translation>
         </message>
         <message>
+            <source>COM Mode</source>
+            <translation>COM Mode</translation>
+        </message>
+        <message>
+            <source>Single COM</source>
+            <translation>Single COM</translation>
+        </message>
+        <message>
+            <source>Dual COM</source>
+            <translation>Dual COM</translation>
+        </message>
+        <message>
             <source>Embodying Math&amp;Physics Education project 2023-1-PL01-KA210-SCH-000165829</source>
             <translation>Embodying Math&amp;Physics Education project 2023-1-PL01-KA210-SCH-000165829</translation>
         </message>
