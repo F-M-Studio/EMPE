@@ -194,6 +194,8 @@ void MainWindow::updateUIForComMode(bool useOneCom) {
     if (portSettings) {
         portSettings->setPort2Visible(!useOneCom);
     }
+
+
 }
 
 void MainWindow::createControls() {

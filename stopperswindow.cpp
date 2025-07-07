@@ -1,5 +1,6 @@
 #include "stopperswindow.h"
 #include "mainwindow.h"
+#include "portconfig.h"
 #include <QWidget>
 #include <QVBoxLayout>
 #include <QGroupBox>
@@ -136,8 +137,12 @@ void StoppersWindow::createStoperControls() {
     connect(sensitivitySlider, &QSlider::valueChanged, this, &StoppersWindow::onSensitivityChanged);
     connect(enableStoper1CheckBox, &QCheckBox::toggled, this, [this](bool checked) { stoper1Enabled = checked; });
     connect(enableStoper2CheckBox, &QCheckBox::toggled, this, [this](bool checked) { stoper2Enabled = checked; });
-}
 
+}
+void StoppersWindow::showEvent(QShowEvent *event) {
+    QMainWindow::showEvent(event);
+    updateUIForComMode(PortConfig::useOneCOM());
+}
 void StoppersWindow::onSensitivityChanged(int value) {
     dropSensitivity = value;
     sensitivityLabel->setText(tr("Sensitivity: %1 mm").arg(value));
@@ -249,6 +254,26 @@ void StoppersWindow::logDropEvent(int sensorId, int previousDistance, int curren
 void StoppersWindow::updateUIForComMode(bool useOneCom) {
     if (sensor2GroupBox) {
         sensor2GroupBox->setVisible(!useOneCom);
+
+        // Reset counters and timers for sensor 2 when switching to one COM
+        if (useOneCom) {
+            dropCount2 = 0;
+            stoper2Time = 0;
+            stopStoper2();
+            previousDistance2 = 0;
+            lastDropTime2 = QDateTime();
+            if (timeLabel2) {
+                timeLabel2->setText("00:00:00.00");
+            }
+            if (dropCounter2Label) {
+                dropCounter2Label->setText(tr("Drops: 0"));
+            }
+            if (enableStoper2CheckBox) {
+                enableStoper2CheckBox->setChecked(true);
+            }
+        }
+
+        updateStoperDisplay();
     }
 }
 

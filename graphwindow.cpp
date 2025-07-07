@@ -30,6 +30,7 @@
 #include "./ui_graphwindow.h"
 #include "mainwindow.h"
 #include "appmenu.h"
+#include "portconfig.h"
 #include <QtCharts>
 #include <QLineSeries>
 #include <QChartView>
@@ -390,7 +391,11 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     showSeries2Toggle = new QCheckBox(tr("Show Series 2"));
     showSeries2Toggle->setChecked(true);
 
-
+    if (PortConfig::useOneCOM()) {
+        showSeries2Toggle->hide();
+    } else {
+        showSeries2Toggle->show();
+    }
     timeAxisLayout->addStretch();
     timeAxisLayout->addWidget(showSeries1Toggle);
     timeAxisLayout->addWidget(showSeries2Toggle);

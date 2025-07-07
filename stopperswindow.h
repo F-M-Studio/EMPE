@@ -18,7 +18,8 @@ class MainWindow;
 
 class StoppersWindow : public QMainWindow {
     Q_OBJECT
-
+protected:
+    void showEvent(QShowEvent *event) override;
 public:
     explicit StoppersWindow(MainWindow *mainWindow, QWidget *parent = nullptr);
 
