@@ -95,9 +95,7 @@ MainWindow::MainWindow(QWidget *parent)
         openGraphWindow();
     });
     connect(appMenu, &AppMenu::portSettingsRequested, this, [this]() {
-        PortSettings *portSettings = new PortSettings(this);
-        portSettings->setAttribute(Qt::WA_DeleteOnClose);
-        portSettings->show();
+        portSettings->exec();
     });
     connect(appMenu, &AppMenu::aboutUsRequested, this, &MainWindow::showAboutUsDialog);
 
