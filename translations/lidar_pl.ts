@@ -333,23 +333,23 @@
             <translation>Stop</translation>
         </message>
         <message>
-            <source>PORT settings</source>
+            <source>Port settings</source>
             <translation>Ustawienia portu</translation>
         </message>
         <message>
-            <source>Show GRAPH</source>
+            <source>Show Graph</source>
             <translation>Pokaż wykres</translation>
         </message>
         <message>
-            <source>SAVE data 1</source>
+            <source>Save data 1</source>
             <translation>Zapisz dane 1</translation>
         </message>
         <message>
-            <source>SAVE data 2</source>
+            <source>Save data 2</source>
             <translation>Zapisz dane 2</translation>
         </message>
         <message>
-            <source>Clear GRAPH</source>
+            <source>Clear Graph</source>
             <translation>Wyczyść wykres</translation>
         </message>
         <message>
