@@ -365,8 +365,8 @@
             <translation>Odległość:</translation>
         </message>
         <message>
-            <source>Time</source>
-            <translation>Czas</translation>
+            <source>Time:</source>
+            <translation>Czas:</translation>
         </message>
         <message>
             <source>Always on Top</source>

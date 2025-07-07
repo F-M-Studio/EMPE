@@ -137,8 +137,8 @@
             <translation>Time (min:ms)</translation>
         </message>
         <message>
-            <source>Distance</source>
-            <translation>Distance</translation>
+            <source>Distance:</source>
+            <translation>Distance:</translation>
         </message>
         <message>
             <source>Recording period [ms]:</source>
@@ -332,24 +332,24 @@
             <translation>Stop</translation>
         </message>
         <message>
-            <source>PORT settings</source>
-            <translation>PORT settings</translation>
+            <source>Port settings</source>
+            <translation>Port settings</translation>
         </message>
         <message>
-            <source>Show GRAPH</source>
-            <translation>Show GRAPH</translation>
+            <source>Show Graph</source>
+            <translation>Show Graph</translation>
         </message>
         <message>
-            <source>SAVE data 1</source>
-            <translation>SAVE data 1</translation>
+            <source>Save data 1</source>
+            <translation>Save data 1</translation>
         </message>
         <message>
-            <source>SAVE data 2</source>
-            <translation>SAVE data 2</translation>
+            <source>Save data 2</source>
+            <translation>Save data 2</translation>
         </message>
         <message>
-            <source>Clear GRAPH</source>
-            <translation>Clear GRAPH</translation>
+            <source>Clear Graph</source>
+            <translation>Clear Graph</translation>
         </message>
         <message>
             <source>Show raw data</source>
@@ -364,8 +364,8 @@
             <translation>Distance:</translation>
         </message>
         <message>
-            <source>Time</source>
-            <translation>Time</translation>
+            <source>Time:</source>
+            <translation>Time:</translation>
         </message>
         <message>
             <source>Always on Top</source>
@@ -444,6 +444,125 @@
         <message>
             <source>Sensor 2 Data Stream</source>
             <translation>Sensor 2 Data Stream</translation>
+        </message>
+    </context>
+    <context>
+        <name>PortSettings</name>
+        <message>
+            <source>Setup</source>
+            <translation>Setup</translation>
+        </message>
+        <message>
+            <source>Refresh</source>
+            <translation>Refresh</translation>
+        </message>
+        <message>
+            <source>OK</source>
+            <translation>OK</translation>
+        </message>
+        <message>
+            <source>Cancel</source>
+            <translation>Cancel</translation>
+        </message>
+        <message>
+            <source>Port 1</source>
+            <translation>Port 1</translation>
+        </message>
+        <message>
+            <source>Port 2</source>
+            <translation>Port 2</translation>
+        </message>
+        <message>
+            <source>Settings</source>
+            <translation>Settings</translation>
+        </message>
+        <message>
+            <source>Port</source>
+            <translation>Port</translation>
+        </message>
+        <message>
+            <source>Baud rate</source>
+            <translation>Baud rate</translation>
+        </message>
+        <message>
+            <source>Data bits</source>
+            <translation>Data bits</translation>
+        </message>
+        <message>
+            <source>Stop bits</source>
+            <translation>Stop bits</translation>
+        </message>
+        <message>
+            <source>Parity</source>
+            <translation>Parity</translation>
+        </message>
+        <message>
+            <source>Flow control</source>
+            <translation>Flow control</translation>
+        </message>
+        <message>
+            <source>None</source>
+            <translation>None</translation>
+        </message>
+        <message>
+            <source>Even</source>
+            <translation>Even</translation>
+        </message>
+        <message>
+            <source>Odd</source>
+            <translation>Odd</translation>
+        </message>
+        <message>
+            <source>Mark</source>
+            <translation>Mark</translation>
+        </message>
+        <message>
+            <source>Space</source>
+            <translation>Space</translation>
+        </message>
+        <message>
+            <source>Software</source>
+            <translation>Software</translation>
+        </message>
+        <message>
+            <source>Hardware</source>
+            <translation>Hardware</translation>
+        </message>
+        <message>
+            <source>Connected Serial Ports Information:</source>
+            <translation>Connected Serial Ports Information:</translation>
+        </message>
+        <message>
+            <source>No serial ports detected</source>
+            <translation>No serial ports detected</translation>
+        </message>
+        <message>
+            <source>N/A</source>
+            <translation>N/A</translation>
+        </message>
+        <message>
+            <source>Port:</source>
+            <translation>Port:</translation>
+        </message>
+        <message>
+            <source>Description:</source>
+            <translation>Description:</translation>
+        </message>
+        <message>
+            <source>Manufacturer:</source>
+            <translation>Manufacturer:</translation>
+        </message>
+        <message>
+            <source>Serial Number:</source>
+            <translation>Serial Number:</translation>
+        </message>
+        <message>
+            <source>Location:</source>
+            <translation>Location:</translation>
+        </message>
+        <message>
+            <source>Bluetooth Device</source>
+            <translation>Bluetooth Device</translation>
         </message>
     </context>
     <context>
