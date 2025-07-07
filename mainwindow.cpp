@@ -116,7 +116,7 @@ MainWindow::MainWindow(QWidget *parent)
     separator->setFrameShadow(QFrame::Sunken);
     mainLayout->addWidget(separator);
 
-    creatorsNoteLabel = new QLabel(tr("Embodying Math&Physics Education project 2023-1-PL01-KA210-SCH-000165829"),
+    creatorsNoteLabel = new QLabel(tr("Embodying Math&Physics Education 2023-1-PL01-KA210-SCH-000165829"),
                                    this);
     creatorsNoteLabel->setAlignment(Qt::AlignCenter);
     QFont noteFont = creatorsNoteLabel->font();
@@ -445,7 +445,7 @@ void MainWindow::retranslateUi() {
     if (timeLabel) timeLabel->setText(tr("Time:"));
     if (timeLabel2) timeLabel2->setText(tr("Time:"));
     alwaysOnTopCheckbox->setText(tr("Always on Top"));
-    creatorsNoteLabel->setText(tr("Embodying Math&Physics Education project 2023-1-PL01-KA210-SCH-000165829"));
+    creatorsNoteLabel->setText(tr("Embodying Math&Physics Education 2023-1-PL01-KA210-SCH-000165829"));
 
     if (appMenu) {
         appMenu->updateStartStopAction(isReading);

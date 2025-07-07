@@ -201,7 +201,7 @@
             <translation>Dwa COM/Lidary</translation>
         </message>
         <message>
-            <source>Embodying Math&amp;Physics Education project 2023-1-PL01-KA210-SCH-000165829</source>
+            <source>Embodying Math&amp;Physics Education 2023-1-PL01-KA210-SCH-000165829</source>
             <translation>Embodying Math&amp;Physics Education 2023-1-PL01-KA210-SCH-000165829</translation>
         </message>
         <message>
