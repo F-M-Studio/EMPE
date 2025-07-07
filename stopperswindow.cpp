@@ -143,9 +143,9 @@ void StoppersWindow::showEvent(QShowEvent *event) {
     QMainWindow::showEvent(event);
     updateUIForComMode(PortConfig::useOneCOM());
 }
-void StoppersWindow::onSensitivityChanged(int value) {
-    dropSensitivity = value;
-    sensitivityLabel->setText(tr("Sensitivity: %1 mm").arg(value));
+void StoppersWindow::onSensitivityChanged(int sensitivityValue) {
+    dropSensitivity = sensitivityValue;
+    sensitivityLabel->setText(tr("Sensitivity: %1 mm").arg(sensitivityValue));
 }
 
 void StoppersWindow::startStoper1() {

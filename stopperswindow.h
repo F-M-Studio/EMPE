@@ -40,7 +40,7 @@ public:
     friend class MainWindow;
 
 private slots:
-    void onSensitivityChanged(int value);
+    void onSensitivityChanged(int sensitivityValue);
 
     void updateStoper1Time();
 
