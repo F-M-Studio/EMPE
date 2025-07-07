@@ -181,6 +181,7 @@
             <translation>Pokaż serię 2</translation>
         </message>
     </context>
+
     <context>
         <name>MainWindow</name>
         <message>
@@ -448,6 +449,125 @@
         <message>
             <source>Sensor 2 Data Stream</source>
             <translation>Strumień Danych Czujnika 2</translation>
+        </message>
+    </context>
+    <context>
+        <name>PortSettings</name>
+        <message>
+            <source>Setup</source>
+            <translation>Konfiguracja</translation>
+        </message>
+        <message>
+            <source>Refresh</source>
+            <translation>Odśwież</translation>
+        </message>
+        <message>
+            <source>OK</source>
+            <translation>OK</translation>
+        </message>
+        <message>
+            <source>Cancel</source>
+            <translation>Anuluj</translation>
+        </message>
+        <message>
+            <source>Port 1</source>
+            <translation>Port 1</translation>
+        </message>
+        <message>
+            <source>Port 2</source>
+            <translation>Port 2</translation>
+        </message>
+        <message>
+            <source>Settings</source>
+            <translation>Ustawienia</translation>
+        </message>
+        <message>
+            <source>Port</source>
+            <translation>Port</translation>
+        </message>
+        <message>
+            <source>Baud rate</source>
+            <translation>Szybkość transmisji</translation>
+        </message>
+        <message>
+            <source>Data bits</source>
+            <translation>Bity danych</translation>
+        </message>
+        <message>
+            <source>Stop bits</source>
+            <translation>Bity stopu</translation>
+        </message>
+        <message>
+            <source>Parity</source>
+            <translation>Parzystość</translation>
+        </message>
+        <message>
+            <source>Flow control</source>
+            <translation>Kontrola przepływu</translation>
+        </message>
+        <message>
+            <source>None</source>
+            <translation>Brak</translation>
+        </message>
+        <message>
+            <source>Even</source>
+            <translation>Parzysta</translation>
+        </message>
+        <message>
+            <source>Odd</source>
+            <translation>Nieparzysta</translation>
+        </message>
+        <message>
+            <source>Mark</source>
+            <translation>Mark</translation>
+        </message>
+        <message>
+            <source>Space</source>
+            <translation>Space</translation>
+        </message>
+        <message>
+            <source>Software</source>
+            <translation>Programowa</translation>
+        </message>
+        <message>
+            <source>Hardware</source>
+            <translation>Sprzętowa</translation>
+        </message>
+        <message>
+            <source>Connected Serial Ports Information:</source>
+            <translation>Informacje o podłączonych portach szeregowych:</translation>
+        </message>
+        <message>
+            <source>No serial ports detected</source>
+            <translation>Nie wykryto portów szeregowych</translation>
+        </message>
+        <message>
+            <source>N/A</source>
+            <translation>Brak danych</translation>
+        </message>
+        <message>
+            <source>Port:</source>
+            <translation>Port:</translation>
+        </message>
+        <message>
+            <source>Description:</source>
+            <translation>Opis:</translation>
+        </message>
+        <message>
+            <source>Manufacturer:</source>
+            <translation>Producent:</translation>
+        </message>
+        <message>
+            <source>Serial Number:</source>
+            <translation>Numer seryjny:</translation>
+        </message>
+        <message>
+            <source>Location:</source>
+            <translation>Lokalizacja:</translation>
+        </message>
+        <message>
+            <source>Bluetooth Device</source>
+            <translation>Urządzenie Bluetooth</translation>
         </message>
     </context>
     <context>
