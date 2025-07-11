@@ -180,6 +180,14 @@
             <source>Show Series 2</source>
             <translation>Show Series 2</translation>
         </message>
+        <message>
+            <source>Line thickness 1:</source>
+            <translation>Line thickness 1:</translation>
+        </message>
+        <message>
+            <source>Line thickness 2:</source>
+            <translation>Line thickness 2:</translation>
+        </message>
     </context>
     <context>
         <name>MainWindow</name>

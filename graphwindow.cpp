@@ -310,6 +310,83 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
 
     mainLayout->addWidget(smoothingWidget);
 
+    lineThickness1Label = new QLabel(tr("Line thickness 1:"));
+    lineThickness1Label->setContentsMargins(10, 0, 0, 0);
+    lineThickness1Slider = new QSlider(Qt::Horizontal);
+    lineThickness1Edit = new QLineEdit("3");
+    lineThickness1Edit->setAlignment(Qt::AlignRight);
+    lineThickness1Edit->setFixedWidth(50);
+    lineThickness1Edit->setValidator(new QIntValidator(1, 10, this));
+
+    lineThickness1Slider->setRange(1, 10);
+    lineThickness1Slider->setValue(3);
+
+    auto *lineThickness1Widget = new QWidget();
+    auto *lineThickness1Layout = new QHBoxLayout(lineThickness1Widget);
+
+    lineThickness1Layout->setContentsMargins(11, 2, 11, 2);
+    lineThickness1Layout->setSpacing(4);
+    lineThickness1Layout->addWidget(lineThickness1Label);
+    lineThickness1Layout->addWidget(lineThickness1Slider);
+    lineThickness1Layout->addWidget(lineThickness1Edit);
+    lineThickness1Widget->setLayout(lineThickness1Layout);
+
+    lineThickness2Label = new QLabel(tr("Line thickness 2:"));
+    lineThickness2Label->setContentsMargins(10, 0, 0, 0);
+    lineThickness2Slider = new QSlider(Qt::Horizontal);
+    lineThickness2Edit = new QLineEdit("3");
+    lineThickness2Edit->setAlignment(Qt::AlignRight);
+    lineThickness2Edit->setFixedWidth(50);
+    lineThickness2Edit->setValidator(new QIntValidator(1, 10, this));
+
+    lineThickness2Slider->setRange(1, 10);
+    lineThickness2Slider->setValue(3);
+
+    auto *lineThickness2Widget = new QWidget();
+    auto *lineThickness2Layout = new QHBoxLayout(lineThickness2Widget);
+
+    lineThickness2Layout->setContentsMargins(11, 2, 11, 2);
+    lineThickness2Layout->setSpacing(4);
+    lineThickness2Layout->addWidget(lineThickness2Label);
+    lineThickness2Layout->addWidget(lineThickness2Slider);
+    lineThickness2Layout->addWidget(lineThickness2Edit);
+    lineThickness2Widget->setLayout(lineThickness2Layout);
+
+    if (PortConfig::useOneCOM()) {
+        lineThickness2Widget->hide();
+    }
+
+    mainLayout->addWidget(lineThickness1Widget);
+    mainLayout->addWidget(lineThickness2Widget);
+
+    connect(lineThickness1Slider, &QSlider::valueChanged, this, [this](int value) {
+        lineThickness1Edit->setText(QString::number(value));
+        lineThickness1 = value;
+        updateChartTheme();
+    });
+
+    connect(lineThickness1Edit, &QLineEdit::editingFinished, this, [this] {
+        int value = lineThickness1Edit->text().toInt();
+        lineThickness1Slider->setValue(value);
+        lineThickness1 = value;
+        updateChartTheme();
+    });
+
+    connect(lineThickness2Slider, &QSlider::valueChanged, this, [this](int value) {
+        lineThickness2Edit->setText(QString::number(value));
+        lineThickness2 = value;
+        updateChartTheme();
+    });
+
+    connect(lineThickness2Edit, &QLineEdit::editingFinished, this, [this] {
+        int value = lineThickness2Edit->text().toInt();
+        lineThickness2Slider->setValue(value);
+        lineThickness2 = value;
+        updateChartTheme();
+    });
+
+    mainLayout->addWidget(smoothingWidget);
+
 
     connect(smoothingToggle, &QCheckBox::toggled, this, [this](const bool checked) {
         useSpline = checked;
@@ -345,6 +422,9 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
             series->setVisible(showSeries1);
             series2->setVisible(showSeries2);
         }
+
+        // Aktualizuj grubość linii po przełączeniu typu wykresu
+        updateChartTheme();
     });
 
 
@@ -532,22 +612,22 @@ void GraphWindow::updateChartTheme() {
 
 
     QPen newSeriesPen(primaryColor);
-    newSeriesPen.setWidth(3);
+    newSeriesPen.setWidth(lineThickness1);  // Zastosuj wybraną grubość linii
     newSeriesPen.setCapStyle(Qt::RoundCap);
     series->setPen(newSeriesPen);
 
     QPen newSplinePen(secondaryColor);
-    newSplinePen.setWidth(3);
+    newSplinePen.setWidth(lineThickness1);  // Zastosuj wybraną grubość linii
     newSplinePen.setCapStyle(Qt::RoundCap);
     splineSeries->setPen(newSplinePen);
 
     QPen newSeriesPen2(primaryColor2);
-    newSeriesPen2.setWidth(3);
+    newSeriesPen2.setWidth(lineThickness2);  // Zastosuj wybraną grubość dla drugiej linii
     newSeriesPen2.setCapStyle(Qt::RoundCap);
     series2->setPen(newSeriesPen2);
 
     QPen newSplinePen2(secondaryColor2);
-    newSplinePen2.setWidth(3);
+    newSplinePen2.setWidth(lineThickness2);  // Zastosuj wybraną grubość dla drugiej linii
     newSplinePen2.setCapStyle(Qt::RoundCap);
     splineSeries2->setPen(newSplinePen2);
 

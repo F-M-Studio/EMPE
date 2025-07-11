@@ -180,6 +180,14 @@
             <source>Show Series 2</source>
             <translation>Pokaż serię 2</translation>
         </message>
+        <message>
+            <source>Line thickness 1:</source>
+            <translation>Grubość linii 1:</translation>
+        </message>
+        <message>
+            <source>Line thickness 2:</source>
+            <translation>Grubość linii 2:</translation>
+        </message>
     </context>
 
     <context>

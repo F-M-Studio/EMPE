@@ -84,7 +84,7 @@ private:
     QChart *chart;
     QValueAxis *axisX;
     QValueAxis *axisY;
-    const int MAX_POINTS = 100; // Maximum number of points to show
+    const int MAX_POINTS = 100;
 
     QSlider *recordingSlider;
     QLabel *recordingLabel{};
@@ -128,6 +128,16 @@ private:
     QCheckBox *showSeries2Toggle;
     bool showSeries1 = true;
     bool showSeries2 = true;
+
+    QSlider *lineThickness1Slider;
+    QLineEdit *lineThickness1Edit;
+    QLabel *lineThickness1Label;
+    int lineThickness1 = 3;
+
+    QSlider *lineThickness2Slider;
+    QLineEdit *lineThickness2Edit;
+    QLabel *lineThickness2Label;
+    int lineThickness2 = 3;
 };
 
 #endif // GRAPHWINDOW_H
