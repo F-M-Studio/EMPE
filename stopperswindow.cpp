@@ -195,21 +195,13 @@ void StoppersWindow::saveIntervals1() {
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QMessageBox::warning(this, tr("Error"),
                            tr("Cannot write file %1:\n%2.")
-                           .arg(QDir::toNativeSeparators(fileName)),
-                           file.errorString());
+                           .arg(QDir::toNativeSeparators(fileName),
+                           file.errorString()));
         return;
     }
 
     QTextStream out(&file);
-    // Add descriptive header
-    out << "# Sensor 1 Drop Intervals\n";
-    out << "# Each row shows the time between consecutive drops\n";
-    out << "#\n";
-    out << "# Time [hh:mm:ss.zzz] - Time of the current drop\n";
-    out << "# Interval [ms] - Time since last drop in milliseconds\n";
-    out << "# Interval [s] - Time since last drop in seconds\n";
-    out << "# Drop Amount [mm] - Distance change from previous drop\n";
-    out << "Time,Interval [ms],Interval [s],Drop Amount [mm]\n";
+    out << "Timestamp,Interval (ms),Interval (s),Drop Amount\n";
 
     QDateTime prevTime;
     bool firstDrop = true;
@@ -218,7 +210,7 @@ void StoppersWindow::saveIntervals1() {
             if (!firstDrop) {
                 qint64 intervalMs = prevTime.msecsTo(event.timestamp);
                 double intervalS = intervalMs / 1000.0;
-                out << event.timestamp.toString("hh:mm:ss.zzz") << ","
+                out << event.timestamp.toString("yyyy-MM-dd hh:mm:ss.zzz") << ","
                     << intervalMs << ","
                     << QString::number(intervalS, 'f', 3) << ","
                     << event.dropAmount << "\n";
@@ -257,15 +249,7 @@ void StoppersWindow::saveIntervals2() {
     }
 
     QTextStream out(&file);
-    // Add descriptive header
-    out << "# Sensor 2 Drop Intervals\n";
-    out << "# Each row shows the time between consecutive drops\n";
-    out << "#\n";
-    out << "# Time [hh:mm:ss.zzz] - Time of the current drop\n";
-    out << "# Interval [ms] - Time since last drop in milliseconds\n";
-    out << "# Interval [s] - Time since last drop in seconds\n";
-    out << "# Drop Amount [mm] - Distance change from previous drop\n";
-    out << "Time,Interval [ms],Interval [s],Drop Amount [mm]\n";
+    out << "Timestamp,Interval (ms),Interval (s),Drop Amount\n";
 
     QDateTime prevTime;
     bool firstDrop = true;
@@ -274,7 +258,7 @@ void StoppersWindow::saveIntervals2() {
             if (!firstDrop) {
                 qint64 intervalMs = prevTime.msecsTo(event.timestamp);
                 double intervalS = intervalMs / 1000.0;
-                out << event.timestamp.toString("hh:mm:ss.zzz") << ","
+                out << event.timestamp.toString("yyyy-MM-dd hh:mm:ss.zzz") << ","
                     << intervalMs << ","
                     << QString::number(intervalS, 'f', 3) << ","
                     << event.dropAmount << "\n";
