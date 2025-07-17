@@ -135,29 +135,25 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::createComModeSelector() {
-    comModeBox = new QGroupBox(tr("COM Mode"), this);
-    QHBoxLayout* comModeLayout = new QHBoxLayout(comModeBox);
+    dualComCheckbox = new QCheckBox(tr("Use Dual COM Ports"), this);
+    dualComCheckbox->setChecked(!PortConfig::useOneCOM());
 
-    oneComRadio = new QRadioButton(tr("Single COM"), comModeBox);
-    twoComRadio = new QRadioButton(tr("Dual COM"), comModeBox);
-    comModeGroup = new QButtonGroup(this);
-    comModeGroup->addButton(oneComRadio, 1);
-    comModeGroup->addButton(twoComRadio, 2);
+    connect(dualComCheckbox, &QCheckBox::stateChanged, this, [this](int state) {
+        bool useOneCom = (state == Qt::Unchecked);
+        PortConfig::setUseOneCOM(useOneCom);
 
-    comModeLayout->addWidget(oneComRadio);
-    comModeLayout->addWidget(twoComRadio);
+        if (Reading) {
+            stopReading();
+            startStopBtn->setText(tr("Start"));
+            isReading = false;
+        }
 
-    // Domyślnie wybieramy jeden COM
-    oneComRadio->setChecked(PortConfig::useOneCOM());
-    twoComRadio->setChecked(!PortConfig::useOneCOM());
+        updateUIForComMode(useOneCom);
+    });
 
-    // Podłączenie sygnału - poprawiona składnia dla Qt 6
-    connect(comModeGroup, &QButtonGroup::idClicked,
-            this, &MainWindow::onComModeChanged);
+    mainLayout->addWidget(dualComCheckbox);
 
-    mainLayout->addWidget(comModeBox);
-
-    // Aktualizacja interfejsu zgodnie z aktualnym trybem
+    // Update UI according to current mode
     updateUIForComMode(PortConfig::useOneCOM());
 }
 
@@ -427,9 +423,7 @@ void MainWindow::retranslateUi() {
     setWindowTitle(tr("EMPE"));
 
     // Update COM mode selector texts
-    if (comModeBox) comModeBox->setTitle(tr("COM Mode"));
-    if (oneComRadio) oneComRadio->setText(tr("Single COM"));
-    if (twoComRadio) twoComRadio->setText(tr("Dual COM"));
+    if (dualComCheckbox) dualComCheckbox->setText(tr("Use Dual COM Ports"));
 
     // Update button texts
     portSettingsBtn->setText(tr("Port settings"));

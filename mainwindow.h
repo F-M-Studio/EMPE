@@ -146,10 +146,12 @@ private:
     QAction *saveDataAction{};
 
     // Selektory trybu COM
-    QRadioButton *oneComRadio{};
+  /*  QRadioButton *oneComRadio{};
     QRadioButton *twoComRadio{};
     QButtonGroup *comModeGroup{};
-    QGroupBox *comModeBox{};
+    QGroupBox *comModeBox{}; */
+    // zamiana radio buttonów na checkboxa
+    QCheckBox *dualComCheckbox{};
 
     QPushButton *portSettingsBtn{};
     QPushButton *showGraphBtn{};
