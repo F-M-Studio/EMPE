@@ -42,7 +42,7 @@
 GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(parent), ui(new Ui::GraphWindow),
                                                                     mainWindow(mainWindow) {
     ui->setupUi(this);
-
+    setWindowTitle("Graph Window");
     ui->frame->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
     ui->frame->setMinimumSize(0, 0);
 
