@@ -67,6 +67,9 @@ private:
 
     void stopStoper2();
 
+    // Metoda pomocnicza do formatowania czasu
+    QString formatTimeFromMs(int ms);
+
     QGroupBox *stoperGroupBox;
     QSlider *sensitivitySlider;
     QLabel *sensitivityLabel;

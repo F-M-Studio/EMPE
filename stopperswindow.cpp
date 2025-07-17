@@ -201,23 +201,61 @@ void StoppersWindow::saveIntervals1() {
     }
 
     QTextStream out(&file);
-    out << "Timestamp,Interval (ms),Interval (s),Drop Amount\n";
+    // Use local formatting for numbers
+    QLocale locale;
+
+    // Add metadata header
+    out << "Drop Measurement Data - Sensor 1\n";
+    out << "Generated: " << QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss") << "\n";
+    out << "Sensitivity: " << dropSensitivity << " mm\n";
+    out << "Total drops: " << dropCount1 << "\n";
+    out << "Session duration: " << formatTimeFromMs(stoper1Time) << "\n";
+    out << "\n";
+
+    // Main data header
+    out << "\"Timestamp\",\"Interval (ms)\",\"Interval (s)\",\"Drop Amount\"\n";
 
     QDateTime prevTime;
     bool firstDrop = true;
+    int dropNumber = 0;
+    qint64 totalIntervalMs = 0;
+    qint64 minInterval = -1;
+    qint64 maxInterval = 0;
+
     for (const DropEvent& event : dropEvents) {
         if (event.sensorNumber == 1) {
             if (!firstDrop) {
+                dropNumber++;
                 qint64 intervalMs = prevTime.msecsTo(event.timestamp);
+                totalIntervalMs += intervalMs;
+
+                if (minInterval == -1 || intervalMs < minInterval) {
+                    minInterval = intervalMs;
+                }
+                if (intervalMs > maxInterval) {
+                    maxInterval = intervalMs;
+                }
+
                 double intervalS = intervalMs / 1000.0;
-                out << event.timestamp.toString("yyyy-MM-dd hh:mm:ss.zzz") << ","
+                out << "\"" << event.timestamp.toString("yyyy-MM-dd hh:mm:ss.zzz") << "\","
                     << intervalMs << ","
-                    << QString::number(intervalS, 'f', 3) << ","
+                    << locale.toString(intervalS, 'f', 3) << ","
                     << event.dropAmount << "\n";
             }
             prevTime = event.timestamp;
             firstDrop = false;
         }
+    }
+
+    // Add summary statistics
+    if (dropNumber > 0) {
+        out << "Summary Statistics\n";
+        out << "Number of intervals: " << dropNumber << "\n";
+        out << "Average interval: " << locale.toString(totalIntervalMs / (double)dropNumber, 'f', 1) << " ms ("
+            << locale.toString((totalIntervalMs / 1000.0) / dropNumber, 'f', 3) << " s)\n";
+        out << "Minimum interval: " << (minInterval >= 0 ? QString::number(minInterval) : "N/A") << " ms\n";
+        out << "Maximum interval: " << (maxInterval > 0 ? QString::number(maxInterval) : "N/A") << " ms\n";
+        out << "Drop frequency: " << locale.toString((dropNumber * 1000.0) / totalIntervalMs, 'f', 2) << " drops/second\n";
     }
 
     file.close();
@@ -243,24 +281,50 @@ void StoppersWindow::saveIntervals2() {
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QMessageBox::warning(this, tr("Error"),
                            tr("Cannot write file %1:\n%2.")
-                           .arg(QDir::toNativeSeparators(fileName)),
-                           file.errorString());
+                           .arg(QDir::toNativeSeparators(fileName),
+                           file.errorString()));
         return;
     }
 
     QTextStream out(&file);
-    out << "Timestamp,Interval (ms),Interval (s),Drop Amount\n";
+    // Use local formatting for numbers
+    QLocale locale;
+
+    // Add metadata header
+    out << "Drop Measurement Data - Sensor 2\n";
+    out << "Generated: " << QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss") << "\n";
+    out << "Sensitivity: " << dropSensitivity << " mm\n";
+    out << "Total drops: " << dropCount2 << "\n";
+    out << "Session duration: " << formatTimeFromMs(stoper2Time) << "\n";
+
+    // Main data header
+    out << "\"Timestamp\",\"Interval (ms)\",\"Interval (s)\",\"Drop Amount\"\n";
 
     QDateTime prevTime;
     bool firstDrop = true;
+    int dropNumber = 0;
+    qint64 totalIntervalMs = 0;
+    qint64 minInterval = -1;
+    qint64 maxInterval = 0;
+
     for (const DropEvent& event : dropEvents) {
         if (event.sensorNumber == 2) {
             if (!firstDrop) {
+                dropNumber++;
                 qint64 intervalMs = prevTime.msecsTo(event.timestamp);
+                totalIntervalMs += intervalMs;
+
+                if (minInterval == -1 || intervalMs < minInterval) {
+                    minInterval = intervalMs;
+                }
+                if (intervalMs > maxInterval) {
+                    maxInterval = intervalMs;
+                }
+
                 double intervalS = intervalMs / 1000.0;
-                out << event.timestamp.toString("yyyy-MM-dd hh:mm:ss.zzz") << ","
+                out << "\"" << event.timestamp.toString("yyyy-MM-dd hh:mm:ss.zzz") << "\","
                     << intervalMs << ","
-                    << QString::number(intervalS, 'f', 3) << ","
+                    << locale.toString(intervalS, 'f', 3) << ","
                     << event.dropAmount << "\n";
             }
             prevTime = event.timestamp;
@@ -268,11 +332,38 @@ void StoppersWindow::saveIntervals2() {
         }
     }
 
+    // Add summary statistics
+    if (dropNumber > 0) {
+        out << "\n";
+        out << "Summary Statistics\n";
+        out << "Number of intervals: " << dropNumber << "\n";
+        out << "Average interval: " << locale.toString(totalIntervalMs / (double)dropNumber, 'f', 1) << " ms ("
+            << locale.toString((totalIntervalMs / 1000.0) / dropNumber, 'f', 3) << " s)\n";
+        out << "Minimum interval: " << (minInterval >= 0 ? QString::number(minInterval) : "N/A") << " ms\n";
+        out << "Maximum interval: " << (maxInterval > 0 ? QString::number(maxInterval) : "N/A") << " ms\n";
+        out << "Drop frequency: " << locale.toString((dropNumber * 1000.0) / totalIntervalMs, 'f', 2) << " drops/second\n";
+    }
+
     file.close();
     QMessageBox::information(this, tr("Success"),
                             tr("Sensor 2 intervals saved to %1")
                             .arg(QDir::toNativeSeparators(fileName)));
 }
+
+// Pomocnicza metoda do formatowania czasu w formacie czytelnym
+QString StoppersWindow::formatTimeFromMs(int ms) {
+    int hours = ms / 3600000;
+    int minutes = (ms % 3600000) / 60000;
+    int seconds = (ms % 60000) / 1000;
+    int milliseconds = ms % 1000;
+
+    return QString("%1:%2:%3.%4")
+            .arg(hours, 2, 10, QChar('0'))
+            .arg(minutes, 2, 10, QChar('0'))
+            .arg(seconds, 2, 10, QChar('0'))
+            .arg(milliseconds, 3, 10, QChar('0'));
+}
+
 void StoppersWindow::onSensitivityChanged(int sensitivityValue) {
     dropSensitivity = sensitivityValue;
     sensitivityLabel->setText(tr("Sensitivity: %1 mm").arg(sensitivityValue));
