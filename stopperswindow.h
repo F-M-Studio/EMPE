@@ -12,6 +12,7 @@
 #include <QTimer>
 #include <QDateTime>
 #include <qlineedit.h>
+#include <qtextedit.h>
 #include "portconfig.h"
 
 class MainWindow;
@@ -73,6 +74,8 @@ private:
     QTimer *stoperTimer2;
     QLineEdit *timeLabel;
     QLineEdit *timeLabel2;
+    QTextEdit *leapsText1;  // For displaying time differences for sensor 1
+    QTextEdit *leapsText2;  // For displaying time differences for sensor 2
 
     // Wskaźnik na box zawierający kontrolki drugiego sensora
     QGroupBox *sensor2GroupBox;

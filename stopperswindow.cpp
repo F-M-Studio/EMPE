@@ -13,6 +13,7 @@
 #include <QLineEdit>
 #include <QFrame>
 #include <QEvent>
+#include <QScrollBar>
 
 StoppersWindow::StoppersWindow(MainWindow *mainWindow, QWidget *parent)
     : QMainWindow(parent), mainWindow(mainWindow),
@@ -101,6 +102,13 @@ void StoppersWindow::createStoperControls() {
     sensor1Layout->addWidget(dropCounter1Label);
     sensor1Layout->addWidget(timeLabel);
 
+    // Add time differences text boxes
+    leapsText1 = new QTextEdit(this);
+    leapsText1->setReadOnly(true);
+    leapsText1->setMaximumHeight(100);
+    leapsText1->setPlaceholderText(tr("Time differences between drops"));
+    sensor1Layout->addWidget(leapsText1);
+
     // Sensor 2 Section
     sensor2GroupBox = new QGroupBox(tr("Sensor 2"), this);
     auto *sensor2Layout = new QVBoxLayout(sensor2GroupBox);
@@ -123,6 +131,13 @@ void StoppersWindow::createStoperControls() {
     sensor2Layout->addWidget(dropCounter2Label);
     sensor2Layout->addWidget(timeLabel2);
 
+    // Add time differences text boxes
+    leapsText2 = new QTextEdit(this);
+    leapsText2->setReadOnly(true);
+    leapsText2->setMaximumHeight(100);
+    leapsText2->setPlaceholderText(tr("Time differences between drops"));
+    sensor2Layout->addWidget(leapsText2);
+
     // Sensors in horizontal layout
     auto *sensorsFrame = new QFrame(this);
     auto *sensorsLayout = new QHBoxLayout(sensorsFrame);
@@ -143,6 +158,14 @@ void StoppersWindow::createStoperControls() {
 void StoppersWindow::showEvent(QShowEvent *event) {
     QMainWindow::showEvent(event);
     updateUIForComMode(PortConfig::useOneCOM());
+
+    // Start timers automatically when window opens
+    startStoper1();
+    startStoper2();
+
+    // Clear the leaps text boxes
+    if (leapsText1) leapsText1->clear();
+    if (leapsText2) leapsText2->clear();
 }
 void StoppersWindow::onSensitivityChanged(int sensitivityValue) {
     dropSensitivity = sensitivityValue;
@@ -291,6 +314,16 @@ void StoppersWindow::checkForDrop1(int currentDistance) {
             return;
         }
 
+        // Calculate time difference if this isn't the first drop
+        if (lastDropTime1.isValid()) {
+            qint64 timeDiff = lastDropTime1.msecsTo(currentTime);
+            QString timeDiffStr = QString("Drop interval: %1.%2s\n")
+                .arg(timeDiff / 1000)
+                .arg(timeDiff % 1000, 3, 10, QChar('0'));
+            leapsText1->append(timeDiffStr);
+            leapsText1->verticalScrollBar()->setValue(leapsText1->verticalScrollBar()->maximum());
+        }
+
         // Toggle stoper1 on each drop from sensor 1
         if (stoper1Running) {
             stopStoper1();
@@ -318,6 +351,16 @@ void StoppersWindow::checkForDrop2(int currentDistance) {
         if (lastDropTime2.isValid() && lastDropTime2.msecsTo(currentTime) < DROP_COOLDOWN_MS) {
             previousDistance2 = currentDistance;
             return;
+        }
+
+        // Calculate time difference if this isn't the first drop
+        if (lastDropTime2.isValid()) {
+            qint64 timeDiff = lastDropTime2.msecsTo(currentTime);
+            QString timeDiffStr = QString("Drop interval: %1.%2s\n")
+                .arg(timeDiff / 1000)
+                .arg(timeDiff % 1000, 3, 10, QChar('0'));
+            leapsText2->append(timeDiffStr);
+            leapsText2->verticalScrollBar()->setValue(leapsText2->verticalScrollBar()->maximum());
         }
 
         // Toggle stoper2 on each drop from sensor 2
