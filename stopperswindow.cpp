@@ -201,10 +201,17 @@ void StoppersWindow::saveIntervals1() {
     }
 
     QTextStream out(&file);
-    // Use local formatting for numbers
     QLocale locale;
 
-    // Add metadata header
+    // Filter events for sensor 1 only
+    QVector<DropEvent> sensor1Events;
+    for (const DropEvent& event : dropEvents) {
+        if (event.sensorNumber == 1) {
+            sensor1Events.append(event);
+        }
+    }
+
+    // Write metadata header
     out << "Drop Measurement Data - Sensor 1\n";
     out << "Generated: " << QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss") << "\n";
     out << "Sensitivity: " << dropSensitivity << " mm\n";
@@ -212,50 +219,47 @@ void StoppersWindow::saveIntervals1() {
     out << "Session duration: " << formatTimeFromMs(stoper1Time) << "\n";
     out << "\n";
 
-    // Main data header
-    out << "\"Timestamp\",\"Interval (ms)\",\"Interval (s)\",\"Drop Amount\"\n";
+    // Write data header
+    out << "Time [hh:mm:ss.zzz],Interval [ms],Interval [s],Drop Amount [mm]\n";
 
-    QDateTime prevTime;
-    bool firstDrop = true;
-    int dropNumber = 0;
-    qint64 totalIntervalMs = 0;
-    qint64 minInterval = -1;
-    qint64 maxInterval = 0;
+    // Process and write data
+    if (sensor1Events.size() > 1) {
+        QDateTime prevTime = sensor1Events.first().timestamp;
+        qint64 totalIntervalMs = 0;
+        qint64 minInterval = std::numeric_limits<qint64>::max();
+        qint64 maxInterval = 0;
+        int validIntervals = 0;
 
-    for (const DropEvent& event : dropEvents) {
-        if (event.sensorNumber == 1) {
-            if (!firstDrop) {
-                dropNumber++;
-                qint64 intervalMs = prevTime.msecsTo(event.timestamp);
-                totalIntervalMs += intervalMs;
+        // Skip first event (no interval for it)
+        for (int i = 1; i < sensor1Events.size(); i++) {
+            const DropEvent& event = sensor1Events[i];
+            qint64 intervalMs = prevTime.msecsTo(event.timestamp);
 
-                if (minInterval == -1 || intervalMs < minInterval) {
-                    minInterval = intervalMs;
-                }
-                if (intervalMs > maxInterval) {
-                    maxInterval = intervalMs;
-                }
+            // Write data row
+            out << event.timestamp.toString("hh:mm:ss.zzz") << ","
+                << intervalMs << ","
+                << locale.toString(intervalMs / 1000.0, 'f', 3) << ","
+                << event.dropAmount << "\n";
 
-                double intervalS = intervalMs / 1000.0;
-                out << "\"" << event.timestamp.toString("yyyy-MM-dd hh:mm:ss.zzz") << "\","
-                    << intervalMs << ","
-                    << locale.toString(intervalS, 'f', 3) << ","
-                    << event.dropAmount << "\n";
-            }
+            // Update statistics
+            totalIntervalMs += intervalMs;
+            if (intervalMs < minInterval) minInterval = intervalMs;
+            if (intervalMs > maxInterval) maxInterval = intervalMs;
+            validIntervals++;
+
             prevTime = event.timestamp;
-            firstDrop = false;
         }
-    }
 
-    // Add summary statistics
-    if (dropNumber > 0) {
-        out << "Summary Statistics\n";
-        out << "Number of intervals: " << dropNumber << "\n";
-        out << "Average interval: " << locale.toString(totalIntervalMs / (double)dropNumber, 'f', 1) << " ms ("
-            << locale.toString((totalIntervalMs / 1000.0) / dropNumber, 'f', 3) << " s)\n";
-        out << "Minimum interval: " << (minInterval >= 0 ? QString::number(minInterval) : "N/A") << " ms\n";
-        out << "Maximum interval: " << (maxInterval > 0 ? QString::number(maxInterval) : "N/A") << " ms\n";
-        out << "Drop frequency: " << locale.toString((dropNumber * 1000.0) / totalIntervalMs, 'f', 2) << " drops/second\n";
+        // Write statistics if we have valid intervals
+        if (validIntervals > 0) {
+            out << "\n";
+            out << "Summary Statistics\n";
+            out << "Number of intervals: " << validIntervals << "\n";
+            out << "Average interval: " << locale.toString(totalIntervalMs / (double)validIntervals, 'f', 1) << " ms\n";
+            out << "Minimum interval: " << minInterval << " ms\n";
+            out << "Maximum interval: " << maxInterval << " ms\n";
+            out << "Drop frequency: " << locale.toString(validIntervals / (totalIntervalMs / 1000.0), 'f', 3) << " Hz\n";
+        }
     }
 
     file.close();
@@ -287,61 +291,65 @@ void StoppersWindow::saveIntervals2() {
     }
 
     QTextStream out(&file);
-    // Use local formatting for numbers
     QLocale locale;
 
-    // Add metadata header
+    // Filter events for sensor 2 only
+    QVector<DropEvent> sensor2Events;
+    for (const DropEvent& event : dropEvents) {
+        if (event.sensorNumber == 2) {
+            sensor2Events.append(event);
+        }
+    }
+
+    // Write metadata header
     out << "Drop Measurement Data - Sensor 2\n";
     out << "Generated: " << QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss") << "\n";
     out << "Sensitivity: " << dropSensitivity << " mm\n";
     out << "Total drops: " << dropCount2 << "\n";
     out << "Session duration: " << formatTimeFromMs(stoper2Time) << "\n";
+    out << "\n";
 
-    // Main data header
-    out << "\"Timestamp\",\"Interval (ms)\",\"Interval (s)\",\"Drop Amount\"\n";
+    // Write data header
+    out << "Time [hh:mm:ss.zzz],Interval [ms],Interval [s],Drop Amount [mm]\n";
 
-    QDateTime prevTime;
-    bool firstDrop = true;
-    int dropNumber = 0;
-    qint64 totalIntervalMs = 0;
-    qint64 minInterval = -1;
-    qint64 maxInterval = 0;
+    // Process and write data
+    if (sensor2Events.size() > 1) {
+        QDateTime prevTime = sensor2Events.first().timestamp;
+        qint64 totalIntervalMs = 0;
+        qint64 minInterval = std::numeric_limits<qint64>::max();
+        qint64 maxInterval = 0;
+        int validIntervals = 0;
 
-    for (const DropEvent& event : dropEvents) {
-        if (event.sensorNumber == 2) {
-            if (!firstDrop) {
-                dropNumber++;
-                qint64 intervalMs = prevTime.msecsTo(event.timestamp);
-                totalIntervalMs += intervalMs;
+        // Skip first event (no interval for it)
+        for (int i = 1; i < sensor2Events.size(); i++) {
+            const DropEvent& event = sensor2Events[i];
+            qint64 intervalMs = prevTime.msecsTo(event.timestamp);
 
-                if (minInterval == -1 || intervalMs < minInterval) {
-                    minInterval = intervalMs;
-                }
-                if (intervalMs > maxInterval) {
-                    maxInterval = intervalMs;
-                }
+            // Write data row
+            out << event.timestamp.toString("hh:mm:ss.zzz") << ","
+                << intervalMs << ","
+                << locale.toString(intervalMs / 1000.0, 'f', 3) << ","
+                << event.dropAmount << "\n";
 
-                double intervalS = intervalMs / 1000.0;
-                out << "\"" << event.timestamp.toString("yyyy-MM-dd hh:mm:ss.zzz") << "\","
-                    << intervalMs << ","
-                    << locale.toString(intervalS, 'f', 3) << ","
-                    << event.dropAmount << "\n";
-            }
+            // Update statistics
+            totalIntervalMs += intervalMs;
+            if (intervalMs < minInterval) minInterval = intervalMs;
+            if (intervalMs > maxInterval) maxInterval = intervalMs;
+            validIntervals++;
+
             prevTime = event.timestamp;
-            firstDrop = false;
         }
-    }
 
-    // Add summary statistics
-    if (dropNumber > 0) {
-        out << "\n";
-        out << "Summary Statistics\n";
-        out << "Number of intervals: " << dropNumber << "\n";
-        out << "Average interval: " << locale.toString(totalIntervalMs / (double)dropNumber, 'f', 1) << " ms ("
-            << locale.toString((totalIntervalMs / 1000.0) / dropNumber, 'f', 3) << " s)\n";
-        out << "Minimum interval: " << (minInterval >= 0 ? QString::number(minInterval) : "N/A") << " ms\n";
-        out << "Maximum interval: " << (maxInterval > 0 ? QString::number(maxInterval) : "N/A") << " ms\n";
-        out << "Drop frequency: " << locale.toString((dropNumber * 1000.0) / totalIntervalMs, 'f', 2) << " drops/second\n";
+        // Write statistics if we have valid intervals
+        if (validIntervals > 0) {
+            out << "\n";
+            out << "Summary Statistics\n";
+            out << "Number of intervals: " << validIntervals << "\n";
+            out << "Average interval: " << locale.toString(totalIntervalMs / (double)validIntervals, 'f', 1) << " ms\n";
+            out << "Minimum interval: " << minInterval << " ms\n";
+            out << "Maximum interval: " << maxInterval << " ms\n";
+            out << "Drop frequency: " << locale.toString(validIntervals / (totalIntervalMs / 1000.0), 'f', 3) << " Hz\n";
+        }
     }
 
     file.close();
