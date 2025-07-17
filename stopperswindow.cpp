@@ -324,12 +324,12 @@ void StoppersWindow::checkForDrop1(int currentDistance) {
             leapsText1->verticalScrollBar()->setValue(leapsText1->verticalScrollBar()->maximum());
         }
 
-        // Toggle stoper1 on each drop from sensor 1
-        if (stoper1Running) {
-            stopStoper1();
-        } else {
-            startStoper1();
-        }
+        // // Toggle stoper1 on each drop from sensor 1
+        // if (stoper1Running) {
+        //     stopStoper1();
+        // } else {
+        //     startStoper1();
+        // }
 
         dropCount1++;
         logDropEvent(1, previousDistance1, currentDistance, difference);
@@ -364,11 +364,11 @@ void StoppersWindow::checkForDrop2(int currentDistance) {
         }
 
         // Toggle stoper2 on each drop from sensor 2
-        if (stoper2Running) {
-            stopStoper2();
-        } else {
-            startStoper2();
-        }
+        // if (stoper2Running) {
+        //     stopStoper2();
+        // } else {
+        //     startStoper2();
+        // }
 
         dropCount2++;
         logDropEvent(2, previousDistance2, currentDistance, difference);
