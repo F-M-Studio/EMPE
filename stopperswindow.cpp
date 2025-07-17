@@ -14,6 +14,9 @@
 #include <QFrame>
 #include <QEvent>
 #include <QScrollBar>
+#include <QFileDialog>
+#include <QMessageBox>
+
 
 StoppersWindow::StoppersWindow(MainWindow *mainWindow, QWidget *parent)
     : QMainWindow(parent), mainWindow(mainWindow),
@@ -144,12 +147,20 @@ void StoppersWindow::createStoperControls() {
     sensorsLayout->addWidget(sensor1GroupBox);
     sensorsLayout->addWidget(sensor2GroupBox);
 
+    //save data buttons
+    saveIntervals1Btn = new QPushButton(tr("Save Intervals"), this);
+    sensor1Layout->addWidget(saveIntervals1Btn);
+    saveIntervals2Btn = new QPushButton(tr("Save Intervals"), this);
+    sensor2Layout->addWidget(saveIntervals2Btn);
+
     // Add all sections to main layout
     mainLayout->addWidget(sensitivityGroupBox);
     mainLayout->addWidget(sensorsFrame);
     mainLayout->addStretch();
 
     // Connect signals
+    connect(saveIntervals1Btn, &QPushButton::clicked, this, &StoppersWindow::saveIntervals1);
+    connect(saveIntervals2Btn, &QPushButton::clicked, this, &StoppersWindow::saveIntervals2);
     connect(sensitivitySlider, &QSlider::valueChanged, this, &StoppersWindow::onSensitivityChanged);
     connect(enableStoper1CheckBox, &QCheckBox::toggled, this, [this](bool checked) { stoper1Enabled = checked; });
     connect(enableStoper2CheckBox, &QCheckBox::toggled, this, [this](bool checked) { stoper2Enabled = checked; });
@@ -166,6 +177,101 @@ void StoppersWindow::showEvent(QShowEvent *event) {
     // Clear the leaps text boxes
     if (leapsText1) leapsText1->clear();
     if (leapsText2) leapsText2->clear();
+}
+void StoppersWindow::saveIntervals1() {
+    QString defaultFileName = QString("Sensor1_Intervals_%1.csv").arg(QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss"));
+    QString fileName = QFileDialog::getSaveFileName(this,
+                                                  tr("Save Sensor 1 Intervals"),
+                                                  defaultFileName,
+                                                  tr("CSV Files (*.csv)"));
+
+    if (fileName.isEmpty()) return;
+
+    if (!fileName.endsWith(".csv", Qt::CaseInsensitive)) {
+        fileName += ".csv";
+    }
+
+    QFile file(fileName);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QMessageBox::warning(this, tr("Error"),
+                           tr("Cannot write file %1:\n%2.")
+                           .arg(QDir::toNativeSeparators(fileName),
+                           file.errorString()));
+        return;
+    }
+
+    QTextStream out(&file);
+    out << "Timestamp,Interval (ms),Interval (s),Drop Amount\n";
+
+    QDateTime prevTime;
+    bool firstDrop = true;
+    for (const DropEvent& event : dropEvents) {
+        if (event.sensorNumber == 1) {
+            if (!firstDrop) {
+                qint64 intervalMs = prevTime.msecsTo(event.timestamp);
+                double intervalS = intervalMs / 1000.0;
+                out << event.timestamp.toString("yyyy-MM-dd hh:mm:ss.zzz") << ","
+                    << intervalMs << ","
+                    << QString::number(intervalS, 'f', 3) << ","
+                    << event.dropAmount << "\n";
+            }
+            prevTime = event.timestamp;
+            firstDrop = false;
+        }
+    }
+
+    file.close();
+    QMessageBox::information(this, tr("Success"),
+                            tr("Sensor 1 intervals saved to %1")
+                            .arg(QDir::toNativeSeparators(fileName)));
+}
+
+void StoppersWindow::saveIntervals2() {
+    QString defaultFileName = QString("Sensor2_Intervals_%1.csv").arg(QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss"));
+    QString fileName = QFileDialog::getSaveFileName(this,
+                                                  tr("Save Sensor 2 Intervals"),
+                                                  defaultFileName,
+                                                  tr("CSV Files (*.csv)"));
+
+    if (fileName.isEmpty()) return;
+
+    if (!fileName.endsWith(".csv", Qt::CaseInsensitive)) {
+        fileName += ".csv";
+    }
+
+    QFile file(fileName);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QMessageBox::warning(this, tr("Error"),
+                           tr("Cannot write file %1:\n%2.")
+                           .arg(QDir::toNativeSeparators(fileName)),
+                           file.errorString());
+        return;
+    }
+
+    QTextStream out(&file);
+    out << "Timestamp,Interval (ms),Interval (s),Drop Amount\n";
+
+    QDateTime prevTime;
+    bool firstDrop = true;
+    for (const DropEvent& event : dropEvents) {
+        if (event.sensorNumber == 2) {
+            if (!firstDrop) {
+                qint64 intervalMs = prevTime.msecsTo(event.timestamp);
+                double intervalS = intervalMs / 1000.0;
+                out << event.timestamp.toString("yyyy-MM-dd hh:mm:ss.zzz") << ","
+                    << intervalMs << ","
+                    << QString::number(intervalS, 'f', 3) << ","
+                    << event.dropAmount << "\n";
+            }
+            prevTime = event.timestamp;
+            firstDrop = false;
+        }
+    }
+
+    file.close();
+    QMessageBox::information(this, tr("Success"),
+                            tr("Sensor 2 intervals saved to %1")
+                            .arg(QDir::toNativeSeparators(fileName)));
 }
 void StoppersWindow::onSensitivityChanged(int sensitivityValue) {
     dropSensitivity = sensitivityValue;

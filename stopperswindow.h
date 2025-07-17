@@ -14,6 +14,7 @@
 #include <qlineedit.h>
 #include <qtextedit.h>
 #include "portconfig.h"
+#include <QPushButton>
 
 class MainWindow;
 
@@ -43,14 +44,17 @@ public:
 
 private slots:
     void onSensitivityChanged(int sensitivityValue);
-
+    void saveIntervals1();
+    void saveIntervals2();
     void updateStoper1Time();
 
     void updateStoper2Time();
 
 private:
     MainWindow *mainWindow;
+    QPushButton *saveIntervals1Btn{};
 
+    QPushButton *saveIntervals2Btn{};
     void createStoperControls();
 
     void logDropEvent(int sensorId, int previousDistance, int currentDistance, int difference);
