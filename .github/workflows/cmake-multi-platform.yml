@@ -54,9 +54,7 @@ jobs:
       - name: Configure & Build
         shell: bash
         run: |
-          cmake -G "MinGW Makefiles" -B build 
-            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} 
-            -DCMAKE_PREFIX_PATH=${{ env.QT_PATH }}/mingw_64/lib/cmake
+          cmake -G "MinGW Makefiles" -B build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DCMAKE_PREFIX_PATH=${{ env.QT_PATH }}/mingw_64/lib/cmake
           cmake --build build --config ${{ env.BUILD_TYPE }} --parallel
 
       - name: Deploy Qt dependencies
@@ -126,7 +124,7 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y ninja-build build-essential libgl1-mesa-dev libxkbcommon-x11-dev
+          sudo apt-get install -y ninja-build build-essential libgl1-mesa-dev libxkbcommon-x11-dev libfuse2
 
       - name: Setup Qt
         uses: jurplel/install-qt-action@v4
