@@ -52,18 +52,21 @@ jobs:
 
       - name: verify folder dir
         run: |
-          dir D:\a\EMPE\Qt\6.8.3\msvc2022_64
+          dir D:\a\EMPE\Qt\6.8.3\msvc2022_64\bin\
+          dir D:\a\EMPE\Qt\6.8.3\msvc2022_64\lib\
+          dir D:\a\EMPE\Qt\6.8.3\msvc2022_64\lib\cmake\Qt6\
+          dir D:\a\EMPE\Qt\6.8.3\msvc2022_64\modules\
 
       - name: Configure & Build
         shell: bash
         run: |
-          cmake -G "Ninja" -B build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DCMAKE_PREFIX_PATH=D:\a\EMPE\Qt\6.8.3\msvc2022_64\lib\cmake
+          cmake -G "Ninja" -B build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DCMAKE_PREFIX_PATH=D:\a\EMPE\Qt\6.8.3\msvc2022_64\lib\cmake\Qt6\
           cmake --build build --config ${{ env.BUILD_TYPE }} --parallel
 
       - name: Deploy Qt dependencies
         run: |
           $MingwPath = "C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin"
-          $QtBinPath = "D:\a\EMPE\Qt\6.8.3\msvc2022_64Z\bin"
+          $QtBinPath = "D:\a\EMPE\Qt\6.8.3\msvc2022_64\bin"
           Copy-Item "$MingwPath\libgcc_s_seh-1.dll" -Destination "build"
           Copy-Item "$MingwPath\libstdc++-6.dll" -Destination "build"
           Copy-Item "$MingwPath\libwinpthread-1.dll" -Destination "build"
