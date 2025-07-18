@@ -9,7 +9,6 @@
     - [Okno Wykresu](#okno-wykresu)
     - [Okno Stoperów](#okno-stoperów)
     - [Ustawienia Portów](#ustawienia-portów)
-    - [Menu Debugowania](#menu-debugowania)
 5. [Technologie](#technologie)
 6. [Kompilacja Projektu](#kompilacja-projektu)
 7. [Autorzy](#autorzy)
@@ -32,8 +31,7 @@ Aplikacja komunikuje się z czujnikami przez porty szeregowe (COM) i oferuje bog
 - **Wielojęzyczność**: Pełne wsparcie dla języka polskiego i angielskiego, z możliwością zmiany w trakcie działania aplikacji.
 - **Pomiar interwałów (Stopery)**: Dedykowane okno do mierzenia czasu pomiędzy wykrytymi "spadkami" (nagłymi zmianami odległości), z regulowaną czułością.
 - **Zapis danych**: Możliwość eksportu zebranych danych pomiarowych oraz interwałów czasowych do plików w formacie `.csv` w celu dalszej analizy.
-- **Narzędzia deweloperskie**: Ukryte menu debugowania (dostępne pod skrótem `Ctrl+0`) wyświetlające surowe dane z portów i globalny czas.
-
+  
 ## Instrukcja Obsługi
 
 1.  **Uruchomienie**: Po uruchomieniu aplikacji wyświetli się okno główne.
@@ -86,12 +84,6 @@ Konfiguracja połączenia z czujnikami.
 - **Wybór portu**: Lista dostępnych portów COM.
 - **Parametry transmisji**: Baud rate, bity danych, bity stopu, parzystość, kontrola przepływu.
 - **Informacje o porcie**: Wyświetla szczegółowe dane o podłączonych urządzeniach.
-
-### Menu Debugowania
-Dostępne pod skrótem `Ctrl+0`.
-- **Globalny czas**: Wyświetla wspólny, największy czas z obu czujników.
-- **Surowe dane**: Pokazuje nieprzetworzone ramki danych odbierane z portów szeregowych, co jest przydatne do diagnozowania problemów z komunikacją.
-- **Generator danych**: Przycisk `Start Fake Data` pozwala na testowanie aplikacji bez podłączonych czujników.
 
 ## Technologie
 - **Język**: C++20
