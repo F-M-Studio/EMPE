@@ -112,47 +112,40 @@ jobs:
         with:
           name: ${{ env.APP_NAME }}-macos-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}
           path: lidar-macos-*.zip
-
   linux-qt:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: get-info
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y ninja-build build-essential libgl1-mesa-dev libxkbcommon-x11-dev libfuse2
-
-      - name: Setup Qt
-        uses: jurplel/install-qt-action@v4
-        with:
-          version: '6.8.2'
-          host: linux
-          target: desktop
-          modules: qtserialport qtcharts
-
-      - name: Configure & Build
+          sudo apt-get update && sudo apt install -y \
+          libx11-dev libxext-dev libwayland-dev libdecor-0-dev \
+          libxkbcommon-dev libglfw3-dev libgles2-mesa-dev libfuse2 \
+          clang build-essential ninja-build \
+          qt6-base-dev qt6-tools-dev qt6-multimedia-dev \
+          qt6-serialport-dev libqt6charts6-dev \
+          libasound2-dev libpulse-dev libopenal-dev libudev-dev
+      - name: Configure CMake
         run: |
-          cmake -G "Ninja" -B build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
-          cmake --build build --config ${{ env.BUILD_TYPE }} --parallel
+          cmake --fresh -G Ninja -B build \
+            -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
+            -DCMAKE_PREFIX_PATH="/usr/lib/x86_64-linux-gnu/cmake/Qt6"
+      - name: Build
+        run: cmake --build build --config ${{env.BUILD_TYPE}} --parallel $(nproc)
 
-      - name: Download linuxdeployqt
+      - name: Verify build output
         run: |
-          wget -c -nv "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
-          chmod a+x linuxdeployqt-continuous-x86_64.AppImage
-
-      - name: Package Linux Build (AppImage)
+          ls -lR build
+      - name: Package and Upload Linux artifact
         run: |
-          mkdir -p output/
-          cp build/lidar output/
-          cp empe.desktop output/
-          cp icons/EMPE.png output/empe.png
-          ./linuxdeployqt-continuous-x86_64.AppImage output/lidar -appimage
-
+          mkdir -p upload
+          cp build/${{ env.APP_NAME }} upload/
+          tar czvf ${{ env.APP_NAME }}-linux-${{ needs.get-info.outputs.shorthash }}.tar.gz -C upload .
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ env.APP_NAME }}-linux-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}
-          path: ./*-x86_64.AppImage
+          path: ${{ env.APP_NAME }}-linux-*.tar.gz
