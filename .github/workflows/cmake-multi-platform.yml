@@ -20,7 +20,7 @@ jobs:
       shorthash: ${{ steps.get-info.outputs.shorthash }}
       fullhash: ${{ steps.get-info.outputs.fullhash }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Get commit information
         id: get-info
         run: |
@@ -32,20 +32,20 @@ jobs:
     runs-on: windows-latest
     needs: get-info
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
 
       - name: Setup MinGW
-        uses: coffeebe4code/setup-mingw@v1
+        uses: coffeebe4code/setup-mingw@v1-beta-2
         with:
           platform: x64
           version: 11.2.0
 
       - name: Setup Qt
-        uses: jurplel/install-qt-action@v3
+        uses: jurplel/install-qt-action@v4
         with:
-          version: '6.2.4'
+          version: '6.8.2'
           host: windows
           target: desktop
           arch: win64_mingw
@@ -61,7 +61,11 @@ jobs:
 
       - name: Deploy Qt dependencies
         run: |
+          $MingwPath = "C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin"
           $QtBinPath = "${{ env.QT_PATH }}\mingw_64\bin"
+          Copy-Item "$MingwPath\libgcc_s_seh-1.dll" -Destination "build"
+          Copy-Item "$MingwPath\libstdc++-6.dll" -Destination "build"
+          Copy-Item "$MingwPath\libwinpthread-1.dll" -Destination "build"
           & "$QtBinPath\windeployqt.exe" --compiler-runtime --no-translations build\lidar.exe
 
       - name: Package Windows Build
@@ -70,7 +74,7 @@ jobs:
           xcopy build output\ /E /H /C /I
           7z a lidar-windows-${{ needs.get-info.outputs.shorthash }}.zip .\output\*
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: ${{ env.APP_NAME }}-windows-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}
           path: lidar-windows-*.zip
@@ -112,10 +116,10 @@ jobs:
           path: lidar-macos-*.zip
 
   linux-qt:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: get-info
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
 
@@ -125,9 +129,9 @@ jobs:
           sudo apt-get install -y ninja-build build-essential libgl1-mesa-dev libxkbcommon-x11-dev
 
       - name: Setup Qt
-        uses: jurplel/install-qt-action@v3
+        uses: jurplel/install-qt-action@v4
         with:
-          version: '6.2.4'
+          version: '6.8.2'
           host: linux
           target: desktop
           modules: qtserialport qtcharts
@@ -148,7 +152,7 @@ jobs:
           cp build/lidar output/
           ./linuxdeployqt-continuous-x86_64.AppImage output/lidar -appimage
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: ${{ env.APP_NAME }}-linux-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}
           path: ./*-x86_64.AppImage
