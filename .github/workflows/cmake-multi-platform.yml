@@ -20,7 +20,7 @@ jobs:
       shorthash: ${{ steps.get-info.outputs.shorthash }}
       fullhash: ${{ steps.get-info.outputs.fullhash }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
       - name: Get commit information
         id: get-info
         run: |
@@ -32,55 +32,45 @@ jobs:
     runs-on: windows-latest
     needs: get-info
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
         with:
           submodules: recursive
-      
+
       - name: Setup MinGW
-        uses: coffeebe4code/setup-mingw@v1-beta-2
+        uses: coffeebe4code/setup-mingw@v1
         with:
           platform: x64
           version: 11.2.0
-          
+
       - name: Setup Qt
-        uses: jurplel/install-qt-action@v4
+        uses: jurplel/install-qt-action@v3
         with:
-          version: 6.8.2
+          version: '6.2.4'
           host: windows
           target: desktop
           arch: win64_mingw
           modules: qtserialport qtcharts
-          cache: true
-          tools: tools_mingw90
 
       - name: Configure & Build
-        env:
-          QT_PATH: ${{ env.QT_PATH }}
-          MINGW_HOME: C:/ProgramData/chocolatey/lib/mingw/tools/install/mingw64
+        shell: bash
         run: |
-          cmake -G "MinGW Makefiles" -B build `
-            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} `
-            -DCMAKE_PREFIX_PATH="${{ env.QT_PATH }}/mingw_64/lib/cmake"
+          cmake -G "MinGW Makefiles" -B build 
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} 
+            -DCMAKE_PREFIX_PATH=${{ env.QT_PATH }}/mingw_64/lib/cmake
           cmake --build build --config ${{ env.BUILD_TYPE }} --parallel
-          
+
       - name: Deploy Qt dependencies
         run: |
-          $MingwPath = "C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin"
-          $QtBinPath = "$env:QT_PATH\mingw_64\bin"
-          
-          # Copy required MinGW DLLs
-          Copy-Item "$MingwPath\libgcc_s_seh-1.dll" -Destination "build"
-          Copy-Item "$MingwPath\libstdc++-6.dll" -Destination "build"
-          Copy-Item "$MingwPath\libwinpthread-1.dll" -Destination "build"
+          $QtBinPath = "${{ env.QT_PATH }}\mingw_64\bin"
           & "$QtBinPath\windeployqt.exe" --compiler-runtime --no-translations build\lidar.exe
-          
+
       - name: Package Windows Build
         run: |
           mkdir output
-          copy build\\lidar.exe output\\
-          7z a lidar-windows-${{ needs.get-info.outputs.shorthash }}.zip output/*
+          xcopy build output\ /E /H /C /I
+          7z a lidar-windows-${{ needs.get-info.outputs.shorthash }}.zip .\output\*
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v3
         with:
           name: ${{ env.APP_NAME }}-windows-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}
           path: lidar-windows-*.zip
@@ -120,33 +110,45 @@ jobs:
         with:
           name: ${{ env.APP_NAME }}-macos-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}
           path: lidar-macos-*.zip
-          
+
   linux-qt:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-20.04
     needs: get-info
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
         with:
           submodules: recursive
 
       - name: Install Dependencies
         run: |
-          sudo apt update && sudo apt install -y \
-          ninja-build qt6-base-dev qt6-tools-dev qt6-serialport-dev libqt6charts6-dev \
-          libxkbcommon-dev libx11-dev libxext-dev libglfw3-dev libgles2-mesa-dev
+          sudo apt-get update
+          sudo apt-get install -y ninja-build build-essential libgl1-mesa-dev libxkbcommon-x11-dev
+
+      - name: Setup Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: '6.2.4'
+          host: linux
+          target: desktop
+          modules: qtserialport qtcharts
 
       - name: Configure & Build
         run: |
           cmake -G "Ninja" -B build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
           cmake --build build --config ${{ env.BUILD_TYPE }} --parallel
 
-      - name: Package Linux Build
+      - name: Download linuxdeployqt
         run: |
-          mkdir output
-          cp build/lidar output/
-          tar czvf lidar-linux-${{ needs.get-info.outputs.shorthash }}.tar.gz -C output .
+          wget -c -nv "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
+          chmod a+x linuxdeployqt-continuous-x86_64.AppImage
 
-      - uses: actions/upload-artifact@v4
+      - name: Package Linux Build (AppImage)
+        run: |
+          mkdir -p output/
+          cp build/lidar output/
+          ./linuxdeployqt-continuous-x86_64.AppImage output/lidar -appimage
+
+      - uses: actions/upload-artifact@v3
         with:
           name: ${{ env.APP_NAME }}-linux-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}
-          path: lidar-linux-*.tar.gz
+          path: ./*-x86_64.AppImage
