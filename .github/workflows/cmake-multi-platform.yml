@@ -148,6 +148,8 @@ jobs:
         run: |
           mkdir -p output/
           cp build/lidar output/
+          cp empe.desktop output/
+          cp icons/EMPE.png output/empe.png
           ./linuxdeployqt-continuous-x86_64.AppImage output/lidar -appimage
 
       - uses: actions/upload-artifact@v4
