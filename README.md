@@ -105,9 +105,9 @@ Do skompilowania projektu wymagany jest kompilator C++20, CMake oraz zainstalowa
     ```
 
 ## Autorzy
-- **Mateusz Korniak** `<mkorniak04@gmail.com>`
-- **Mateusz Machowski** `<machowskimateusz51@gmail.com>`
-- **Filip Leśnik** `<filip.lesnik170@gmail.com>`
+- **Mateusz Korniak**
+- **Mateusz Machowski**
+- **Filip Leśnik**
 
 ## Licencja
 Ten program jest wolnym oprogramowaniem; możesz go rozprowadzać i/lub modyfikować na warunkach **Powszechnej Licencji Publicznej GNU, w wersji 3** tej Licencji lub (według twojego wyboru) dowolnej późniejszej wersji.
