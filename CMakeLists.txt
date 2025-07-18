@@ -138,6 +138,8 @@ target_link_libraries(lidar
 
 # Add deployment
 include(GNUInstallDirs)
+
+# Installation configuration
 if (WIN32)
     set(DEBUG_SUFFIX "")
     if (CMAKE_BUILD_TYPE MATCHES "Debug")
@@ -146,8 +148,13 @@ if (WIN32)
     set(WINDOWS_ICON_RC ${CMAKE_CURRENT_BINARY_DIR}/app_icon.rc)
     file(WRITE ${WINDOWS_ICON_RC} "IDI_ICON1 ICON \"${CMAKE_CURRENT_SOURCE_DIR}/icons/EMPE.ico\"")
     target_sources(lidar PRIVATE ${WINDOWS_ICON_RC})
-    # Deploy Qt runtime files
-    if (TARGET Qt6::qmake)
+
+    # Install executable and resources
+    install(TARGETS lidar DESTINATION .)
+    install(FILES ${QM_FILES} DESTINATION translations)
+
+    # Install Qt runtime files using windeployqt
+    if (TARGET Qt6::qmake AND NOT DEFINED ENV{GITHUB_ACTIONS})
         get_target_property(_qmake_executable Qt6::qmake IMPORTED_LOCATION)
         get_filename_component(_qt_bin_dir "${_qmake_executable}" DIRECTORY)
 
@@ -163,19 +170,21 @@ if (WIN32)
         )
     endif ()
 
-    # Deploy MinGW runtime DLLs
-    set(MINGW_BIN_PATH "F:/Qt/Tools/mingw1120_64/bin")
-    foreach (MINGW_DLL
-            libgcc_s_seh-1.dll
-            libstdc++-6.dll
-            libwinpthread-1.dll)
-        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${MINGW_BIN_PATH}/${MINGW_DLL}"
-                "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
-                COMMENT "Copying ${MINGW_DLL}..."
-        )
-    endforeach ()
+    # Deploy MinGW runtime DLLs (only for local builds)
+    if (NOT DEFINED ENV{GITHUB_ACTIONS})
+        set(MINGW_BIN_PATH "F:/Qt/Tools/mingw1120_64/bin")
+        foreach (MINGW_DLL
+                libgcc_s_seh-1.dll
+                libstdc++-6.dll
+                libwinpthread-1.dll)
+            add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    "${MINGW_BIN_PATH}/${MINGW_DLL}"
+                    "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+                    COMMENT "Copying ${MINGW_DLL}..."
+            )
+        endforeach ()
+    endif ()
 endif ()
 
 # macOS platform-specific settings
@@ -195,21 +204,19 @@ if (APPLE)
             MACOSX_PACKAGE_LOCATION "Resources"
     )
     target_sources(lidar PRIVATE ${APP_ICON_MACOSX})
+
+    # Install bundle
+    install(TARGETS lidar DESTINATION .)
+    install(FILES ${QM_FILES} DESTINATION lidar.app/Contents/Resources/translations)
 endif ()
 
 # Linux platform-specific settings
 if (UNIX AND NOT APPLE)
-    # Install binary
-    install(TARGETS lidar DESTINATION bin)
+    # Install executable and resources
+    install(TARGETS lidar DESTINATION ${CMAKE_INSTALL_BINDIR})
+    install(FILES ${QM_FILES} DESTINATION ${CMAKE_INSTALL_DATADIR}/lidar/translations)
 
-    # Install desktop file
-
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/empe.desktop
-            DESTINATION share/applications)
-
-    # Install icons
-    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/icons/EMPE.png
-            DESTINATION share/icons/hicolor/256x256/apps
-            RENAME empe.png)
-
+    # Install desktop file and icon (optional)
+    # install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/empe.desktop DESTINATION ${CMAKE_INSTALL_DATADIR}/applications)
+    # install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/icons/EMPE.png DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/256x256/apps)
 endif ()

@@ -1,0 +1,39 @@
+name: Feature Request
+description: Request a new feature
+labels: [enhancement]
+body:
+- type: markdown
+  attributes:
+    value: |
+      ### Use this form to request a feature for EMPE.
+- type: input
+  attributes:
+    label: Role
+    description: In what way do you use EMPE that needs this feature?
+    placeholder: I use EMPE for lidar data analysis.
+  validations:
+    required: true
+- type: input
+  attributes:
+    label: Feature Request
+    description: What do you want EMPE to do?
+    placeholder: I want EMPE to support additional data formats.
+  validations:
+    required: true
+- type: input
+  attributes:
+    label: Benefit
+    description: Why do you need EMPE to do this?
+    placeholder: so that I can work with data from different sensors.
+  validations:
+    required: true
+- type: checkboxes
+  attributes:
+    label: This suggestion is unique
+    options:
+    - label: I have searched the issue tracker and did not find an issue describing my suggestion, especially not one that has been rejected.
+      required: true
+- type: textarea
+  attributes:
+    label: You may use the editor below to elaborate further.
+

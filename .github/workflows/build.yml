@@ -1,0 +1,186 @@
+name: Build EMPE
+
+on:
+  workflow_call:
+    inputs:
+      build_type:
+        description: Type of build (Debug, Release, RelWithDebInfo, MinSizeRel)
+        type: string
+        default: Debug
+      is_qt_cached:
+        description: Enable Qt caching or not
+        type: string
+        default: true
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            qt_ver: 6
+            qt_host: linux
+            qt_arch: ""
+            qt_version: "6.8.2"
+            qt_modules: "qtserialport qtcharts"
+
+          - os: windows-2022
+            name: "Windows-MSVC"
+            msystem: ""
+            architecture: "x64"
+            vcvars_arch: "amd64"
+            qt_ver: 6
+            qt_host: "windows"
+            qt_arch: "win64_msvc2022_64"
+            qt_version: "6.8.2"
+            qt_modules: "qtserialport qtcharts"
+
+          - os: macos-14
+            name: macOS
+            macosx_deployment_target: 11.0
+            qt_ver: 6
+            qt_host: mac
+            qt_arch: ""
+            qt_version: "6.8.2"
+            qt_modules: "qtserialport qtcharts"
+
+    runs-on: ${{ matrix.os }}
+
+    env:
+      MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macosx_deployment_target }}
+      INSTALL_DIR: "install"
+      BUILD_DIR: "build"
+      HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
+
+    steps:
+      ##
+      # PREPARE
+      ##
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: "true"
+
+      - name: Set short version
+        shell: bash
+        run: |
+          ver_short=`git rev-parse --short HEAD`
+          echo "VERSION=$ver_short" >> $GITHUB_ENV
+
+      - name: Install Dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get -y update
+          sudo apt-get -y install ninja-build
+
+      - name: Install Dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew update
+          brew install ninja
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          aqtversion: "==3.1.*"
+          py7zrversion: ">=0.20.2"
+          version: ${{ matrix.qt_version }}
+          target: "desktop"
+          arch: ${{ matrix.qt_arch }}
+          modules: ${{ matrix.qt_modules }}
+          cache: ${{ inputs.is_qt_cached }}
+
+      - name: Install MSVC (Windows MSVC)
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          vsversion: 2022
+          arch: ${{ matrix.vcvars_arch }}
+
+      ##
+      # CONFIGURE
+      ##
+
+      - name: Configure CMake (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          cmake -S . -B ${{ env.BUILD_DIR }} -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }} -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -G Ninja
+
+      - name: Configure CMake (Windows MSVC)
+        if: runner.os == 'Windows'
+        run: |
+          cmake -S . -B ${{ env.BUILD_DIR }} -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }} -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} -DCMAKE_MSVC_RUNTIME_LIBRARY="MultiThreadedDLL" -A${{ matrix.architecture}}
+
+      - name: Configure CMake (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          cmake -S . -B ${{ env.BUILD_DIR }} -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} -G Ninja
+
+      ##
+      # BUILD
+      ##
+
+      - name: Build
+        if: runner.os != 'Windows'
+        run: |
+          cmake --build ${{ env.BUILD_DIR }}
+
+      - name: Build (Windows MSVC)
+        if: runner.os == 'Windows'
+        run: |
+          cmake --build ${{ env.BUILD_DIR }} --config ${{ inputs.build_type }}
+
+      ##
+      # PACKAGE BUILDS
+      ##
+
+      - name: Package (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          cmake --install ${{ env.BUILD_DIR }}
+          cd ${{ env.INSTALL_DIR }}
+          chmod +x "lidar.app/Contents/MacOS/lidar"
+          ditto -c -k --sequesterRsrc --keepParent "lidar.app" ../EMPE-macOS.zip
+
+      - name: Package (Windows MSVC)
+        if: runner.os == 'Windows'
+        run: |
+          cmake --install ${{ env.BUILD_DIR }} --config ${{ inputs.build_type }}
+          cd ${{ env.INSTALL_DIR }}
+          # Deploy Qt dependencies
+          ${{ env.QT_ROOT_DIR }}/bin/windeployqt.exe --compiler-runtime --no-translations lidar.exe
+          # Create zip
+          7z a ../EMPE-Windows.zip *
+
+      - name: Package (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          cmake --install ${{ env.BUILD_DIR }}
+          cd ${{ env.INSTALL_DIR }}
+          tar -czf ../EMPE-Linux.tar.gz *
+
+      ##
+      # UPLOAD BUILDS
+      ##
+
+      - name: Upload binary (macOS)
+        if: runner.os == 'macOS'
+        uses: actions/upload-artifact@v4
+        with:
+          name: EMPE-macOS-${{ env.VERSION }}-${{ inputs.build_type }}
+          path: EMPE-macOS.zip
+
+      - name: Upload binary (Windows)
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: EMPE-Windows-${{ env.VERSION }}-${{ inputs.build_type }}
+          path: EMPE-Windows.zip
+
+      - name: Upload binary (Linux)
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v4
+        with:
+          name: EMPE-Linux-${{ env.VERSION }}-${{ inputs.build_type }}
+          path: EMPE-Linux.tar.gz
