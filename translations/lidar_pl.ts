@@ -197,8 +197,8 @@
             <translation>EMPE</translation>
         </message>
         <message>
-            <source>COM Mode</source>
-            <translation>Tryb portów COM. Jedno/dwa urządzenia</translation>
+            <source>Use Dual COM Ports</source>
+            <translation>Użyj dwóch portów COM</translation>
         </message>
         <message>
             <source>Single COM</source>
@@ -583,6 +583,14 @@
         <message>
             <source>Stoppers</source>
             <translation>Stopery</translation>
+        </message>
+        <message>
+            <source>Time differences between drops</source>
+            <translation>Czas pomiędzy spadkami</translation>
+        </message>
+        <message>
+            <source>Save Intervals</source>
+            <translation>Zapisz wynik</translation>
         </message>
         <message>
             <source>Drop Settings</source>
