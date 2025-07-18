@@ -44,10 +44,10 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: '6.7.3'
-          target: 'desktop'
-          arch: 'win64_mingw'
-          modules: 'all'
+          version: 6.7.3
+          target: desktop
+          arch: win64_mingw
+          modules: qtserialport qtcharts
           use-official: false
 
       - name: Configure & Build
@@ -124,10 +124,16 @@ jobs:
           sudo apt-get update && sudo apt-get upgrade && sudo apt install -y \
           libx11-dev libxext-dev libwayland-dev libdecor-0-dev \
           libxkbcommon-dev libglfw3-dev libgles2-mesa-dev libfuse2 \
-          clang build-essential ninja-build qt6-* \
-          qt6-base-dev qt6-tools-dev qt6-multimedia-dev \
-          qt6-serialport-dev libqt6charts6-dev \
+          clang build-essential ninja-build \
           libasound2-dev libpulse-dev libopenal-dev libudev-dev
+      - name: Setup Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: 6.8.3
+          host: linux
+          target: desktop
+          arch: linux_gcc_64
+          modules: qtserialport qtcharts
       - name: Check Qt version
         run: |
           qmake6 -v || qtpaths6 --qt-version
