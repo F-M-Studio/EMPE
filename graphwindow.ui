@@ -1,58 +1,79 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Nazwa Projektu: EMPE
+  Plik: graphwindow.ui
+
+  Krótki opis pliku: Definicja interfejsu użytkownika okna wykresu w formacie Qt UI XML.
+
+  Autorzy:
+  Mateusz Korniak <mkorniak04@gmail.com>
+  Mateusz Machowski <machowskimateusz51@gmail.com>
+  Filip Leśnik <filip.lesnik170@gmail.com>
+
+  Data Utworzenia: 10 Marca 2025
+  Ostatnia Modyfikacja: 18 Czerwca 2025
+
+  Ten program jest wolnym oprogramowaniem; możesz go rozprowadzać i/lub
+  modyfikować na warunkach Powszechnej Licencji Publicznej GNU,
+  opublikowanej przez Free Software Foundation, w wersji 3 tej Licencji
+  lub (według twojego wyboru) dowolnej późniejszej wersji.
+
+  Ten program jest rozpowszechniany w nadziei, że będzie użyteczny, ale
+  BEZ ŻADNEJ GWARANCJI; nawet bez domyślnej gwarancji PRZYDATNOŚCI
+  HANDLOWEJ lub PRZYDATNOŚCI DO OKREŚLONEGO CELU. Zobacz Powszechną
+  Licencję Publiczną GNU, aby uzyskać więcej szczegółów.
+
+  Powinieneś otrzymać kopię Powszechnej Licencji Publicznej GNU wraz z
+  tym programem. Jeśli nie, zobacz <http://www.gnu.org/licenses/>.
+-->
 <ui version="4.0">
-    <class>GraphWindow</class>
-    <widget class="QMainWindow" name="GraphWindow">
-        <property name="geometry">
-            <rect>
-                <x>0</x>
-                <y>0</y>
-                <width>800</width>
-                <height>600</height>
-            </rect>
-        </property>
-        <property name="windowTitle">
-            <string>MainWindow</string>
-        </property>
-        <widget class="QWidget" name="centralwidget">
-            <widget class="QFrame" name="frame">
-                <property name="geometry">
-                    <rect>
-                        <x>10</x>
-                        <y>10</y>
-                        <width>780</width>
-                        <height>550</height>
-                    </rect>
-                </property>
-                <property name="maximumSize">
-                    <size>
-                        <width>780</width>
-                        <height>550</height>
-                    </size>
-                </property>
-                <property name="layoutDirection">
-                    <enum>Qt::LayoutDirection::LeftToRight</enum>
-                </property>
-                <property name="autoFillBackground">
-                    <bool>false</bool>
-                </property>
-                <layout class="QHBoxLayout" name="horizontalLayout">
-                    <property name="spacing">
-                        <number>1</number>
-                    </property>
-                </layout>
-            </widget>
-        </widget>
-        <widget class="QMenuBar" name="menubar">
-            <property name="geometry">
-                <rect>
-                    <x>0</x>
-                    <y>0</y>
-                    <width>800</width>
-                    <height>24</height>
-                </rect>
-            </property>
-        </widget>
-    </widget>
-    <resources/>
-    <connections/>
+ <class>GraphWindow</class>
+ <widget class="QMainWindow" name="GraphWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>830</width>
+    <height>829</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QFrame" name="frame">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>10</y>
+      <width>780</width>
+      <height>550</height>
+     </rect>
+    </property>
+    <property name="layoutDirection">
+     <enum>Qt::LayoutDirection::LeftToRight</enum>
+    </property>
+    <property name="autoFillBackground">
+     <bool>false</bool>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <property name="spacing">
+      <number>1</number>
+     </property>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>830</width>
+     <height>24</height>
+    </rect>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
 </ui>

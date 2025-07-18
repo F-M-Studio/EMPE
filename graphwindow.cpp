@@ -1,7 +1,36 @@
+/*
+* Nazwa Projektu: EMPE
+ * Plik: graphwindow.cpp
+ *
+ * Krótki opis pliku: Implementacja klasy okna wykresu zawierająca funkcje wizualizacji danych i interakcji z użytkownikiem.
+ *
+ * Autorzy:
+ * Mateusz Korniak <mkorniak04@gmail.com>
+ * Mateusz Machowski <machowskimateusz51@gmail.com>
+ * Filip Leśnik <filip.lesnik170@gmail.com>
+ *
+ * Data Utworzenia: 10 Marca 2025
+ * Ostatnia Modyfikacja: 18 Czerwca 2025
+ *
+ * Ten program jest wolnym oprogramowaniem; możesz go rozprowadzać i/lub
+ * modyfikować na warunkach Powszechnej Licencji Publicznej GNU,
+ * opublikowanej przez Free Software Foundation, w wersji 3 tej Licencji
+ * lub (według twojego wyboru) dowolnej późniejszej wersji.
+ *
+ * Ten program jest rozpowszechniany w nadziei, że będzie użyteczny, ale
+ * BEZ ŻADNEJ GWARANCJI; nawet bez domyślnej gwarancji PRZYDATNOŚCI
+ * HANDLOWEJ lub PRZYDATNOŚCI DO OKREŚLONEGO CELU. Zobacz Powszechną
+ * Licencję Publiczną GNU, aby uzyskać więcej szczegółów.
+ *
+ * Powinieneś otrzymać kopię Powszechnej Licencji Publicznej GNU wraz z
+ * tym programem. Jeśli nie, zobacz <http://www.gnu.org/licenses/>.
+*/
+
 #include "graphwindow.h"
 #include "./ui_graphwindow.h"
 #include "mainwindow.h"
 #include "appmenu.h"
+#include "portconfig.h"
 #include <QtCharts>
 #include <QLineSeries>
 #include <QChartView>
@@ -13,30 +42,23 @@
 GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(parent), ui(new Ui::GraphWindow),
                                                                     mainWindow(mainWindow) {
     ui->setupUi(this);
-
+    setWindowTitle("Graph Window");
     ui->frame->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
     ui->frame->setMinimumSize(0, 0);
 
-    // Make sure the frame fills the central widget
+
     ui->centralwidget->setLayout(new QVBoxLayout());
     ui->centralwidget->layout()->setContentsMargins(0, 0, 0, 10);
     ui->centralwidget->layout()->addWidget(ui->frame);
 
-    auto *appMenu = new AppMenu(this, mainWindow);
-    connect(appMenu, &AppMenu::portSettingsRequested, mainWindow, &MainWindow::openPortSettings);
-    connect(appMenu, &AppMenu::graphWindowRequested, mainWindow, &MainWindow::openGraphWindow);
-    connect(appMenu, &AppMenu::startStopRequested, mainWindow, &MainWindow::handleStartStopButton);
-    connect(appMenu, &AppMenu::saveDataRequested, mainWindow, &MainWindow::saveDataToFile);
-    connect(appMenu, &AppMenu::languageChanged, mainWindow, &MainWindow::loadLanguage);
-
     delete ui->frame->layout();
 
-    // Create the layout first
+
     auto *clearBtnContainer = new QWidget();
     auto *clearBtnLayout = new QHBoxLayout(clearBtnContainer);
     clearBtnLayout->addStretch();
 
-    // Add start/stop button first (on left)
+
     startStopBtn = new QPushButton(mainWindow->Reading ? tr("Stop") : tr("Start"));
     startStopBtn->setFixedWidth(80);
     connect(startStopBtn, &QPushButton::clicked, mainWindow, &MainWindow::handleStartStopButton);
@@ -45,15 +67,15 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     });
     clearBtnLayout->addWidget(startStopBtn);
 
-    // Then add clear button (on right)
+
     clearGraphBtn = new QPushButton(tr("Clear Graph"));
     clearGraphBtn->setFixedWidth(140);
     clearBtnLayout->addWidget(clearGraphBtn);
     clearBtnLayout->addStretch();
 
-    // Connect clear button
     connect(clearGraphBtn, &QPushButton::clicked, this, &GraphWindow::clearGraph);
     series = new QLineSeries();
+    series2 = new QLineSeries();
     chart = new QChart();
     const auto chartView = new QChartView(chart);
     chart->layout()->setContentsMargins(0, 0, 0, 0);
@@ -72,10 +94,13 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     axisY->setLabelFormat("%d");
 
     chart->addSeries(series);
+    chart->addSeries(series2);
     chart->addAxis(axisX, Qt::AlignBottom);
     chart->addAxis(axisY, Qt::AlignLeft);
     series->attachAxis(axisX);
     series->attachAxis(axisY);
+    series2->attachAxis(axisX);
+    series2->attachAxis(axisY);
     chart->legend()->hide();
 
     chart->setBackgroundVisible(true);
@@ -84,7 +109,7 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     chartView->setRenderHint(QPainter::Antialiasing);
     chartView->setFrameStyle(QFrame::NoFrame);
 
-    // Create recording slider components
+
     recordingTitleLabel = new QLabel(tr("Recording period [ms]:"));
     recordingSlider = new QSlider(Qt::Horizontal);
     recordingEdit = new QLineEdit("100");
@@ -95,7 +120,7 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     recordingSlider->setRange(10, 1000);
     recordingSlider->setValue(100);
 
-    // Create Y-axis control components
+
     yAxisToggle = new QCheckBox(tr("Set Y"));
     yAxisTitleLabel = new QLabel(tr("Y axis range:"));
     yAxisTitleLabel->setContentsMargins(10, 0, 0, 0);
@@ -111,8 +136,8 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     yAxisTitleLabel->setEnabled(false);
     yAxisEdit->setEnabled(false);
 
-    // Create auto-remove points control components
-    autoRemoveToggle = new QCheckBox(tr("Auto-remove points"));
+
+    autoRemoveToggle = new QCheckBox(tr("Auto-scroll X axis"));
     autoRemoveToggle->setChecked(true);
     pointsLimitLabel = new QLabel(tr("Points limit:"));
     pointsLimitLabel->setContentsMargins(10, 0, 0, 0);
@@ -125,7 +150,7 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     pointsLimitSlider->setRange(10, 10000);
     pointsLimitSlider->setValue(100);
 
-    // Create smoothing controls (add after the other controls)
+
     smoothingToggle = new QCheckBox(tr("Smooth Graph"));
     smoothingToggle->setChecked(false);
     smoothingLevelLabel = new QLabel(tr("Smoothing:"));
@@ -142,10 +167,10 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     smoothingLevelLabel->setEnabled(false);
     smoothingLevelEdit->setEnabled(false);
 
-    // Create the widget for smoothing controls
+
     auto *smoothingWidget = new QWidget();
     auto *smoothingLayout = new QHBoxLayout(smoothingWidget);
-    // Set the margins and spacing for the layout (change if shitty)
+
     smoothingLayout->setContentsMargins(11, 2, 11, 2);
     smoothingLayout->setSpacing(4);
     smoothingLayout->addWidget(smoothingToggle);
@@ -154,13 +179,14 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     smoothingLayout->addWidget(smoothingLevelEdit);
     smoothingWidget->setLayout(smoothingLayout);
 
-    // Initialize the splineSeries but don't add it to the chart yet
-    splineSeries = new QSplineSeries();
 
-    // Create widgets for sliders
+    splineSeries = new QSplineSeries();
+    splineSeries2 = new QSplineSeries();
+
+
     auto *recordingSliderWidget = new QWidget();
     auto *recordingLayout = new QHBoxLayout(recordingSliderWidget);
-    // Set the margins and spacing for the layout (change if shitty)
+
     recordingLayout->setContentsMargins(11, 2, 11, 2);
     recordingLayout->setSpacing(4);
 
@@ -172,7 +198,7 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
 
     auto *yAxisSliderWidget = new QWidget();
     auto *yAxisLayout = new QHBoxLayout(yAxisSliderWidget);
-    // Set the margins and spacing for the layout (change if shitty)
+
     yAxisLayout->setContentsMargins(11, 2, 11, 2);
     yAxisLayout->setSpacing(4);
 
@@ -184,7 +210,7 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
 
     auto *pointsLimitWidget = new QWidget();
     auto *pointsLayout = new QHBoxLayout(pointsLimitWidget);
-    // Set the margins and spacing for the layout (change if shitty)
+
     pointsLayout->setContentsMargins(11, 2, 11, 2);
     pointsLayout->setSpacing(4);
 
@@ -203,15 +229,15 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     mainLayout->addWidget(pointsLimitWidget);
     ui->frame->setLayout(mainLayout);
 
-    // Enable all rendering hints for high-quality text
+
     chartView->setRenderHint(QPainter::Antialiasing);
     chartView->setRenderHint(QPainter::TextAntialiasing);
     chartView->setRenderHint(QPainter::SmoothPixmapTransform);
     chartView->setRenderHint(QPainter::LosslessImageRendering);
 
-    // Set better OpenGL format
+
     QSurfaceFormat format;
-    format.setSamples(8); // Increase from 4 to 8 for better anti-aliasing
+    format.setSamples(8);
     format.setDepthBufferSize(24);
     format.setStencilBufferSize(8);
     format.setSwapInterval(1);
@@ -284,7 +310,6 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
 
     mainLayout->addWidget(smoothingWidget);
 
-    // Modify the smoothingToggle connection
     connect(smoothingToggle, &QCheckBox::toggled, this, [this](const bool checked) {
         useSpline = checked;
         smoothingLevelSlider->setEnabled(checked);
@@ -292,24 +317,39 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
         smoothingLevelEdit->setEnabled(checked);
 
         if (checked) {
-            // Apply smoothing to existing points
             applySmoothing();
 
-            // Show the smoothed series
+
             chart->removeSeries(series);
+            chart->removeSeries(series2);
             chart->addSeries(splineSeries);
+            chart->addSeries(splineSeries2);
             splineSeries->attachAxis(axisX);
             splineSeries->attachAxis(axisY);
+            splineSeries2->attachAxis(axisX);
+            splineSeries2->attachAxis(axisY);
+
+            splineSeries->setVisible(showSeries1);
+            splineSeries2->setVisible(showSeries2);
         } else {
-            // Switch back to original series
             chart->removeSeries(splineSeries);
+            chart->removeSeries(splineSeries2);
             chart->addSeries(series);
+            chart->addSeries(series2);
             series->attachAxis(axisX);
             series->attachAxis(axisY);
+            series2->attachAxis(axisX);
+            series2->attachAxis(axisY);
+
+            series->setVisible(showSeries1);
+            series2->setVisible(showSeries2);
         }
+
+        // Aktualizuj grubość linii po przełączeniu typu wykresu
+        updateChartTheme();
     });
 
-    // Update the smoothing level slider connection
+
     connect(smoothingLevelSlider, &QSlider::valueChanged, this, [this](int value) {
         smoothingLevelEdit->setText(QString::number(value));
         if (useSpline) {
@@ -317,15 +357,90 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
         }
     });
 
-    // Connect smoothing level edit
+
     connect(smoothingLevelEdit, &QLineEdit::editingFinished, this, [this] {
         const int value = smoothingLevelEdit->text().toInt();
         smoothingLevelSlider->setValue(value);
     });
 
+        lineThickness1Label = new QLabel(tr("Line thickness 1:"));
+    lineThickness1Label->setContentsMargins(10, 0, 0, 0);
+    lineThickness1Slider = new QSlider(Qt::Horizontal);
+    lineThickness1Edit = new QLineEdit("3");
+    lineThickness1Edit->setAlignment(Qt::AlignRight);
+    lineThickness1Edit->setFixedWidth(50);
+    lineThickness1Edit->setValidator(new QIntValidator(1, 10, this));
+
+    lineThickness1Slider->setRange(1, 10);
+    lineThickness1Slider->setValue(3);
+
+    auto *lineThickness1Widget = new QWidget();
+    auto *lineThickness1Layout = new QHBoxLayout(lineThickness1Widget);
+
+    lineThickness1Layout->setContentsMargins(11, 2, 11, 2);
+    lineThickness1Layout->setSpacing(4);
+    lineThickness1Layout->addWidget(lineThickness1Label);
+    lineThickness1Layout->addWidget(lineThickness1Slider);
+    lineThickness1Layout->addWidget(lineThickness1Edit);
+    lineThickness1Widget->setLayout(lineThickness1Layout);
+
+    lineThickness2Label = new QLabel(tr("Line thickness 2:"));
+    lineThickness2Label->setContentsMargins(10, 0, 0, 0);
+    lineThickness2Slider = new QSlider(Qt::Horizontal);
+    lineThickness2Edit = new QLineEdit("3");
+    lineThickness2Edit->setAlignment(Qt::AlignRight);
+    lineThickness2Edit->setFixedWidth(50);
+    lineThickness2Edit->setValidator(new QIntValidator(1, 10, this));
+
+    lineThickness2Slider->setRange(1, 10);
+    lineThickness2Slider->setValue(3);
+
+    auto *lineThickness2Widget = new QWidget();
+    auto *lineThickness2Layout = new QHBoxLayout(lineThickness2Widget);
+
+    lineThickness2Layout->setContentsMargins(11, 2, 11, 2);
+    lineThickness2Layout->setSpacing(4);
+    lineThickness2Layout->addWidget(lineThickness2Label);
+    lineThickness2Layout->addWidget(lineThickness2Slider);
+    lineThickness2Layout->addWidget(lineThickness2Edit);
+    lineThickness2Widget->setLayout(lineThickness2Layout);
+
+    if (PortConfig::useOneCOM()) {
+        lineThickness2Widget->hide();
+    }
+
+    mainLayout->addWidget(lineThickness1Widget);
+    mainLayout->addWidget(lineThickness2Widget);
+
+    connect(lineThickness1Slider, &QSlider::valueChanged, this, [this](int value) {
+        lineThickness1Edit->setText(QString::number(value));
+        lineThickness1 = value;
+        updateChartTheme();
+    });
+
+    connect(lineThickness1Edit, &QLineEdit::editingFinished, this, [this] {
+        int value = lineThickness1Edit->text().toInt();
+        lineThickness1Slider->setValue(value);
+        lineThickness1 = value;
+        updateChartTheme();
+    });
+
+    connect(lineThickness2Slider, &QSlider::valueChanged, this, [this](int value) {
+        lineThickness2Edit->setText(QString::number(value));
+        lineThickness2 = value;
+        updateChartTheme();
+    });
+
+    connect(lineThickness2Edit, &QLineEdit::editingFinished, this, [this] {
+        int value = lineThickness2Edit->text().toInt();
+        lineThickness2Slider->setValue(value);
+        lineThickness2 = value;
+        updateChartTheme();
+    });
+
     timeAxisToggle = new QCheckBox(tr("Use Relative Time"));
     timeAxisToggle->setChecked(true);
-
+    timeAxisToggle->hide();
 
     auto *timeAxisWidget = new QWidget();
     auto *timeAxisLayout = new QHBoxLayout(timeAxisWidget);
@@ -337,16 +452,52 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
     mainLayout->addWidget(timeAxisWidget);
 
     connect(timeAxisToggle, &QCheckBox::toggled, this, [this, mainWindow](bool checked) {
-        useAbsoluteTime = !checked; // Toggle is for "Relative Time" so invert the logic
+        useAbsoluteTime = !checked;
 
-        useAbsoluteTime = !timeAxisToggle->isChecked();
         if (!useAbsoluteTime && mainWindow->Reading) {
             initialTime = mainWindow->timeInMilliseconds;
         }
 
-        // Clear and redraw the chart with new time axis setting
-        series->clear();
-        splineSeries->clear();
+
+        clearGraph();
+    });
+
+
+    showSeries1Toggle = new QCheckBox(tr("Show Series 1"));
+    showSeries1Toggle->setChecked(true);
+    showSeries2Toggle = new QCheckBox(tr("Show Series 2"));
+    showSeries2Toggle->setChecked(true);
+
+    if (PortConfig::useOneCOM()) {
+        showSeries2Toggle->hide();
+    } else {
+        showSeries2Toggle->show();
+    }
+    timeAxisLayout->addStretch();
+    timeAxisLayout->addWidget(showSeries1Toggle);
+    timeAxisLayout->addWidget(showSeries2Toggle);
+
+
+    connect(showSeries1Toggle, &QCheckBox::toggled, this, [this](bool checked) {
+        showSeries1 = checked;
+
+
+        if (useSpline) {
+            splineSeries->setVisible(checked);
+        } else {
+            series->setVisible(checked);
+        }
+    });
+
+    connect(showSeries2Toggle, &QCheckBox::toggled, this, [this](bool checked) {
+        showSeries2 = checked;
+
+
+        if (useSpline) {
+            splineSeries2->setVisible(checked);
+        } else {
+            series2->setVisible(checked);
+        }
     });
 
     updateTimer->start(recordingSlider->value());
@@ -363,8 +514,8 @@ void GraphWindow::keyPressEvent(QKeyEvent *event) {
 
         if (Gen) {
             mainWindow->Reading = true;
-            // Start generating random data
-            auto *genTimer = new QTimer(this);
+
+            auto genTimer = new QTimer(this);
             connect(genTimer, &QTimer::timeout, this, [this, genTimer]() {
                 if (!Gen) {
                     genTimer->stop();
@@ -372,28 +523,24 @@ void GraphWindow::keyPressEvent(QKeyEvent *event) {
                     return;
                 }
 
-                // Generate random distance and incrementing time
+
                 static int timeValue = 0;
                 timeValue += 10;
                 mainWindow->distance = rand() % 50;
                 mainWindow->timeInMilliseconds = timeValue;
 
-                // Force an immediate graph update
+
                 updateGraph();
-                qDebug() << "GraphWindow::keyPressEvent";
-                qDebug() << "timeValue: " << mainWindow->timeInMilliseconds;
-                qDebug() << "distance: " << mainWindow->distance;
             });
             genTimer->start(100);
         }
     } else {
-        mainWindow->Reading = false;
         QMainWindow::keyPressEvent(event);
     }
 }
 
 void GraphWindow::changeEvent(QEvent *event) {
-    if (event->type() == QEvent::PaletteChange) {
+    if (event->type() == QEvent::ApplicationPaletteChange) {
         updateChartTheme();
     }
     QMainWindow::changeEvent(event);
@@ -401,13 +548,13 @@ void GraphWindow::changeEvent(QEvent *event) {
 
 void GraphWindow::updateChartTheme() {
     if (!chart || !axisX || !axisY || !series || !splineSeries) {
-        return; // Guard against null pointers
+        return;
     }
 
     QPalette pal = palette();
     bool isDarkMode = pal.color(QPalette::Window).lightness() < 128;
 
-    // Set chart theme based on system theme
+
     chart->setTheme(isDarkMode ? QChart::ChartThemeDark : QChart::ChartThemeLight);
 
     QColor bgColor = pal.color(QPalette::Window);
@@ -416,14 +563,14 @@ void GraphWindow::updateChartTheme() {
 
     chart->setBackgroundVisible(true);
     chart->setBackgroundBrush(QBrush(bgColor));
-    chart->setBackgroundRoundness(0); // Ensure no rounded corners
+    chart->setBackgroundRoundness(0);
     chart->setPlotAreaBackgroundVisible(true);
     chart->setPlotAreaBackgroundBrush(QBrush(baseColor));
 
-    // Set text colors
+
     chart->setTitleBrush(QBrush(textColor));
 
-    // Update axes
+
     axisX->setLabelsColor(textColor);
     axisY->setLabelsColor(textColor);
     axisX->setTitleBrush(QBrush(textColor));
@@ -431,82 +578,121 @@ void GraphWindow::updateChartTheme() {
     axisX->setLinePenColor(textColor);
     axisY->setLinePenColor(textColor);
 
-    // Make grid lines very light
+
     QColor gridColor = textColor;
-    gridColor.setAlpha(30); // Reduced from 50
+    gridColor.setAlpha(30);
     axisX->setGridLineColor(gridColor);
     axisY->setGridLineColor(gridColor);
 
     QColor minorGridColor = textColor;
-    minorGridColor.setAlpha(15); // Reduced from 25
+    minorGridColor.setAlpha(15);
     axisX->setMinorGridLineColor(minorGridColor);
     axisY->setMinorGridLineColor(minorGridColor);
 
-    // Use high-contrast colors for the series
+
     QColor primaryColor;
     QColor secondaryColor;
+    QColor primaryColor2;
+    QColor secondaryColor2;
 
     if (isDarkMode) {
-        // Bright colors for dark mode
-        primaryColor = QColor(0, 230, 118); // Bright green
-        secondaryColor = QColor(255, 128, 0); // Bright orange
+        primaryColor = QColor(0, 230, 118);
+        secondaryColor = QColor(255, 128, 0);
+        primaryColor2 = QColor(0, 180, 255);
+        secondaryColor2 = QColor(255, 0, 128);
     } else {
-        // Strong colors for light mode
-        primaryColor = QColor(0, 100, 255); // Deep blue
-        secondaryColor = QColor(220, 0, 80); // Deep red
+        primaryColor = QColor(0, 100, 255);
+        secondaryColor = QColor(220, 0, 80);
+        primaryColor2 = QColor(0, 150, 0);
+        secondaryColor2 = QColor(180, 0, 180);
     }
 
-    // Create new pens with increased width
+
     QPen newSeriesPen(primaryColor);
-    newSeriesPen.setWidth(3); // Increased from 2
+    newSeriesPen.setWidth(lineThickness1);  // Zastosuj wybraną grubość linii
     newSeriesPen.setCapStyle(Qt::RoundCap);
     series->setPen(newSeriesPen);
 
     QPen newSplinePen(secondaryColor);
-    newSplinePen.setWidth(3); // Increased from 2
+    newSplinePen.setWidth(lineThickness1);  // Zastosuj wybraną grubość linii
     newSplinePen.setCapStyle(Qt::RoundCap);
     splineSeries->setPen(newSplinePen);
 
-    // Force a complete redraw
+    QPen newSeriesPen2(primaryColor2);
+    newSeriesPen2.setWidth(lineThickness2);  // Zastosuj wybraną grubość dla drugiej linii
+    newSeriesPen2.setCapStyle(Qt::RoundCap);
+    series2->setPen(newSeriesPen2);
+
+    QPen newSplinePen2(secondaryColor2);
+    newSplinePen2.setWidth(lineThickness2);  // Zastosuj wybraną grubość dla drugiej linii
+    newSplinePen2.setCapStyle(Qt::RoundCap);
+    splineSeries2->setPen(newSplinePen2);
+
     chart->update();
     chart->scene()->update();
 }
 
 void GraphWindow::applySmoothing() const {
-    if (!useSpline || series->count() < 2) {
+    if (!useSpline) {
         return;
     }
 
-    // Get window size from smoothing level (1-25)
-    int windowSize = 1 + (smoothingLevelSlider->value() * 10 / 4);
-    if (windowSize % 2 == 0) windowSize++; // Make sure it's odd
+    int windowSize = 1 + (smoothingLevelSlider->value() * 2.5);
+    if (windowSize % 2 == 0) windowSize++;
 
-    // Create a copy of original points
-    QVector<QPointF> originalPoints;
-    for (int i = 0; i < series->count(); ++i) {
-        originalPoints.append(series->at(i));
-    }
-
-    // Clear the spline series
-    splineSeries->clear();
-
-    // Apply smoothing to ALL points
-    const int halfWindow = windowSize / 2;
-    for (int i = 0; i < originalPoints.size(); ++i) {
-        double sumX = 0;
-        double sumY = 0;
-        int count = 0;
-
-        // Use available points within the window
-        for (int j = qMax(0, i - halfWindow); j <= qMin(i + halfWindow, originalPoints.size() - 1); ++j) {
-            sumX += originalPoints[j].x();
-            sumY += originalPoints[j].y();
-            count++;
+    if (series->count() >= 2) {
+        QVector<QPointF> originalPoints;
+        for (int i = 0; i < series->count(); ++i) {
+            originalPoints.append(series->at(i));
         }
 
-        // Add the smoothed point
-        if (count > 0) {
-            splineSeries->append(sumX / count, sumY / count);
+
+        splineSeries->clear();
+
+
+        const int halfWindow = windowSize / 2;
+        for (int i = 0; i < originalPoints.size(); ++i) {
+            double sumX = 0;
+            double sumY = 0;
+            int count = 0;
+
+
+            for (int j = qMax(0, i - halfWindow); j <= qMin(i + halfWindow, originalPoints.size() - 1); ++j) {
+                sumX += originalPoints[j].x();
+                sumY += originalPoints[j].y();
+                count++;
+            }
+
+
+            if (count > 0) {
+                splineSeries->append(sumX / count, sumY / count);
+            }
+        }
+    }
+
+    if (series2->count() >= 2) {
+        QVector<QPointF> originalPoints;
+        for (int i = 0; i < series2->count(); ++i) {
+            originalPoints.append(series2->at(i));
+        }
+
+        splineSeries2->clear();
+
+        const int halfWindow = windowSize / 2;
+        for (int i = 0; i < originalPoints.size(); ++i) {
+            double sumX = 0;
+            double sumY = 0;
+            int count = 0;
+
+            for (int j = qMax(0, i - halfWindow); j <= qMin(i + halfWindow, originalPoints.size() - 1); ++j) {
+                sumX += originalPoints[j].x();
+                sumY += originalPoints[j].y();
+                count++;
+            }
+
+            if (count > 0) {
+                splineSeries2->append(sumX / count, sumY / count);
+            }
         }
     }
 }
@@ -514,6 +700,8 @@ void GraphWindow::applySmoothing() const {
 void GraphWindow::clearGraph() {
     series->clear();
     splineSeries->clear();
+    series2->clear();
+    splineSeries2->clear();
 
     if (!useAbsoluteTime && mainWindow->Reading) {
         initialTime = mainWindow->timeInMilliseconds;
@@ -533,44 +721,63 @@ void GraphWindow::updateGraph() {
     startStopBtn->setText(mainWindow->Reading ? tr("Stop") : tr("Start"));
 
     if (mainWindow->Reading) {
-        // Calculate X coordinate based on mode
         double xValue = useAbsoluteTime ? mainWindow->timeInMilliseconds : mainWindow->timeInMilliseconds - initialTime;
 
-        // If this is first point in relative mode, set initial time
         if (!useAbsoluteTime && series->count() == 0) {
             initialTime = mainWindow->timeInMilliseconds;
             xValue = 0;
         }
 
-        // Always add to the original series
         series->append(xValue, mainWindow->distance);
 
-        // Rest of the function remains unchanged
+        // Tylko dodaj dane do drugiej serii, jeśli nie używamy trybu jednego COMa
+        if (!PortConfig::useOneCOM()) {
+            series2->append(xValue, mainWindow->distance2);
+        }
+
         if (autoRemovePoints) {
             while (series->count() > pointsLimit) {
                 series->remove(0);
             }
+            if (!PortConfig::useOneCOM()) {
+                while (series2->count() > pointsLimit) {
+                    series2->remove(0);
+                }
+            }
         }
 
-        // Apply smoothing if enabled
         if (useSpline) {
             this->applySmoothing();
         }
 
-        // Calculate min/max values for axes
         const QXYSeries *activeSeries = useSpline
                                             ? static_cast<QXYSeries *>(splineSeries)
                                             : static_cast<QXYSeries *>(series);
+        const QXYSeries *activeSeries2 = useSpline
+                                             ? static_cast<QXYSeries *>(splineSeries2)
+                                             : static_cast<QXYSeries *>(series2);
 
-        if (activeSeries->count() > 0) {
-            const double xMin = activeSeries->at(0).x();
+        if (activeSeries->count() > 0 || (activeSeries2->count() > 0 && !PortConfig::useOneCOM())) {
+            const double xMin = activeSeries->count() > 0 ? activeSeries->at(0).x() : xValue;
             const double xMax = xValue;
-            double yMin = mainWindow->distance;
-            double yMax = mainWindow->distance;
+
+            double yMin = double(mainWindow->distance);
+            double yMax = double(mainWindow->distance);
+
+            // Uwzględnij dane z drugiego COMa tylko jeśli nie używamy trybu jednego COMa
+            if (!PortConfig::useOneCOM()) {
+                yMin = qMin(yMin, double(mainWindow->distance2));
+                yMax = qMax(yMax, double(mainWindow->distance2));
+            }
 
             for (int i = 0; i < activeSeries->count(); ++i) {
                 yMin = qMin(yMin, activeSeries->at(i).y());
                 yMax = qMax(yMax, activeSeries->at(i).y());
+            }
+
+            for (int i = 0; i < activeSeries2->count(); ++i) {
+                yMin = qMin(yMin, activeSeries2->at(i).y());
+                yMax = qMax(yMax, activeSeries2->at(i).y());
             }
 
             axisX->setRange(xMin, xMax);
@@ -579,20 +786,4 @@ void GraphWindow::updateGraph() {
             }
         }
     }
-}
-
-void GraphWindow::retranslateUi() {
-    setWindowTitle(tr("Graph"));
-    clearGraphBtn->setText(tr("Clear Graph"));
-    startStopBtn->setText(mainWindow->Reading ? tr("Stop") : tr("Start"));
-    axisX->setTitleText(tr("Time (min:ms)"));
-    axisY->setTitleText(tr("Distance"));
-    recordingTitleLabel->setText(tr("Recording period [ms]:"));
-    yAxisToggle->setText(tr("Set Y"));
-    yAxisTitleLabel->setText(tr("Y axis range:"));
-    autoRemoveToggle->setText(tr("Auto-remove points"));
-    pointsLimitLabel->setText(tr("Points limit:"));
-    smoothingToggle->setText(tr("Smooth Graph"));
-    smoothingLevelLabel->setText(tr("Smoothing:"));
-    timeAxisToggle->setText(tr("Use Relative Time"));
 }

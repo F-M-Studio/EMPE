@@ -1,28 +1,56 @@
-// mainwindow.h
+/*
+* Nazwa Projektu: EMPE
+ * Plik: mainwindow.h
+ *
+ * Krótki opis pliku: inicjalizacja i elementy logiki głównego okna aplikacji (nagłówki)
+ *
+ * Autorzy:
+ * Mateusz Korniak <mkorniak04@gmail.com>
+ * Mateusz Machowski <machowskimateusz51@gmail.com>
+ * Filip Leśnik <filip.lesnik170@gmail.com>
+ *
+ * Data Utworzenia: 4 Marca 2025
+ * Ostatnia Modyfikacja: 4 Lipca 2025
+ *
+ * Ten program jest wolnym oprogramowaniem; możesz go rozprowadzać i/lub
+ * modyfikować na warunkach Powszechnej Licencji Publicznej GNU,
+ * opublikowanej przez Free Software Foundation, w wersji 3 tej Licencji
+ * lub (według twojego wyboru) dowolnej późniejszej wersji.
+ *
+ * Ten program jest rozpowszechniany w nadziei, że będzie użyteczny, ale
+ * BEZ ŻADNEJ GWARANCJI; nawet bez domyślnej gwarancji PRZYDATNOŚCI
+ * HANDLOWEJ lub PRZYDATNOŚCI DO OKREŚLONEGO CELU. Zobacz Powszechną
+ * Licencję Publiczną GNU, aby uzyskać więcej szczegółów.
+ *
+ * Powinieneś otrzymać kopię Powszechnej Licencji Publicznej GNU wraz z
+ * tym programem. Jeśli nie, zobacz <http://www.gnu.org/licenses/>.
+*/
 
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QMenuBar>
-#include <QMenu>
-#include <QAction>
-#include <QVBoxLayout>
 #include <QPushButton>
-#include <QSlider>
-#include <QLabel>
 #include <QLineEdit>
-#include <QTimeEdit>
+#include <QLabel>
+#include <QCheckBox>
 #include <QTextEdit>
-#include <QKeyEvent>
-#include <QSerialPort>
-#include <QtWidgets>
+#include <QVBoxLayout>
 #include <QTranslator>
+#include <QSlider>
+#include <QRadioButton>
+#include <QButtonGroup>
+#include <QGroupBox> // Dodanie brakującego nagłówka
 
-// Replace include with forward declaration
 class PortSettings;
 class AppMenu;
 class MovingAverageFilterParallel;
+class StoppersWindow;
+class QSerialPort;
+class QMenu;
+class QTimer;
+class DebugWindow;
+class GraphWindow;
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -32,30 +60,72 @@ public:
 
     ~MainWindow() override;
 
-    bool Reading{};
-    int distance{}, timeInMilliseconds{}, minutes{}, seconds{}, milliseconds{};
-
-    void loadLanguage(const QString &language);
+    bool Reading;
+    int distance, timeInMilliseconds, minutes, seconds, milliseconds;
+    int distance2, timeInMilliseconds2, minutes2, seconds2, milliseconds2;
 
     void handleStartStopButton();
 
-    void openPortSettings() const;
+    void saveDataToFile(const QTextEdit *display, const QString &regex);
 
-    void openGraphWindow();
+    QTextEdit *dataDisplay;
+    QTextEdit *dataDisplay2;
+    QWidget *centralWidget;
+    QVBoxLayout *mainLayout;
 
-    void saveDataToFile();
+    struct DataPoint {
+        int distance;
+        int timeInMilliseconds;
+    };
+
+    QVector<DataPoint> dataPoints;
+    QVector<DataPoint> dataPoints2;
+
+    // Metoda do zmiany języka w czasie rzeczywistym
+    bool switchLanguage(const QString &language);
+
+    // Methods for injecting fake data from DebugWindow
+    void fakeData1(const QString &data);
+
+    void fakeData2(const QString &data);
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;
+    void closeEvent(QCloseEvent *event) override;
+
+private slots:
+    void showAboutUsDialog();
+
+    void openStoppersWindow();
+
+    // Slot do obsługi zmiany liczby portów COM
+    void onComModeChanged(int id);
 
 private:
-    // Add these variables for smoothing
-    std::vector<double> distanceBuffer;
-    MovingAverageFilterParallel *filter = nullptr;
-    int filterWindowSize = 5; // Default window size
+    DebugWindow *debugWindow = nullptr;
+    GraphWindow *graphWindow = nullptr;
+    void openDebugWindow();
+    void openGraphWindow();
+    void createMenu();
 
+    void createControls();
+
+    // Nowe metody do obsługi trybów COM
+    void createComModeSelector();
+    void updateUIForComMode(bool useOneCom);
+
+    void startReading();
+
+    void stopReading();
+
+    void parseData(const QString &data);
+
+    void parseData2(const QString &data);
+
+    void processBuffer(QString &buffer, QTextEdit *display, void (MainWindow::*parseFunc)(const QString &));
 
     AppMenu *appMenu;
+    StoppersWindow *stoppersWindow;
 
     QTimer *validationTimer{};
     bool deviceValidated = false;
@@ -66,19 +136,7 @@ private:
 
     void retranslateUi();
 
-    struct DataPoint {
-        int distance;
-        int timeInMilliseconds;
-    };
 
-    QVector<DataPoint> dataPoints;
-
-    QWidget *centralWidget;
-    QVBoxLayout *mainLayout;
-    QComboBox *portBox{};
-    QCheckBox *alwaysOnTopCheckbox{};
-
-    // Menu Bar
     QMenuBar *menuBar{};
     QMenu *mainMenu{};
     PortSettings *portSettings;
@@ -87,37 +145,60 @@ private:
     QAction *startMeasurementAction{};
     QAction *saveDataAction{};
 
-    // Buttons
+    // Selektory trybu COM
+  /*  QRadioButton *oneComRadio{};
+    QRadioButton *twoComRadio{};
+    QButtonGroup *comModeGroup{};
+    QGroupBox *comModeBox{}; */
+    // zamiana radio buttonów na checkboxa
+    QCheckBox *dualComCheckbox{};
+
     QPushButton *portSettingsBtn{};
     QPushButton *showGraphBtn{};
-    QPushButton *stopBtn{};
+    QPushButton *startStopBtn{};
     QPushButton *saveDataBtn{};
+    QPushButton *saveData2Btn{};
     QPushButton *clearGraphBtn{};
+    QPushButton *showRawDataBtn{};
+    QPushButton *stoppersButton{};
 
-    // Sliders & Controls
     QSlider *yAxisSlider{};
     QLineEdit *maxYInput{};
     QLineEdit *distanceInput{};
-    QTimeEdit *timeInput{};
+    QLineEdit *distanceInput2{};
+    QLineEdit *timeInput{};
+    QLineEdit *timeInput2{};
     QLabel *yAxisValueLabel{};
 
-    // Serial port
     QSerialPort *serialPort{};
+    QSerialPort *serialPort1{};
+    QSerialPort *serialPort2{};
 
-    QTextEdit *dataDisplay;
     bool isReading;
-
-    void createControls();
-
-    bool startReading();
-
-    void stopReading();
-
-    void parseData(const QString &data);
 
     QCheckBox *rawDataToggle{};
     bool useRawData = false;
     int lastValidDistance = 0;
+    QLabel *creatorsNoteLabel{};
+
+    // Wskaźnik na grupę dla drugiego sensora
+    QGroupBox *sensor2Box{};
+
+    const int SIGNIFICANT_CHANGE_THRESHOLD = 30;
+    const int SMALL_CHANGE_THRESHOLD = 10;
+
+    // Add missing member variables
+    QLabel *timeLabel{};
+    QLabel *timeLabel2{};
+    QLabel *globalTimeLabel{};
+    QCheckBox *alwaysOnTopCheckbox{};
+
+    QString dataBuffer1;
+    QString dataBuffer2;
+
+    void updateGlobalTimeDisplay(int timeMs);
+
+    friend class DebugWindow; // Add this line to give DebugWindow access
 };
 
-#endif // MAINWINDOW_H
+#endif

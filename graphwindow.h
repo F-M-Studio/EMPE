@@ -1,7 +1,36 @@
-// graphwindow.h
+/*
+* Nazwa Projektu: EMPE
+ * Plik: graphwindow.h
+ *
+ * Krótki opis pliku: Deklaracja klasy okna wykresu do wizualizacji pomiarów w czasie rzeczywistym.
+ *
+ * Autorzy:
+ * Mateusz Korniak <mkorniak04@gmail.com>
+ * Mateusz Machowski <machowskimateusz51@gmail.com>
+ * Filip Leśnik <filip.lesnik170@gmail.com>
+ *
+ * Data Utworzenia: 10 Marca 2025
+ * Ostatnia Modyfikacja: 18 Czerwca 2025
+ *
+ * Ten program jest wolnym oprogramowaniem; możesz go rozprowadzać i/lub
+ * modyfikować na warunkach Powszechnej Licencji Publicznej GNU,
+ * opublikowanej przez Free Software Foundation, w wersji 3 tej Licencji
+ * lub (według twojego wyboru) dowolnej późniejszej wersji.
+ *
+ * Ten program jest rozpowszechniany w nadziei, że będzie użyteczny, ale
+ * BEZ ŻADNEJ GWARANCJI; nawet bez domyślnej gwarancji PRZYDATNOŚCI
+ * HANDLOWEJ lub PRZYDATNOŚCI DO OKREŚLONEGO CELU. Zobacz Powszechną
+ * Licencję Publiczną GNU, aby uzyskać więcej szczegółów.
+ *
+ * Powinieneś otrzymać kopię Powszechnej Licencji Publicznej GNU wraz z
+ * tym programem. Jeśli nie, zobacz <http://www.gnu.org/licenses/>.
+*/
+
 #pragma once
 
 #include "mainwindow.h"
+#include "portconfig.h"
+
 #ifndef GRAPHWINDOW_H
 #define GRAPHWINDOW_H
 
@@ -51,10 +80,11 @@ private:
     MainWindow *mainWindow;
     QTimer *updateTimer;
     QLineSeries *series;
+    QLineSeries *series2;
     QChart *chart;
     QValueAxis *axisX;
     QValueAxis *axisY;
-    const int MAX_POINTS = 100; // Maximum number of points to show
+    const int MAX_POINTS = 100;
 
     QSlider *recordingSlider;
     QLabel *recordingLabel{};
@@ -81,6 +111,7 @@ private:
 
 
     QSplineSeries *splineSeries;
+    QSplineSeries *splineSeries2;
     QCheckBox *smoothingToggle;
     QSlider *smoothingLevelSlider;
     QLineEdit *smoothingLevelEdit;
@@ -92,6 +123,21 @@ private:
     QCheckBox *timeAxisToggle;
     bool useAbsoluteTime = false;
     long long initialTime = 0;
+
+    QCheckBox *showSeries1Toggle;
+    QCheckBox *showSeries2Toggle;
+    bool showSeries1 = true;
+    bool showSeries2 = true;
+
+    QSlider *lineThickness1Slider;
+    QLineEdit *lineThickness1Edit;
+    QLabel *lineThickness1Label;
+    int lineThickness1 = 3;
+
+    QSlider *lineThickness2Slider;
+    QLineEdit *lineThickness2Edit;
+    QLabel *lineThickness2Label;
+    int lineThickness2 = 3;
 };
 
 #endif // GRAPHWINDOW_H

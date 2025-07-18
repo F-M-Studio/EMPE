@@ -1,9 +1,39 @@
-// mainwindow.cpp
+/*
+* Nazwa Projektu: EMPE
+ * Plik: mainwindow.cpp
+ *
+ * Krótki opis pliku: inicjalizacja i elementy logiki głównego okna aplikacji
+ *
+ * Autorzy:
+ * Mateusz Korniak <mkorniak04@gmail.com>
+ * Mateusz Machowski <machowskimateusz51@gmail.com>
+ * Filip Leśnik <filip.lesnik170@gmail.com>
+ *
+ * Data Utworzenia: 4 Marca 2025
+ * Ostatnia Modyfikacja: 3 Lipca 2025
+ *
+ * Ten program jest wolnym oprogramowaniem; możesz go rozprowadzać i/lub
+ * modyfikować na warunkach Powszechnej Licencji Publicznej GNU,
+ * opublikowanej przez Free Software Foundation, w wersji 3 tej Licencji
+ * lub (według twojego wyboru) dowolnej późniejszej wersji.
+ *
+ * Ten program jest rozpowszechniany w nadziei, że będzie użyteczny, ale
+ * BEZ ŻADNEJ GWARANCJI; nawet bez domyślnej gwarancji PRZYDATNOŚCI
+ * HANDLOWEJ lub PRZYDATNOŚCI DO OKREŚLONEGO CELU. Zobacz Powszechną
+ * Licencję Publiczną GNU, aby uzyskać więcej szczegółów.
+ *
+ * Powinieneś otrzymać kopię Powszechnej Licencji Publicznej GNU wraz z
+ * tym programem. Jeśli nie, zobacz <http://www.gnu.org/licenses/>.
+*/
 
 #include "mainwindow.h"
 #include "portsettings.h"
 #include "appmenu.h"
 #include "graphwindow.h"
+#include "aboutusdialog.h"
+#include "debugwindow.h"
+#include "stopperswindow.h"
+#include "portconfig.h"
 
 #include <QDebug>
 #include <QTimer>
@@ -15,31 +45,87 @@
 #include <QTextStream>
 #include <QDir>
 #include <QFile>
-#include <QLineSeries>
-#include <QMenu>
-#include <QAction>
 #include <QApplication>
+#include <QPixmap>
+#include <QGroupBox>
+#include <QGridLayout>
+#include <QDateTime>
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), portSettings(new PortSettings(this)), isReading(false) {
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent),
+      isReading(false),
+      portSettings(new PortSettings(this)),
+      Reading(false),
+      distance(0), timeInMilliseconds(0), minutes(0), seconds(0), milliseconds(0),
+      distance2(0), timeInMilliseconds2(0), minutes2(0), seconds2(0), milliseconds2(0),
+      stoppersWindow(nullptr) {
     centralWidget = new QWidget(this);
     setCentralWidget(centralWidget);
-
+    setWindowTitle(tr("EMPE"));
     mainLayout = new QVBoxLayout(centralWidget);
+    mainLayout->setContentsMargins(10, 10, 10, 10);
+    mainLayout->setSpacing(5);
 
-    // Create menu using the new AppMenu class
+    // Dodanie selektora trybu COM na samej górze interfejsu
+    createComModeSelector();
+
     appMenu = new AppMenu(this, this);
-    connect(appMenu, &AppMenu::portSettingsRequested, this, &MainWindow::openPortSettings);
-    connect(appMenu, &AppMenu::graphWindowRequested, this, &MainWindow::openGraphWindow);
-    connect(appMenu, &AppMenu::startStopRequested, this, &MainWindow::handleStartStopButton);
-    connect(appMenu, &AppMenu::saveDataRequested, this, &MainWindow::saveDataToFile);
-    connect(appMenu, &AppMenu::languageChanged, this, &MainWindow::loadLanguage);
-
     createControls();
+
+    QWidget *dataContainer = new QWidget(this);
+    QVBoxLayout *dataLayout = new QVBoxLayout(dataContainer);
+    dataLayout->setContentsMargins(0, 0, 0, 0);
+    dataLayout->setSpacing(0);
 
     dataDisplay = new QTextEdit(this);
     dataDisplay->setReadOnly(true);
     dataDisplay->hide();
-    mainLayout->addWidget(dataDisplay);
+    dataDisplay->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    dataLayout->addWidget(dataDisplay);
+
+    dataDisplay2 = new QTextEdit(this);
+    dataDisplay2->setReadOnly(true);
+    dataDisplay2->hide();
+    dataDisplay2->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    dataLayout->addWidget(dataDisplay2);
+    dataContainer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    mainLayout->addWidget(dataContainer, 1);
+
+    connect(appMenu, &AppMenu::graphWindowRequested, this, [this]() {
+        openGraphWindow();
+    });
+    connect(appMenu, &AppMenu::portSettingsRequested, this, [this]() {
+        portSettings->exec();
+    });
+    connect(appMenu, &AppMenu::aboutUsRequested, this, &MainWindow::showAboutUsDialog);
+
+    QHBoxLayout *bottomLayout = new QHBoxLayout();
+    bottomLayout->addStretch();
+
+    QLabel *imageLabel = new QLabel(this);
+    QPixmap pixmap(":/images/FundedByEU.png");
+    imageLabel->setPixmap(pixmap.scaled(100, 100, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    imageLabel->setAlignment(Qt::AlignRight | Qt::AlignBottom);
+
+    bottomLayout->addWidget(imageLabel);
+    mainLayout->addLayout(bottomLayout);
+    updateUIForComMode(PortConfig::useOneCOM());
+
+    QFrame *separator = new QFrame(this);
+    separator->setFrameShape(QFrame::HLine);
+    separator->setFrameShadow(QFrame::Sunken);
+    mainLayout->addWidget(separator);
+
+    creatorsNoteLabel = new QLabel(tr("Embodying Math&Physics Education 2023-1-PL01-KA210-SCH-000165829"),
+                                   this);
+    creatorsNoteLabel->setAlignment(Qt::AlignCenter);
+    QFont noteFont = creatorsNoteLabel->font();
+    noteFont.setPointSize(noteFont.pointSize() - 1);
+    noteFont.setItalic(true);
+    creatorsNoteLabel->setFont(noteFont);
+    creatorsNoteLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+    creatorsNoteLabel->setFixedHeight(creatorsNoteLabel->sizeHint().height());
+    mainLayout->addWidget(creatorsNoteLabel);
 }
 
 MainWindow::~MainWindow() {
@@ -48,50 +134,181 @@ MainWindow::~MainWindow() {
     }
 }
 
-void MainWindow::createControls() {
-    auto *buttonLayout = new QHBoxLayout();
+void MainWindow::createComModeSelector() {
+    dualComCheckbox = new QCheckBox(tr("Use Dual COM Ports"), this);
+    dualComCheckbox->setChecked(!PortConfig::useOneCOM());
 
-    portSettingsBtn = new QPushButton("Port settings");
-    showGraphBtn = new QPushButton("Show Graph");
-    stopBtn = new QPushButton("Start");
-    saveDataBtn = new QPushButton("Save data to file");
+    connect(dualComCheckbox, &QCheckBox::stateChanged, this, [this](int state) {
+        bool useOneCom = (state == Qt::Unchecked);
+        PortConfig::setUseOneCOM(useOneCom);
+
+        if (Reading) {
+            stopReading();
+            startStopBtn->setText(tr("Start"));
+            isReading = false;
+        }
+
+        updateUIForComMode(useOneCom);
+    });
+
+    mainLayout->addWidget(dualComCheckbox);
+
+    // Update UI according to current mode
+    updateUIForComMode(PortConfig::useOneCOM());
+}
+
+void MainWindow::onComModeChanged(int id) {
+    bool useOneCom = (id == 1);
+
+    // Zapisanie ustawienia
+    PortConfig::setUseOneCOM(useOneCom);
+
+    // Jeśli pomiar jest uruchomiony, zatrzymaj go
+    if (Reading) {
+        stopReading();
+        startStopBtn->setText(tr("Start"));
+        isReading = false;
+    }
+
+    // Aktualizacja interfejsu
+    updateUIForComMode(useOneCom);
+}
+
+void MainWindow::updateUIForComMode(bool useOneCom) {
+    // Aktualizacja widoczności elementów interfejsu związanych z drugim portem
+    if (sensor2Box) {
+        sensor2Box->setVisible(!useOneCom);
+    }
+
+    if (saveData2Btn) {
+        saveData2Btn->setVisible(!useOneCom);
+    }
+
+    // Jeśli używamy PortSettings, ukryj drugą zakładkę gdy w trybie jednego portu
+    if (portSettings) {
+        portSettings->setPort2Visible(!useOneCom);
+    }
+
+
+}
+
+void MainWindow::createControls() {
+    QHBoxLayout *buttonLayout = new QHBoxLayout();
+
+    portSettingsBtn = new QPushButton(tr("Port settings"));
+    showGraphBtn = new QPushButton(tr("Show Graph"));
+    startStopBtn = new QPushButton(tr("Start"));
+    saveDataBtn = new QPushButton(tr("Save data 1"));
+    saveData2Btn = new QPushButton(tr("Save data 2"));
+    clearGraphBtn = new QPushButton(tr("Clear Graph"));
+    showRawDataBtn = new QPushButton(tr("Show raw data"));
+    showRawDataBtn->hide();
+    stoppersButton = new QPushButton(tr("Stoppers"));
 
     buttonLayout->addWidget(portSettingsBtn);
     buttonLayout->addWidget(showGraphBtn);
-    buttonLayout->addWidget(stopBtn);
+    buttonLayout->addWidget(startStopBtn);
     buttonLayout->addWidget(saveDataBtn);
+    buttonLayout->addWidget(saveData2Btn);
+    buttonLayout->addWidget(clearGraphBtn);
+    buttonLayout->addWidget(showRawDataBtn);
+    buttonLayout->addWidget(stoppersButton);
 
     mainLayout->addLayout(buttonLayout);
 
-    // Connect buttons to the same functions as menu items
-    connect(portSettingsBtn, &QPushButton::clicked, this, &MainWindow::openPortSettings);
-    connect(showGraphBtn, &QPushButton::clicked, this, &MainWindow::openGraphWindow);
-    connect(stopBtn, &QPushButton::clicked, this, &MainWindow::handleStartStopButton);
-    connect(saveDataBtn, &QPushButton::clicked, this, &MainWindow::saveDataToFile);
+    connect(portSettingsBtn, &QPushButton::clicked, this, [this]() {
+        portSettings->exec();
+    });
 
-    // Rest of your existing controls setup...
-    auto *controlsLayout = new QGridLayout();
+    connect(showGraphBtn, &QPushButton::clicked, this, [this]() {
+        openGraphWindow();
+    });
 
-    auto *distanceLabel = new QLabel("Distance:");
+    connect(startStopBtn, &QPushButton::clicked, this, &MainWindow::handleStartStopButton);
+
+    connect(saveDataBtn, &QPushButton::clicked, this, [this]() {
+        saveDataToFile(dataDisplay, "YY(\\d+)T(\\d+)E");
+    });
+
+    connect(saveData2Btn, &QPushButton::clicked, this, [this]() {
+        saveDataToFile(dataDisplay2, "YY(\\d+)T(\\d+)E");
+    });
+
+    connect(showRawDataBtn, &QPushButton::clicked, this, [this]() {
+        bool visible = !dataDisplay->isVisible();
+        dataDisplay->setVisible(visible);
+        dataDisplay2->setVisible(visible);
+        showRawDataBtn->setText(visible ? tr("Hide raw data") : tr("Show raw data"));
+
+        if (!visible) {
+            setMinimumSize(0, 0);
+            resize(600, 200);
+            setMinimumSize(minimumSizeHint());
+        } else {
+            adjustSize();
+        }
+    });
+
+    connect(stoppersButton, &QPushButton::clicked, this, &MainWindow::openStoppersWindow);
+
+    QGridLayout *controlsLayout = new QGridLayout();
+
+
+    QGroupBox *sensor1Box = new QGroupBox(tr("Sensor 1"));
+    QVBoxLayout *sensor1Layout = new QVBoxLayout(sensor1Box);
+
+    QLabel *distanceLabel = new QLabel(tr("Distance:"));
     distanceInput = new QLineEdit("00");
-    distanceInput->setReadOnly(true); // Make the distance label non-editable
-    auto *timeLabel = new QLabel("Time:");
-    timeInput = new QTimeEdit();
-    timeInput->setDisplayFormat("mm:ss.zzz"); // Set the display format to include milliseconds
-    timeInput->setReadOnly(true); // Make the time label non-editable
+    distanceInput->setReadOnly(true);
 
-    controlsLayout->addWidget(distanceLabel, 0, 0);
-    controlsLayout->addWidget(distanceInput, 0, 1);
-    controlsLayout->addWidget(timeLabel, 1, 0);
-    controlsLayout->addWidget(timeInput, 1, 1);
+    sensor1Layout->addWidget(distanceLabel);
+    sensor1Layout->addWidget(distanceInput);
+
+    QLabel *timeLabel = new QLabel(tr("Time:"));
+    timeInput = new QLineEdit("00:00.000");
+    timeInput->setReadOnly(true);
+
+    sensor1Layout->addWidget(timeLabel);
+    sensor1Layout->addWidget(timeInput);
+
+    sensor2Box = new QGroupBox(tr("Sensor 2"));
+    QVBoxLayout *sensor2Layout = new QVBoxLayout(sensor2Box);
+
+    QLabel *distanceLabel2 = new QLabel(tr("Distance:"));
+    distanceInput2 = new QLineEdit("00");
+    distanceInput2->setReadOnly(true);
+
+    sensor2Layout->addWidget(distanceLabel2);
+    sensor2Layout->addWidget(distanceInput2);
+
+    QLabel *timeLabel2 = new QLabel(tr("Time:"));
+    timeInput2 = new QLineEdit("00:00.000");
+    timeInput2->setReadOnly(true);
+
+    sensor2Layout->addWidget(timeLabel2);
+    sensor2Layout->addWidget(timeInput2);
+
+    // Store labels in member variables
+    this->timeLabel = timeLabel;
+    this->timeLabel2 = timeLabel2;
+
+    globalTimeLabel = new QLabel("00:00.000");
+    globalTimeLabel->setAlignment(Qt::AlignCenter);
+    globalTimeLabel->hide();
+    QFont timeFont = globalTimeLabel->font();
+    timeFont.setPointSize(timeFont.pointSize() + 2);
+    globalTimeLabel->setFont(timeFont);
+
+    // timeLayout->addWidget(globalTimeLabel);
+
+    controlsLayout->addWidget(sensor1Box, 0, 0);
+    controlsLayout->addWidget(sensor2Box, 0, 1);
+    // controlsLayout->addWidget(timeBox, 1, 0, 1, 2);
 
     mainLayout->addLayout(controlsLayout);
 
-    // Create and add the "Always on Top" checkbox
-    alwaysOnTopCheckbox = new QCheckBox("Always on Top", this);
+    alwaysOnTopCheckbox = new QCheckBox(tr("Always on Top"), this);
     mainLayout->addWidget(alwaysOnTopCheckbox);
-
-    // Connect the checkbox state change to window flag update
 
     connect(alwaysOnTopCheckbox, &QCheckBox::checkStateChanged, this, [this](int state) {
         Qt::WindowFlags flags = windowFlags();
@@ -101,44 +318,33 @@ void MainWindow::createControls() {
             flags &= ~Qt::WindowStaysOnTopHint;
         }
         setWindowFlags(flags);
-        show(); // Need to show the window again after changing flags
-    });
-
-    rawDataToggle = new QCheckBox("Get Raw Data", this);
-    rawDataToggle->setChecked(false); // Default is smoothed data
-    mainLayout->addWidget(rawDataToggle);
-
-    connect(rawDataToggle, &QCheckBox::toggled, this, [this](bool checked) {
-        useRawData = checked;
+        show();
     });
 }
 
-void MainWindow::openPortSettings() const {
-    portSettings->retranslateUi();
-    portSettings->exec();
+void MainWindow::openStoppersWindow() {
+    if (!stoppersWindow) {
+        stoppersWindow = new StoppersWindow(this);
+    }
+    stoppersWindow->show();
+    stoppersWindow->raise();
+    stoppersWindow->activateWindow();
 }
 
-void MainWindow::openGraphWindow() {
-    auto *graphWindow = new GraphWindow(this);
-    graphWindow->show();
-}
+void MainWindow::saveDataToFile(const QTextEdit *display, const QString &regexPattern) {
+    QString defaultFileName = QString("EMPE_%1.csv").arg(QDate::currentDate().toString("ddMMyyyy"));
+    QString fileName = QFileDialog::getSaveFileName(this,
+                                                    tr("Save Data"), defaultFileName,
+                                                    tr("CSV Files (*.csv)"));
 
-void MainWindow::saveDataToFile() {
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Save Data"), "", tr("CSV Files (*.csv)"));
-
-    // Check if the file name is empty
     if (fileName.isEmpty()) {
-        QMessageBox::warning(this, tr("No File Name"),
-                             tr("No file name was provided. Save operation was not performed."));
         return;
     }
 
-    // Dodaj rozszerzenie .csv, jeśli nie jest obecne
     if (!fileName.endsWith(".csv", Qt::CaseInsensitive)) {
         fileName += ".csv";
     }
 
-    // Sprawdź, czy plik istnieje
     QFile file(fileName);
     if (file.exists()) {
         QMessageBox::StandardButton reply = QMessageBox::question(this,
@@ -153,266 +359,406 @@ void MainWindow::saveDataToFile() {
         }
     }
 
-    // Otwórz plik do zapisu
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        QMessageBox::warning(this, tr("Save Error"), tr("Cannot open the file for writing."));
+        QMessageBox::warning(this, tr("Error"),
+                             tr("Cannot write file %1:\n%2.")
+                             .arg(QDir::toNativeSeparators(fileName),
+                                  file.errorString()));
         return;
     }
 
-    // Zapisz dane do pliku (przykładowe dane)
     QTextStream out(&file);
-    out << "Example data\n"; // Zastąp to swoimi danymi
+    out << tr("Distance,Time (mm:ss),Milliseconds,Raw Time (ms)\n");
+
+    QString rawData = display->toPlainText();
+    QStringList lines = rawData.split('\n');
+    QRegularExpression regex(regexPattern);
+    bool dataWritten = false;
+
+    for (const QString &line: lines) {
+        QRegularExpressionMatch match = regex.match(line);
+        if (match.hasMatch()) {
+            QString distance = match.captured(1);
+            int timeMs = match.captured(2).toInt();
+
+            int minutes = timeMs / 60000;
+            int seconds = (timeMs % 60000) / 1000;
+            int milliseconds = timeMs % 1000;
+
+            QString timeFormatted = QString("%1:%2")
+                    .arg(minutes, 2, 10, QChar('0'))
+                    .arg(seconds, 2, 10, QChar('0'));
+
+            out << QString("%1,%2,%3,%4\n")
+                    .arg(distance)
+                    .arg(timeFormatted)
+                    .arg(milliseconds)
+                    .arg(timeMs);
+
+            dataWritten = true;
+        }
+    }
 
     file.close();
+
+    if (dataWritten) {
+        QMessageBox::information(this, tr("Success"),
+                                 tr("Data has been saved to %1")
+                                 .arg(QDir::toNativeSeparators(fileName)));
+    }
 }
 
 void MainWindow::handleStartStopButton() {
     if (isReading) {
         stopReading();
-        stopBtn->setText("Start");
-        isReading = false;
+        startStopBtn->setText(tr("Start"));
     } else {
-        // Try to start reading
-        if (startReading()) {
-            stopBtn->setText("Stop");
-            isReading = true;
-        }
+        startReading();
+        startStopBtn->setText(tr("Stop"));
+    }
+    isReading = !isReading;
+}
+
+void MainWindow::retranslateUi() {
+    setWindowTitle(tr("EMPE"));
+
+    // Update COM mode selector texts
+    if (dualComCheckbox) dualComCheckbox->setText(tr("Use Dual COM Ports"));
+
+    // Update button texts
+    portSettingsBtn->setText(tr("Port settings"));
+    showGraphBtn->setText(tr("Show Graph"));
+    startStopBtn->setText(isReading ? tr("Stop") : tr("Start"));
+    saveDataBtn->setText(tr("Save data 1"));
+    saveData2Btn->setText(tr("Save data 2"));
+    clearGraphBtn->setText(tr("Clear Graph"));
+    showRawDataBtn->setText(dataDisplay->isVisible() ? tr("Hide raw data") : tr("Show raw data"));
+    stoppersButton->setText(tr("Stoppers"));
+
+    // Update other labels
+    if (timeLabel) timeLabel->setText(tr("Time:"));
+    if (timeLabel2) timeLabel2->setText(tr("Time:"));
+    alwaysOnTopCheckbox->setText(tr("Always on Top"));
+    creatorsNoteLabel->setText(tr("Embodying Math&Physics Education 2023-1-PL01-KA210-SCH-000165829"));
+
+    if (appMenu) {
+        appMenu->updateStartStopAction(isReading);
     }
 }
 
-
-bool MainWindow::startReading() {
-    QString portName = portSettings->getPortName();
-
-    // Pre-validate the port name before attempting to open
-    QList<QString> likelyInvalidPorts = {
-        "wlan-debug", "Bluetooth", "iPhone", "iPad", "SOC", "debug"
-    };
-
-    bool isLikelyInvalid = false;
-    for (const QString &pattern: likelyInvalidPorts) {
-        if (portName.contains(pattern, Qt::CaseInsensitive)) {
-            isLikelyInvalid = true;
-            break;
-        }
+void MainWindow::keyPressEvent(QKeyEvent *event) {
+    // Ctrl+0 combination to open DEBUG MENU
+    if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_0) {
+        openDebugWindow();
     }
-
-    if (isLikelyInvalid) {
-        QMessageBox::warning(this, "Inappropriate Device",
-                             "The selected port \"" + portName + "\" does not appear to be a proper serial device.\n\n"
-                             "This application requires a standard serial port, typically named:\n"
-                             "• cu.usbserial-*\n"
-                             "• tty.usbserial-*\n"
-                             "• C0M*\n"
-                             "• cu.usbmodem*\n"
-                             "• cu.SLAB_*\n\n"
-                             "Please select a different COM port in Port Settings.");
-        return false;
-    }
-
-    int baudRate = portSettings->getBaudRate();
-    int dataBits = portSettings->getDataBits();
-    int stopBits = portSettings->getStopBits();
-    int parity = portSettings->getParity();
-    int flowControl = portSettings->getFlowControl();
-
-    qDebug() << "Attempting to open port" << portName
-            << "with settings:"
-            << "BaudRate:" << baudRate
-            << "DataBits:" << dataBits
-            << "StopBits:" << stopBits
-            << "Parity:" << parity
-            << "FlowControl:" << flowControl;
-
-    // Create the serial port object
-    serialPort = new QSerialPort(this);
-    serialPort->setPortName(portName);
-    serialPort->setBaudRate(baudRate);
-    serialPort->setDataBits(static_cast<QSerialPort::DataBits>(dataBits));
-    serialPort->setStopBits(static_cast<QSerialPort::StopBits>(stopBits));
-    serialPort->setParity(static_cast<QSerialPort::Parity>(parity));
-    serialPort->setFlowControl(static_cast<QSerialPort::FlowControl>(flowControl));
-
-    // Try to open the port
-    if (!serialPort->open(QIODevice::ReadOnly)) {
-        QMessageBox::critical(this, "Port Error",
-                              "Could not open port " + portName + ".\n\n"
-                              "This may be because:\n"
-                              "• The port is already in use by another application\n"
-                              "• You don't have sufficient permissions\n\n"
-                              "Error: " + serialPort->errorString());
-        delete serialPort;
-        serialPort = nullptr;
-        return false;
-    }
-
-    // Reset validation state
-    deviceValidated = false;
-
-    // Set up validation timer
-    validationTimer = new QTimer(this);
-    validationTimer->setSingleShot(true);
-    validationTimer->start(VALIDATION_TIMEOUT);
-
-    // Connect validation timeout handler
-    connect(validationTimer, &QTimer::timeout, this, [this]() {
-        QMessageBox::warning(this, "Incorrect Device",
-                             "No valid data received from the device.\n\n"
-                             "Expected data format: YY(distance)T(time)E\n\n"
-                             "Please select a different COM port in Port Settings.");
-        stopReading();
-        isReading = false;
-        stopBtn->setText("Start");
-    });
-
-    // Connect read signal
-    connect(serialPort, &QSerialPort::readyRead, this, [this]() {
-        QByteArray data = serialPort->readAll();
-        dataDisplay->append(QString::fromUtf8(data));
-
-        // Check if data matches our expected pattern
-        const QRegularExpression regex("YY(\\d+)T(\\d+)E");
-        QRegularExpressionMatch match = regex.match(QString::fromUtf8(data));
-
-        if (match.hasMatch() && !deviceValidated) {
-            // Valid data received - device is validated
-            deviceValidated = true;
-            if (validationTimer) {
-                validationTimer->stop();
-                delete validationTimer;
-                validationTimer = nullptr;
-            }
-            Reading = true;
-        }
-
-        if (deviceValidated) {
-            parseData(QString::fromUtf8(data));
-        }
-    });
-
-    return true;
 }
 
-void MainWindow::parseData(const QString &data) {
-    const QRegularExpression regex("YY(\\d+)T(\\d+)E");
+void MainWindow::showAboutUsDialog() {
+    auto *dialog = new AboutUsDialog(this);
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+    dialog->show();
+}
 
-    if (const QRegularExpressionMatch match = regex.match(data); match.hasMatch()) {
-        const QString distanceStr = match.captured(1);
-        const QString timeStr = match.captured(2);
-        const int newDistance = distanceStr.toInt();
-        timeInMilliseconds = timeStr.toInt();
-        minutes = timeInMilliseconds / 60000;
-        seconds = timeInMilliseconds % 60000 / 1000;
-        milliseconds = timeInMilliseconds % 1000;
+void MainWindow::openDebugWindow() {
+    if (!debugWindow) {
+        debugWindow = new DebugWindow(this);
+        debugWindow->setAttribute(Qt::WA_DeleteOnClose);
+        connect(debugWindow, &QObject::destroyed, this, [this]() { debugWindow = nullptr; });
+    }
+    debugWindow->show();
+    debugWindow->raise();
+    debugWindow->activateWindow();
+}
+void MainWindow::openGraphWindow() {
+    if (!graphWindow) {
+        graphWindow = new GraphWindow(this);
+        graphWindow->setAttribute(Qt::WA_DeleteOnClose);
+        connect(graphWindow, &QObject::destroyed, this, [this]() { graphWindow = nullptr; });
+    }
+    graphWindow->show();
+    graphWindow->raise();
+    graphWindow->activateWindow();
+}
+// Methods to accept fake data from DebugWindow
+void MainWindow::fakeData1(const QString &data) {
+    // process single fake data string
+    parseData(data);
+}
 
-        // Apply smoothing logic if not using raw data
-        if (!useRawData) {
-            // Only update if it's the first reading or if the change is more than 2 units
-            if (lastValidDistance == 0 || abs(newDistance - lastValidDistance) > 8) {
-                distance = newDistance;
-                lastValidDistance = newDistance;
+void MainWindow::fakeData2(const QString &data) {
+    parseData2(data);
+}
+
+void MainWindow::startReading() {
+    if (!portSettings) {
+        return;
+    }
+
+    // Konfiguracja dla pierwszego portu
+    auto config1 = portSettings->getPortConfig(1);
+    QString portName1 = config1.portName;
+    int baudRate1 = config1.baudRate;
+    int dataBits1 = config1.dataBits;
+    int stopBits1 = config1.stopBits;
+    int parity1 = config1.parity;
+    int flowControl1 = config1.flowControl;
+
+    // Konfiguracja portu szeregowego 1
+    serialPort1 = new QSerialPort(this);
+    serialPort1->setPortName(portName1);
+    serialPort1->setBaudRate(baudRate1);
+    serialPort1->setDataBits(static_cast<QSerialPort::DataBits>(dataBits1));
+    serialPort1->setStopBits(static_cast<QSerialPort::StopBits>(stopBits1));
+    serialPort1->setParity(static_cast<QSerialPort::Parity>(parity1));
+    serialPort1->setFlowControl(static_cast<QSerialPort::FlowControl>(flowControl1));
+
+    if (!serialPort1->open(QIODevice::ReadOnly)) {
+        qDebug() << "Failed to open port" << portName1 << "Error:" << serialPort1->errorString();
+        QMessageBox::warning(this, tr("Error"),
+                            tr("Failed to open port %1: %2").arg(portName1, serialPort1->errorString()));
+        delete serialPort1;
+        serialPort1 = nullptr;
+        return;
+    }
+
+    // Sprawdź, czy używamy jednego czy dwóch portów COM
+    bool useOneCOM = PortConfig::useOneCOM();
+
+    // Konfiguracja dla drugiego portu tylko jeśli używamy dwóch portów
+    if (!useOneCOM) {
+        auto config2 = portSettings->getPortConfig(2);
+        QString portName2 = config2.portName;
+        int baudRate2 = config2.baudRate;
+        int dataBits2 = config2.dataBits;
+        int stopBits2 = config2.stopBits;
+        int parity2 = config2.parity;
+        int flowControl2 = config2.flowControl;
+
+        // Konfiguracja portu szeregowego 2
+        serialPort2 = new QSerialPort(this);
+        serialPort2->setPortName(portName2);
+        serialPort2->setBaudRate(baudRate2);
+        serialPort2->setDataBits(static_cast<QSerialPort::DataBits>(dataBits2));
+        serialPort2->setStopBits(static_cast<QSerialPort::StopBits>(stopBits2));
+        serialPort2->setParity(static_cast<QSerialPort::Parity>(parity2));
+        serialPort2->setFlowControl(static_cast<QSerialPort::FlowControl>(flowControl2));
+
+        if (!serialPort2->open(QIODevice::ReadOnly)) {
+            qDebug() << "Failed to open port" << portName2 << "Error:" << serialPort2->errorString();
+            QMessageBox::warning(this, tr("Error"),
+                                tr("Failed to open port %1: %2").arg(portName2, serialPort2->errorString()));
+
+            if (serialPort1 && serialPort1->isOpen()) {
+                serialPort1->close();
+                delete serialPort1;
+                serialPort1 = nullptr;
             }
-        } else {
-            // Use raw data directly
-            distance = newDistance;
-            lastValidDistance = newDistance;
+
+            delete serialPort2;
+            serialPort2 = nullptr;
+            return;
         }
 
-        // Store the data point
-        dataPoints.append({distance, timeInMilliseconds});
-
-        distanceInput->setText(QString::number(distance));
-        timeInput->setTime(QTime(0, minutes, seconds, milliseconds));
+        qDebug() << "Started reading from both ports";
+    } else {
+        qDebug() << "Started reading from port 1 only";
     }
+
+    Reading = true;
+
+    // Używamy lokalnych wskaźników dla lambda wyrażeń
+    QTimer::singleShot(50, this, [this, useOneCOM]() {
+        // Podłącz pierwszy port
+        connect(this->serialPort1, &QSerialPort::readyRead, this, [this]() {
+            QByteArray data = this->serialPort1->readAll();
+            dataBuffer1.append(QString::fromUtf8(data));
+            processBuffer(dataBuffer1, dataDisplay, &MainWindow::parseData);
+        });
+
+        // Podłącz drugi port tylko jeśli używamy dwóch portów
+        if (!useOneCOM && this->serialPort2) {
+            connect(this->serialPort2, &QSerialPort::readyRead, this, [this]() {
+                QByteArray data = this->serialPort2->readAll();
+                dataBuffer2.append(QString::fromUtf8(data));
+                processBuffer(dataBuffer2, dataDisplay2, &MainWindow::parseData2);
+            });
+        }
+    });
 }
 
 void MainWindow::stopReading() {
-    if (validationTimer) {
-        validationTimer->stop();
-        delete validationTimer;
-        validationTimer = nullptr;
+    if (serialPort1 && serialPort1->isOpen()) {
+        serialPort1->close();
     }
+    delete serialPort1;
+    serialPort1 = nullptr;
 
-    if (serialPort && serialPort->isOpen()) {
-        serialPort->close();
-        qDebug() << "Stopped reading from port";
-        Reading = false;
-        delete serialPort;
-        serialPort = nullptr;
+    if (serialPort2 && serialPort2->isOpen()) {
+        serialPort2->close();
     }
+    delete serialPort2;
+    serialPort2 = nullptr;
 
-    deviceValidated = false;
-}
-
-
-void MainWindow::keyPressEvent(QKeyEvent *event) {
-    if (event->key() == Qt::Key_F7) {
-        dataDisplay->setVisible(!dataDisplay->isVisible());
-    } else {
-        QMainWindow::keyPressEvent(event);
+    Reading = false;
+    if (appMenu) {
+        appMenu->updateStartStopAction(false);
     }
 }
 
-void MainWindow::loadLanguage(const QString &language) {
-    // Remove previous translator if it exists
-    if (translator) {
-        QApplication::removeTranslator(translator);
-        delete translator;
-        translator = nullptr;
-    }
+void MainWindow::parseData(const QString &data) {
+    QRegularExpression regex("YY(\\d+)T(\\d+)E");
+    QRegularExpressionMatch match = regex.match(data);
 
-    translator = new QTranslator(this);
-    QString translationFile = ":/translations/lidar_" + language + ".qm";
-    bool loaded = translator->load(translationFile);
+    if (match.hasMatch()) {
+        distance = match.captured(1).toInt();
+        timeInMilliseconds = match.captured(2).toInt();
 
-    if (!loaded) {
-        qDebug() << "Failed to load translation file:" << translationFile;
-    }
+        minutes = timeInMilliseconds / 60000;
+        seconds = (timeInMilliseconds % 60000) / 1000;
+        milliseconds = timeInMilliseconds % 1000;
 
-    if (loaded) {
-        QApplication::installTranslator(translator);
-    }
+        QString timeStr = QString("%1:%2.%3")
+                .arg(minutes, 2, 10, QChar('0'))
+                .arg(seconds, 2, 10, QChar('0'))
+                .arg(milliseconds, 3, 10, QChar('0'));
 
-    // Update all UI elements in this window
-    retranslateUi();
+        distanceInput->setText(QString::number(distance));
+        timeInput->setText(timeStr);
 
-    // Update the main window's AppMenu
-    appMenu->retranslateUi(); // Add this line
-    appMenu->setLanguage(language);
+        dataPoints.append({distance, timeInMilliseconds});
 
-    // Update all other windows
-    for (QWidget *widget: QApplication::topLevelWidgets()) {
-        if (auto *graphWindow = qobject_cast<GraphWindow *>(widget)) {
-            graphWindow->retranslateUi();
-
-            // Find and update the AppMenu in this GraphWindow
-            for (QObject *child: graphWindow->children()) {
-                if (auto *menu = qobject_cast<AppMenu *>(child)) {
-                    menu->retranslateUi(); // Make sure this is called too
-                    menu->setLanguage(language);
-                }
-            }
+        if (stoppersWindow) {
+            stoppersWindow->checkForDrop1(distance);
         }
     }
+}
 
-    // Update PortSettings if it exists
-    if (portSettings) {
-        portSettings->retranslateUi();
+void MainWindow::parseData2(const QString &data) {
+    QRegularExpression regex("YY(\\d+)T(\\d+)E");
+    QRegularExpressionMatch match = regex.match(data);
+
+    if (match.hasMatch()) {
+        distance2 = match.captured(1).toInt();
+        timeInMilliseconds2 = match.captured(2).toInt();
+
+        minutes2 = timeInMilliseconds2 / 60000;
+        seconds2 = (timeInMilliseconds2 % 60000) / 1000;
+        milliseconds2 = timeInMilliseconds2 % 1000;
+
+        QString timeStr = QString("%1:%2.%3")
+                .arg(minutes2, 2, 10, QChar('0'))
+                .arg(seconds2, 2, 10, QChar('0'))
+                .arg(milliseconds2, 3, 10, QChar('0'));
+
+        distanceInput2->setText(QString::number(distance2));
+        timeInput2->setText(timeStr);
+
+        dataPoints2.append({distance2, timeInMilliseconds2});
+
+        if (stoppersWindow) {
+            stoppersWindow->checkForDrop2(distance2);
+        }
     }
 }
 
-// Add this new method to handle retranslation
-void MainWindow::retranslateUi() {
-    this->setWindowTitle(tr("EMPE"));
-    appMenu->retranslateUi();
 
-    // Buttons
-    portSettingsBtn->setText(tr("Port settings"));
-    showGraphBtn->setText(tr("Show Graph"));
-    stopBtn->setText(isReading ? tr("Stop") : tr("Start"));
-    saveDataBtn->setText(tr("Save data to file"));
+void MainWindow::processBuffer(QString &buffer, QTextEdit *display, void (MainWindow::*parseFunc)(const QString &)) {
+    static QRegularExpression completePattern("YY\\d+T\\d+E");
+    QString processedData;
+    int lastMatchEnd = 0;
 
-    // Other UI elements
-    alwaysOnTopCheckbox->setText(tr("Always on Top"));
-    rawDataToggle->setText(tr("Get Raw Data"));
+    QRegularExpressionMatchIterator matches = completePattern.globalMatch(buffer);
+
+    while (matches.hasNext()) {
+        QRegularExpressionMatch match = matches.next();
+        QString completeMatch = match.captured(0);
+        processedData += completeMatch + "\n";
+        lastMatchEnd = match.capturedEnd();
+    }
+
+    if (!processedData.isEmpty()) {
+        display->append(processedData);
+        (this->*parseFunc)(processedData);
+        buffer = buffer.mid(lastMatchEnd);
+    }
+}
+
+
+void MainWindow::updateGlobalTimeDisplay(int timeMs) {
+    int minutes = timeMs / 60000;
+    int seconds = (timeMs % 60000) / 1000;
+    int milliseconds = timeMs % 1000;
+
+    QString formattedTime = QString("%1:%2.%3")
+            .arg(minutes, 2, 10, QChar('0'))
+            .arg(seconds, 2, 10, QChar('0'))
+            .arg(milliseconds, 3, 10, QChar('0'));
+
+    if (globalTimeLabel) {
+        globalTimeLabel->setText(formattedTime);
+    }
+}
+void MainWindow::closeEvent(QCloseEvent *event) {
+    // Zatrzymanie odczytu przed zamknięciem
+    if (isReading) {
+        stopReading();
+        startStopBtn->setText(tr("Start"));
+        isReading = false;
+    }
+    if (debugWindow) debugWindow->close();
+    if (stoppersWindow) {
+        stoppersWindow->close();
+        stoppersWindow = nullptr;
+    }
+    if (graphWindow) {
+        graphWindow->close();
+        graphWindow = nullptr;
+    }
+
+    QMainWindow::closeEvent(event);
+}
+bool MainWindow::switchLanguage(const QString &language) {
+    // Tworzenie nowego translatora
+    static QTranslator *newTranslator = nullptr;
+
+    // Usuwamy poprzedni translator jeśli istnieje
+    if (newTranslator) {
+        qApp->removeTranslator(newTranslator);
+        delete newTranslator;
+        newTranslator = nullptr;
+    }
+
+    // Tworzymy nowy translator
+    newTranslator = new QTranslator(this);
+
+    // Próba załadowania pliku translacji
+    bool success = newTranslator->load(":/translations/lidar_" + language);
+
+    if (success) {
+        // Zapisz wybór w ustawieniach
+        QSettings settings("EMPE", "LidarApp");
+        settings.setValue("language", language);
+
+        // Instalacja nowego translatora
+        qApp->installTranslator(newTranslator);
+
+        // Aktualizacja interfejsu
+        QEvent *event = new QEvent(QEvent::LanguageChange);
+        QCoreApplication::sendEvent(qApp, event);
+
+        // Dodatkowe wywołania metod przetłumaczenia interfejsu
+        this->retranslateUi();
+
+        // Aktualizacja interfejsu wszystkich otwartych okien
+        foreach(QWidget *widget, QApplication::allWidgets()) {
+            QEvent languageEvent(QEvent::LanguageChange);
+            QApplication::sendEvent(widget, &languageEvent);
+        }
+
+        return true;
+    } else {
+        delete newTranslator;
+        newTranslator = nullptr;
+        return false;
+    }
 }
