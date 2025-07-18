@@ -310,7 +310,60 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
 
     mainLayout->addWidget(smoothingWidget);
 
-    lineThickness1Label = new QLabel(tr("Line thickness 1:"));
+    connect(smoothingToggle, &QCheckBox::toggled, this, [this](const bool checked) {
+        useSpline = checked;
+        smoothingLevelSlider->setEnabled(checked);
+        smoothingLevelLabel->setEnabled(checked);
+        smoothingLevelEdit->setEnabled(checked);
+
+        if (checked) {
+            applySmoothing();
+
+
+            chart->removeSeries(series);
+            chart->removeSeries(series2);
+            chart->addSeries(splineSeries);
+            chart->addSeries(splineSeries2);
+            splineSeries->attachAxis(axisX);
+            splineSeries->attachAxis(axisY);
+            splineSeries2->attachAxis(axisX);
+            splineSeries2->attachAxis(axisY);
+
+            splineSeries->setVisible(showSeries1);
+            splineSeries2->setVisible(showSeries2);
+        } else {
+            chart->removeSeries(splineSeries);
+            chart->removeSeries(splineSeries2);
+            chart->addSeries(series);
+            chart->addSeries(series2);
+            series->attachAxis(axisX);
+            series->attachAxis(axisY);
+            series2->attachAxis(axisX);
+            series2->attachAxis(axisY);
+
+            series->setVisible(showSeries1);
+            series2->setVisible(showSeries2);
+        }
+
+        // Aktualizuj grubość linii po przełączeniu typu wykresu
+        updateChartTheme();
+    });
+
+
+    connect(smoothingLevelSlider, &QSlider::valueChanged, this, [this](int value) {
+        smoothingLevelEdit->setText(QString::number(value));
+        if (useSpline) {
+            applySmoothing();
+        }
+    });
+
+
+    connect(smoothingLevelEdit, &QLineEdit::editingFinished, this, [this] {
+        const int value = smoothingLevelEdit->text().toInt();
+        smoothingLevelSlider->setValue(value);
+    });
+
+        lineThickness1Label = new QLabel(tr("Line thickness 1:"));
     lineThickness1Label->setContentsMargins(10, 0, 0, 0);
     lineThickness1Slider = new QSlider(Qt::Horizontal);
     lineThickness1Edit = new QLineEdit("3");
@@ -383,62 +436,6 @@ GraphWindow::GraphWindow(MainWindow *mainWindow, QWidget *parent) : QMainWindow(
         lineThickness2Slider->setValue(value);
         lineThickness2 = value;
         updateChartTheme();
-    });
-
-    mainLayout->addWidget(smoothingWidget);
-
-
-    connect(smoothingToggle, &QCheckBox::toggled, this, [this](const bool checked) {
-        useSpline = checked;
-        smoothingLevelSlider->setEnabled(checked);
-        smoothingLevelLabel->setEnabled(checked);
-        smoothingLevelEdit->setEnabled(checked);
-
-        if (checked) {
-            applySmoothing();
-
-
-            chart->removeSeries(series);
-            chart->removeSeries(series2);
-            chart->addSeries(splineSeries);
-            chart->addSeries(splineSeries2);
-            splineSeries->attachAxis(axisX);
-            splineSeries->attachAxis(axisY);
-            splineSeries2->attachAxis(axisX);
-            splineSeries2->attachAxis(axisY);
-
-            splineSeries->setVisible(showSeries1);
-            splineSeries2->setVisible(showSeries2);
-        } else {
-            chart->removeSeries(splineSeries);
-            chart->removeSeries(splineSeries2);
-            chart->addSeries(series);
-            chart->addSeries(series2);
-            series->attachAxis(axisX);
-            series->attachAxis(axisY);
-            series2->attachAxis(axisX);
-            series2->attachAxis(axisY);
-
-            series->setVisible(showSeries1);
-            series2->setVisible(showSeries2);
-        }
-
-        // Aktualizuj grubość linii po przełączeniu typu wykresu
-        updateChartTheme();
-    });
-
-
-    connect(smoothingLevelSlider, &QSlider::valueChanged, this, [this](int value) {
-        smoothingLevelEdit->setText(QString::number(value));
-        if (useSpline) {
-            applySmoothing();
-        }
-    });
-
-
-    connect(smoothingLevelEdit, &QLineEdit::editingFinished, this, [this] {
-        const int value = smoothingLevelEdit->text().toInt();
-        smoothingLevelSlider->setValue(value);
     });
 
     timeAxisToggle = new QCheckBox(tr("Use Relative Time"));
