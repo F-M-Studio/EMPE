@@ -37,19 +37,18 @@ jobs:
           submodules: recursive
 
       - name: Setup MinGW
-        uses: coffeebe4code/setup-mingw@v1-beta-2
+        uses: egor-tensin/setup-mingw@v2
         with:
           platform: x64
-          version: 11.2.0
 
-      - name: Setup Qt
+      - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: '6.8.2'
-          host: windows
-          target: desktop
-          arch: win64_mingw
-          modules: qtserialport qtcharts
+          version: '6.8.0'
+          target: 'desktop'
+          arch: 'win64_mingw'
+          modules: 'all'
+          use-official: false
 
       - name: Configure & Build
         shell: bash
