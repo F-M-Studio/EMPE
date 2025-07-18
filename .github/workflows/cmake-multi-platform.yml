@@ -135,7 +135,7 @@ jobs:
             -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
             -DCMAKE_PREFIX_PATH="/usr/lib/x86_64-linux-gnu/cmake/Qt6"
       - name: Build
-        run: cmake --build build --config ${{env.BUILD_TYPE}} --parallel $(nproc)
+        run: cmake --build build --config ${{env.BUILD_TYPE}} --parallel $(nproc) -- -v
 
       - name: Verify build output
         run: |
