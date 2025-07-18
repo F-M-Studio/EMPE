@@ -31,6 +31,9 @@ jobs:
   windows-qt:
     runs-on: windows-latest
     needs: get-info
+    env:
+      QT_PATH: ${{ env.QT_PATH }}
+      MINGW_HOME: C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64
     steps:
       - uses: actions/checkout@v4
         with:
@@ -50,27 +53,37 @@ jobs:
           target: desktop
           arch: win64_mingw
           modules: qtserialport qtcharts
+        id: qt-setup
 
-      - name: Configure & Build
+      - name: Configure CMake
         shell: bash
         run: |
-          cmake -G "MinGW Makefiles" -B build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DCMAKE_PREFIX_PATH=${{ env.QT_PATH }}/mingw_64/lib/cmake
+          cmake -G "MinGW Makefiles" -B build \
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+            -DCMAKE_PREFIX_PATH="${{ env.QT_PATH }}/mingw_64/lib/cmake" \
+            -DQT_PATH="${{ env.QT_PATH }" \
+            -DMINGW_BIN_PATH="${{ env.MINGW_HOME }}/bin" \
+            -DCI_MODE=TRUE
+
+      - name: Build
+        shell: bash
+        run: |
           cmake --build build --config ${{ env.BUILD_TYPE }} --parallel
 
-      - name: Deploy Qt dependencies
+      - name: Verify build output
         run: |
-          $MingwPath = "C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin"
-          $QtBinPath = "${{ env.QT_PATH }}\mingw_64\bin"
-          Copy-Item "$MingwPath\libgcc_s_seh-1.dll" -Destination "build"
-          Copy-Item "$MingwPath\libstdc++-6.dll" -Destination "build"
-          Copy-Item "$MingwPath\libwinpthread-1.dll" -Destination "build"
-          & "$QtBinPath\windeployqt.exe" --compiler-runtime --no-translations build\lidar.exe
+          ls -R build
 
       - name: Package Windows Build
+        shell: bash
         run: |
           mkdir output
-          xcopy build output\ /E /H /C /I
-          7z a lidar-windows-${{ needs.get-info.outputs.shorthash }}.zip .\output\*
+          cp build/lidar.exe output/
+          cp ${{ env.MINGW_HOME }}/bin/libgcc_s_seh-1.dll output/
+          cp ${{ env.MINGW_HOME }}/bin/libstdc++-6.dll output/
+          cp ${{ env.MINGW_HOME }}/bin/libwinpthread-1.dll output/
+          "${{ env.QT_PATH }}/mingw_64/bin/windeployqt.exe" --compiler-runtime --no-translations output/lidar.exe
+          7z a lidar-windows-${{ needs.get-info.outputs.shorthash }}.zip ./output/*
 
       - uses: actions/upload-artifact@v4
         with:
@@ -112,6 +125,7 @@ jobs:
         with:
           name: ${{ env.APP_NAME }}-macos-${{ needs.get-info.outputs.date }}-${{ needs.get-info.outputs.shorthash }}
           path: lidar-macos-*.zip
+
   linux-qt:
     runs-on: ubuntu-24.04
     needs: get-info
