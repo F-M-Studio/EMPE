@@ -129,6 +129,9 @@ jobs:
           qt6-base-dev qt6-tools-dev qt6-multimedia-dev \
           qt6-serialport-dev libqt6charts6-dev \
           libasound2-dev libpulse-dev libopenal-dev libudev-dev
+      - name: Check Qt version
+        run: |
+          qmake6 -v || qtpaths6 --qt-version
       - name: Configure CMake
         run: |
           cmake --fresh -G Ninja -B build \
