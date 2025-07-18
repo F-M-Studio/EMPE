@@ -50,21 +50,20 @@ jobs:
           modules: qtserialport qtcharts
           use-official: false
 
-
       - name: verify folder dir
         run: |
-          dir ${{ env.QT_PATH }}
+          dir D:\a\EMPE\Qt\6.8.3\msvc2022_64
 
       - name: Configure & Build
         shell: bash
         run: |
-          cmake -G "Ninja" -B build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DCMAKE_PREFIX_PATH=${{ env.QT_PATH }}/msvc2022_64/lib/cmake
+          cmake -G "Ninja" -B build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DCMAKE_PREFIX_PATH=D:\a\EMPE\Qt\6.8.3\msvc2022_64\lib\cmake
           cmake --build build --config ${{ env.BUILD_TYPE }} --parallel
 
       - name: Deploy Qt dependencies
         run: |
           $MingwPath = "C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin"
-          $QtBinPath = "${{ env.QT_PATH }}\msvc2022_64\bin"
+          $QtBinPath = "D:\a\EMPE\Qt\6.8.3\msvc2022_64Z\bin"
           Copy-Item "$MingwPath\libgcc_s_seh-1.dll" -Destination "build"
           Copy-Item "$MingwPath\libstdc++-6.dll" -Destination "build"
           Copy-Item "$MingwPath\libwinpthread-1.dll" -Destination "build"
