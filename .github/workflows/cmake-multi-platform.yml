@@ -37,7 +37,7 @@ jobs:
           submodules: recursive
 
       - name: Configure build for x86
-        uses: ilammy/msvc-dev-cmd@v3
+        uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: amd64_x86
 
