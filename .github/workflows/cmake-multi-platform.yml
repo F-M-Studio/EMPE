@@ -53,7 +53,7 @@ jobs:
 
       - name: verify folder dir
         run: |
-          dir D:/a/EMPE/QT6/6.8.3/
+          dir ${{ env.QT_PATH }}
 
       - name: Configure & Build
         shell: bash
