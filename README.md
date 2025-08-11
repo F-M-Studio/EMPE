@@ -1,4 +1,4 @@
-Of course. Here is the extended `README.md` file, now including a glossary of terms used within the application.
+
 
 -----
 
