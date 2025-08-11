@@ -257,11 +257,19 @@ void DebugWindow::handleFakeDataButton() {
     if (!fakeRunning) {
         fakeRunning = true;
         fakeTime = 0;
+        // Ustaw flagę Reading w MainWindow, żeby wykres się aktualizował
+        if (mainWindow) {
+            mainWindow->Reading = true;
+        }
         fakeDataTimer->start();
         fakeDataBtn->setText(tr("Stop Fake Data"));
     } else {
         fakeRunning = false;
         fakeDataTimer->stop();
+        // Wyłącz flagę Reading w MainWindow
+        if (mainWindow) {
+            mainWindow->Reading = false;
+        }
         fakeDataBtn->setText(tr("Start Fake Data"));
     }
 }
@@ -271,8 +279,8 @@ void DebugWindow::onFakeDataTimeout() {
     // increment fake time
     fakeTime += 100;
     // random distances
-    int d1 = QRandomGenerator::global()->bounded(0, 500);
-    int d2 = QRandomGenerator::global()->bounded(0, 500);
+    int d1 = QRandomGenerator::global()->bounded(0, 120);
+    int d2 = QRandomGenerator::global()->bounded(0, 200);
     // format messages
     QString msg1 = QString("YY%1T%2E").arg(d1).arg(fakeTime);
     QString msg2 = QString("YY%1T%2E").arg(d2).arg(fakeTime);
