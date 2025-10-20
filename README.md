@@ -3,23 +3,23 @@
 -----
 
 # EMPE - Dokumentacja Aplikacji
-
 ## Spis treści
 
-1.  [Wprowadzenie](https://www.google.com/search?q=%23wprowadzenie)
-2.  [Główne Funkcje](https://www.google.com/search?q=%23g%C5%82%C3%B3wne-funkcje)
-3.  [Instrukcja Obsługi](https://www.google.com/search?q=%23instrukcja-obs%C5%82ugi)
-4.  [Opis Funkcji Okien](https://www.google.com/search?q=%23opis-funkcji-okien)
-    - [Główne Okno](https://www.google.com/search?q=%23g%C5%82%C3%B3wne-okno)
-    - [Okno Wykresu](https://www.google.com/search?q=%23okno-wykresu)
-    - [Okno Stoperów](https://www.google.com/search?q=%23okno-stoper%C3%B3w)
-    - [Ustawienia Portów](https://www.google.com/search?q=%23ustawienia-port%C3%B3w)
-    - [Menu Debugowania](https://www.google.com/search?q=%23menu-debugowania)
-5.  [Technologie](https://www.google.com/search?q=%23technologie)
-6.  [Kompilacja Projektu](https://www.google.com/search?q=%23kompilacja-projektu)
-7.  [Autorzy](https://www.google.com/search?q=%23autorzy)
-8.  [Słownik Pojęć / Glossary](https://www.google.com/search?q=%23s%C5%82ownik-poj%C4%99%C4%87--glossary)
-9.  [Licencja](https://www.google.com/search?q=%23licencja)
+1. [Wprowadzenie](#wprowadzenie)
+2. [Główne Funkcje](#główne-funkcje)
+3. [Instrukcja Obsługi](#instrukcja-obsługi)
+4. [Opis Funkcji Okien](#opis-funkcji-okien)
+
+   * [Główne Okno](#główne-okno)
+   * [Okno Wykresu](#okno-wykresu)
+   * [Okno Stoperów](#okno-stoperów)
+   * [Ustawienia Portów](#ustawienia-portów)
+   * [Menu Debugowania](#menu-debugowania)
+5. [Technologie](#technologie)
+6. [Kompilacja Projektu](#kompilacja-projektu)
+7. [Autorzy](#autorzy)
+8. [Słownik Pojęć / Glossary](#słownik-pojęć--glossary)
+9. [Licencja](#licencja)
 
 -----
 
