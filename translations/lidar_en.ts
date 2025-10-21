@@ -584,6 +584,10 @@
             <translation>Drop Settings</translation>
         </message>
         <message>
+            <source>Sensitivity: %1 mm</source>
+            <translation>Detection threshold: %1 mm</translation>
+        </message>
+        <message>
             <source>Drop sensitivity:</source>
             <translation>Drop sensitivity:</translation>
         </message>

@@ -732,11 +732,11 @@
         </message>
         <message>
             <source>Drop Sensitivity</source>
-            <translation>Czułość spadku</translation>
+            <translation>Próg czułości</translation>
         </message>
         <message>
             <source>Sensitivity: %1 mm</source>
-            <translation>Czułość: %1 mm</translation>
+            <translation>Próg czułości: %1 mm</translation>
         </message>
         <message>
             <source>Enable Sensor 1</source>
