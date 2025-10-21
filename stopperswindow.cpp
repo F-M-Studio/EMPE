@@ -68,7 +68,7 @@ void StoppersWindow::createStoperControls() {
     auto *sensitivityLayout = new QVBoxLayout(sensitivityGroupBox);
     sensitivityLayout->setSpacing(10);
 
-    sensitivityLabel = new QLabel(tr("Sensitivity: 50 mm"), this);
+    sensitivityLabel = new QLabel(tr("Sensitivity: %1 mm").arg(50), this);
     sensitivityLabel->setAlignment(Qt::AlignCenter);
     QFont labelFont = sensitivityLabel->font();
     labelFont.setPointSize(10);
