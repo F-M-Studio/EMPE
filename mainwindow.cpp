@@ -329,6 +329,11 @@ void MainWindow::openStoppersWindow() {
     stoppersWindow->show();
     stoppersWindow->raise();
     stoppersWindow->activateWindow();
+
+    // Automatically trigger the Start button when Stoppers is clicked
+    if (startStopBtn) {
+        startStopBtn->click();
+    }
 }
 
 void MainWindow::saveDataToFile(const QTextEdit *display, const QString &regexPattern) {
