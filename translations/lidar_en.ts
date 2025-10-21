@@ -38,6 +38,28 @@
             <source>EMPE Team</source>
             <translation>EMPE Team</translation>
         </message>
+        <message>
+            <source>The program was written by: </source>
+            <translation>The program was written by: </translation>
+        </message>
+        <message>
+            <source>Mateusz Korniak &lt;mkorniak04@gmail.com&gt;
+Mateusz Machowski &lt;machowskimateusz51@gmail.com&gt;
+Filip Leśnik &lt;filip.lesnik170@gmail.com&gt;
+</source>
+            <translation>Mateusz Korniak &lt;mkorniak04@gmail.com&gt;
+Mateusz Machowski &lt;machowskimateusz51@gmail.com&gt;
+Filip Leśnik &lt;filip.lesnik170@gmail.com&gt;
+</translation>
+        </message>
+        <message>
+            <source>as part of the Procedural Programming course under the supervision of dr. hab. prof. UKEN Roman Rosiek</source>
+            <translation>as part of the Procedural Programming course under the supervision of dr. hab. prof. UKEN Roman Rosiek</translation>
+        </message>
+        <message>
+            <source>Close</source>
+            <translation>Close</translation>
+        </message>
     </context>
     <context>
         <name>AppMenu</name>

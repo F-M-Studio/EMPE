@@ -35,8 +35,26 @@
             <translation>O nas</translation>
         </message>
         <message>
-            <source>The program was written as part of the Procedural Programming course under the supervision of dr. hab. prof. UKEN Roman Rosiek and was developed by:</source>
-            <translation>Program został napisany w ramach kursu Programowanie Proceduralne pod nadzorem dr. hab. prof. UKEN Romana Rośka i został napisany przez: </translation>
+            <source>The program was written by: </source>
+            <translation>Program został napisany przez: </translation>
+        </message>
+        <message>
+            <source>Mateusz Korniak &lt;mkorniak04@gmail.com&gt;
+Mateusz Machowski &lt;machowskimateusz51@gmail.com&gt;
+Filip Leśnik &lt;filip.lesnik170@gmail.com&gt;
+</source>
+            <translation>Mateusz Korniak &lt;mkorniak04@gmail.com&gt;
+Mateusz Machowski &lt;machowskimateusz51@gmail.com&gt;
+Filip Leśnik &lt;filip.lesnik170@gmail.com&gt;
+</translation>
+        </message>
+        <message>
+            <source>as part of the Procedural Programming course under the supervision of dr. hab. prof. UKEN Roman Rosiek</source>
+            <translation>w ramach kursu Programowanie Proceduralne pod nadzorem dr. hab. prof. UKEN Romana Rośka</translation>
+        </message>
+        <message>
+            <source>Close</source>
+            <translation>Zamknij</translation>
         </message>
         <message>
             <source>EMPE Team</source>

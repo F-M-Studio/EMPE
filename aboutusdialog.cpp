@@ -54,7 +54,7 @@ AboutUsDialog::AboutUsDialog(QWidget *parent) : QDialog(parent) {
     */
     QLabel *authorsHeaderLabel = new QLabel(
         tr(
-            "The program was written as part of the Procedural Programming course under the supervision of dr. hab. prof. UKEN Roman Rosiek and was developed by:"),
+            "The program was written by: "),
         this);
     QFont authorsFont = authorsHeaderLabel->font();
     authorsFont.setBold(true);
@@ -63,7 +63,7 @@ AboutUsDialog::AboutUsDialog(QWidget *parent) : QDialog(parent) {
 
     QLabel *authorsList = new QLabel(tr("Mateusz Korniak <mkorniak04@gmail.com>\n"
                                          "Mateusz Machowski <machowskimateusz51@gmail.com>\n"
-                                         "Filip Leśnik <filip.lesnik170@gmail.com>"), this);
+                                         "Filip Leśnik <filip.lesnik170@gmail.com>\n"), this);
     authorsList->setAlignment(Qt::AlignCenter);
 
     closeButton = new QPushButton(tr("Close"), this);
@@ -88,6 +88,15 @@ AboutUsDialog::AboutUsDialog(QWidget *parent) : QDialog(parent) {
 
     bottomLayout->addWidget(imageLabel);
     layout->addLayout(bottomLayout);
+
+    layout->addSpacing(10);
+
+    QLabel *supervisionLabel = new QLabel(
+        tr("as part of the Procedural Programming course under the supervision of dr. hab. prof. UKEN Roman Rosiek"), this
+    );
+    supervisionLabel->setAlignment(Qt::AlignCenter);
+    supervisionLabel->setWordWrap(true);
+    layout->addWidget(supervisionLabel);
 
     layout->addSpacing(10);
     layout->addWidget(closeButton);
