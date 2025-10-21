@@ -35,8 +35,8 @@
             <translation>O nas</translation>
         </message>
         <message>
-            <source>The program was written as part of the Procedural Programming course under the supervision of Dr. Hab. Roman Rosiek and was developed by:</source>
-            <translation>Program został napisany w ramach kursu Programowanie Proceduralne pod nadzorem Dr. Hab. Romana Rośka i został napisany przez: </translation>
+            <source>The program was written as part of the Procedural Programming course under the supervision of dr. hab. prof. UKEN Roman Rosiek and was developed by:</source>
+            <translation>Program został napisany w ramach kursu Programowanie Proceduralne pod nadzorem dr. hab. prof. UKEN Romana Rośka i został napisany przez: </translation>
         </message>
         <message>
             <source>EMPE Team</source>

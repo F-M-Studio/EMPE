@@ -54,7 +54,7 @@ AboutUsDialog::AboutUsDialog(QWidget *parent) : QDialog(parent) {
     */
     QLabel *authorsHeaderLabel = new QLabel(
         tr(
-            "The program was written as part of the Procedural Programming course under the supervision of Dr. Hab. Roman Rosiek and was developed by:"),
+            "The program was written as part of the Procedural Programming course under the supervision of dr. hab. prof. UKEN Roman Rosiek and was developed by:"),
         this);
     QFont authorsFont = authorsHeaderLabel->font();
     authorsFont.setBold(true);
